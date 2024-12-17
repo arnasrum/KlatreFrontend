@@ -1,65 +1,74 @@
-import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
-import { useState } from 'react';
-import {useCookies} from "react-cookie";
+import { useGoogleLogin, GoogleLogin, googleLogout } from '@react-oauth/google';
+import { useState, useEffect, useContext } from 'react';
+import { TokenContext } from "../Context"
 
 function Login(): JSX.Element {
 
-    interface GoogleResponse {
-        credential: string
-    }
-
-    const [loggedIn, setLoggedIn] = useState(false)
-    const [user, setUser] = useState({})
+    const { user, setUser } = useContext(TokenContext)
     const googleLogin = useGoogleLogin({
-        flow: "auth-code",
-        onSuccess: codeResponse => userLogin(codeResponse),
+        // @ts-ignore
+        onSuccess: codeResponse => handleGoogleCodeResponse(codeResponse),
+        onError: error => console.log("Login failed: ", error),
+        flow: "auth-code"
     })
-
-
-
-    function parseGoogleJWT (token: string): object {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
+    const logOut = () => {
+        googleLogout()
     }
 
-    interface GoogleCodeResponse {
+    interface CodeResponse {
         code: string
     }
 
-    const userLogin = (googleCodeResponse: GoogleCodeResponse) => {
-        console.log("googleResponse: ", googleCodeResponse)
-        const response = fetch("http://localhost:8080/google_login", {
+    const handleGoogleCodeResponse = (codeResponse: CodeResponse) =>  {
+        const GOOGLE_CLIENT_ID = "733167968471-7runi5g0s0gahprbah0lj1460ua2jjv3.apps.googleusercontent.com"
+        const GOOGLE_CLIENT_SECRET = "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"
+        const requestBody = {
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "grant_type": "authorization_code",
+            "code": codeResponse.code,
+            "redirect_uri": "postmessage"
+        }
+        fetch("https://oauth2.googleapis.com/token", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Authorization": `Bearer ${codeResponse.code}`,
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify({ code: googleCodeResponse.code }),
+            body: JSON.stringify(requestBody)
         })
             .then(response => response.json())
-            .then(data => console.log(data))
-            .catch(error => console.error(error, "it seems that the login failed"))
+            .then(data => setUser(data))
+            .catch(error => console.log(error))
+        return
     }
 
 
-    const handleGoogleResponse = (response: GoogleResponse)  => {
-        console.log(response)
-        //const token: JWTToken = parseGoogleJWT(response.credential)
-    }
-    const errorMessage = () =>  {
-        console.error("Google login failed");
-    }
-    //<GoogleLogin onSuccess={handleGoogleResponse} onError={errorMessage} />
+    useEffect(() => {
+        if(user) {
+            fetch("http://localhost:8080/google_login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "token": user.access_token
+                })
+            })
+                .then(response => response.json())
+                .then(responseBody => console.log(responseBody))
+                .catch(error => console.error(error))
+        }
+    }, [ user ])
+
     return(
          <>
-             <h1>Please Login</h1>
-             {!loggedIn? (
-                 <button onClick={() => googleLogin()}>Login</button>
+             {user ? (
+                 <div>
+                     Logged In
+                 </div>
              ) : (
-                 <button>Logout</button>
+                 <button onClick={() => googleLogin()}>Sign in with Google 🚀 </button>
              )}
          </>
     );
