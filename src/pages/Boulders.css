@@ -1,0 +1,13 @@
+
+.Boulder {
+    display: flex;
+    align-items: center;
+}
+.flex-items {
+    padding: 5px;
+}
+
+img {
+    width: 20em;
+    height: 20em;
+}
