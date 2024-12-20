@@ -1,11 +1,11 @@
 import './App.css'
-// @deno-types="@types/react"
 import {useCookies} from "react-cookie";
 import { createContext, useState } from "react"
 import Login from "./pages/Login";
 import { TokenContext} from "./Context";
 import SendAPIRequest from "./pages/SendAPIRequest";
 import Boulders from "./pages/Boulders";
+import ImageViewer from "./pages/ImageViewer";
 
 
 function App() {
@@ -19,6 +19,7 @@ function App() {
                     ) : (
                         <Login/>
                 )}
+                <ImageViewer/>
             </TokenContext.Provider>
         </>
     )

@@ -1,8 +1,9 @@
 import { useState, useEffect, useContext } from 'react'
 import "./Boulders.css"
-import boulderImage from "./boulder.png"
+import boulder from "./boulder.png"
 import { TokenContext} from "../Context";
 import BoulderForm from "./BoulderForm";
+import {apiUrl} from "../constants/global";
 
 function Boulders() {
 
@@ -29,7 +30,7 @@ function Boulders() {
 
     useEffect(() => {
         // @ts-ignore
-        fetch(`http://localhost:8080/boulders?access_token=${user.access_token}`, {
+        fetch(`${apiUrl}/boulders?access_token=${user.access_token}`, {
             method: "GET",
         })
             .then(response => response.json())
@@ -38,24 +39,22 @@ function Boulders() {
     }, [ user, refetch ]);
 
     const handleNextClick = () => {
+        if(page == boulderLength) {return}
         setEditingBoulder(false)
-        if(page == boulderLength) {
-            return
-        }
+        setAddingBoulder(false)
         setPage(prevState => prevState + 1)
     }
     const handlePreviousClick = () => {
+        if(page == 1) {return}
         setEditingBoulder(false)
-        if(page == 1) {
-            return
-        }
+        setAddingBoulder(false)
         setPage(prevState => prevState - 1)
     }
 
 
     const handleEditSubmit = (event) => {
         event.preventDefault()
-        fetch(`http://localhost:8080/boulder?access_token=${user.access_token}`, {
+        fetch(`${apiUrl}/boulder?access_token=${user.access_token}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -77,7 +76,7 @@ function Boulders() {
 
     const handleAddSubmit = (event) => {
         event.preventDefault()
-        fetch(`http://localhost:8080/boulder?access_token=${user.access_token}`, {
+        fetch(`${apiUrl}/boulder?access_token=${user.access_token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -98,53 +97,58 @@ function Boulders() {
     }
 
     return(
-       <>
-           {
-               boulders ? (
-                   boulderLength == 0 ? (
-                       <p>Please insert some boulders</p>
-                   ) : (
-                       <div>
-                           <h3>{boulders[page].name}</h3>
-                           <div className="Boulder">
-                               <ul className="flex-items">
-                                   <li>Attempts: {boulders[page].attempts}</li>
-                                   <li>Grade: {boulders[page].grade}</li>
-                               </ul>
-                               <div>
-                                   <img className="flex-items" src={boulderImage} alt={"boulder"}/>
-                               </div>
-                           </div>
-                           <p>Page {page} of {boulderLength}</p>
-                           <button onClick={handlePreviousClick}>Previous Boulder</button>
-                           <button onClick={handleNextClick}>Next Boulder</button>
-                           <div>
-                               {editingBoulder ? (
-                                   <BoulderForm page={page} handleSubmit={handleEditSubmit} boulders={boulders} defaultValues={true} />
-                                   )
-                                   : (
-                                       <>Not editing</>
-                                   )}
-                               <button onClick={() => {
-                                   setEditingBoulder(prev => !prev)}}>Edit Boulder</button>
-                           </div>
+        <>
+            {
+                boulders ? (
+                    boulderLength == 0 ? (
+                        <p>Please insert some boulders</p>
+                    ) : (
+                        <div>
+                            <h3>{boulders[page].name}</h3>
+                            <div className="Boulder">
+                                <ul className="flex-items">
+                                    <li>Attempts: {boulders[page].attempts}</li>
+                                    <li>Grade: {boulders[page].grade}</li>
+                                </ul>
+                                <div>
+                                    <img className="flex-items" src={boulder} alt={"boulder"}/>
+                                </div>
+                            </div>
+                            <p>Page {page} of {boulderLength}</p>
+                            <button onClick={handlePreviousClick}>Previous Boulder</button>
+                            <button onClick={handleNextClick}>Next Boulder</button>
+                            <div>
+                                {editingBoulder ? (
+                                        <BoulderForm page={page} handleSubmit={handleEditSubmit} boulders={boulders}
+                                                     defaultValues={true}/>
+                                    )
+                                    : (
+                                        <>Not editing</>
+                                    )}
+                                <button onClick={() => {
+                                    setEditingBoulder(prev => !prev)
+                                }}>Edit Boulder
+                                </button>
+                            </div>
 
-                       </div>
-                   )
-               ) : (
-                   <p>Boulder undefined</p>
-               )
-           }
-           <div>
-               {addingBoulder ? (
-                       <BoulderForm page={page} handleSubmit={handleAddSubmit} boulders={boulders} defaultValues={false}/>
-                   ) : (
-                      <>Not Adding</>
-                   )}
-               <button onClick={() => setAddingBoulder(prev => !prev)}>Add boulder</button>
-               <button onClick={() => {}}>Delete Boulder</button>
-           </div>
-       </>
+                        </div>
+                    )
+                ) : (
+                    <p>Boulder undefined</p>
+                )
+            }
+            <div>
+                {addingBoulder ? (
+                    <BoulderForm page={page} handleSubmit={handleAddSubmit} boulders={boulders} defaultValues={false}/>
+                ) : (
+                    <>Not Adding</>
+                )}
+                <button onClick={() => setAddingBoulder(prev => !prev)}>Add boulder</button>
+            </div>
+            <button onClick={() => {}}>
+                Delete Boulder
+            </button>
+        </>
     );
 }
 
