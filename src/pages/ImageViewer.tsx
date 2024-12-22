@@ -1,25 +1,41 @@
-import image from "./boulder.png"
+import imagePNG from "./boulder.png"
 import {apiUrl} from "../constants/global";
 
 export default function ImageViewer() {
 
-    const imageRequest = (event) => {
-
-        fetch(`${apiUrl}/image`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "image/png",
-            },
-            body: image
+    function uploadImage(event) {
+        //const fileInput = document.getElementById('fileInput');
+        event.preventDefault()
+        // Make sure a file is selected
+        if (event.target.fileInput.files.length === 0) {
+            alert('Please select an image file.');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('image', event.target.fileInput.files[0]);
+        fetch(apiUrl + '/image', {
+            method: 'POST',
+            body: formData,
         })
-            .then(res => res.json())
-            .then(data => console.log(data))
-            .catch(err => console.log(err))
+            .then(response => response.body.getReader().read().then(params => {
+                const done = params.done
+                const value = params.value
+                if(params.done) {
+
+                }
+
+        }))
+            .then(responseBody => console.log(responseBody))
+            .catch(error => console.error(error))
     }
+
 
     return (
         <>
-            <button onClick={imageRequest}>Image</button>
+            <form onSubmit={uploadImage} >
+                <input type="file" id="fileInput" accept="image/png"/>
+                <button type={"submit"}>Upload</button>
+            </form>
         </>
     );
 }
