@@ -15,11 +15,13 @@ function App() {
             <h1>Klatre</h1>
             <TokenContext.Provider value={{"user": user, "setUser": setUser}} >
                 {user ? (
-                        <Boulders/>
+                        <div>
+                            <Boulders/>
+                            <ImageViewer/>
+                        </div>
                     ) : (
                         <Login/>
                 )}
-                <ImageViewer/>
             </TokenContext.Provider>
         </>
     )

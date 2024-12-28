@@ -1,7 +1,10 @@
-import imagePNG from "./boulder.png"
+import { useContext } from "react"
 import {apiUrl} from "../constants/global";
+import {TokenContext} from "../Context";
 
 export default function ImageViewer() {
+
+    const { user } = useContext(TokenContext)
 
     function uploadImage(event) {
         //const fileInput = document.getElementById('fileInput');
@@ -13,7 +16,7 @@ export default function ImageViewer() {
         }
         const formData = new FormData();
         formData.append('image', event.target.fileInput.files[0]);
-        fetch(apiUrl + '/image', {
+        fetch(apiUrl + '/image' + "?" + "access_token=" + user.access_token, {
             method: 'POST',
             body: formData,
         })
