@@ -4,6 +4,7 @@ import boulder from "./boulder.png"
 import { TokenContext} from "../Context";
 import BoulderForm from "./BoulderForm";
 import {apiUrl} from "../constants/global";
+import Image from "./Image";
 
 function Boulders() {
 
@@ -24,11 +25,11 @@ function Boulders() {
         name: string,
         attempts: number,
         grade: string,
-        image: File
+        image: string
    }
 
-
     useEffect(() => {
+        console.log(`${apiUrl}/boulders?access_token=${user.access_token}`)
         // @ts-ignore
         fetch(`${apiUrl}/boulders?access_token=${user.access_token}`, {
             method: "GET",
@@ -51,7 +52,6 @@ function Boulders() {
         setPage(prevState => prevState - 1)
     }
 
-
     const handleEditSubmit = (event) => {
         event.preventDefault()
         fetch(`${apiUrl}/boulder?access_token=${user.access_token}`, {
@@ -64,7 +64,8 @@ function Boulders() {
                     "id": boulders[page].id,
                     "name": event.currentTarget.elements.name.value,
                     "attempts": event.currentTarget.elements.attempts.value,
-                    "grade": event.currentTarget.elements.grade.value
+                    "grade": event.currentTarget.elements.grade.value,
+                    "image": event.currentTarget.elements.image.value
                 }
             )
         })
@@ -86,7 +87,7 @@ function Boulders() {
                     "name": event.currentTarget.elements.name.value,
                     "attempts": event.currentTarget.elements.attempts.value,
                     "grade": event.currentTarget.elements.grade.value,
-                    "image": ""
+                    "image": event.currentTarget.elements.image.value
                 }
             )
         })
@@ -100,7 +101,7 @@ function Boulders() {
         <>
             {
                 boulders ? (
-                    boulderLength == 0 ? (
+                    boulderLength < 1 ? (
                         <p>Please insert some boulders</p>
                     ) : (
                         <div>
@@ -111,7 +112,7 @@ function Boulders() {
                                     <li>Grade: {boulders[page].grade}</li>
                                 </ul>
                                 <div>
-                                    <img className="flex-items" src={boulder} alt={"boulder"}/>
+                                    <Image className="flex-items" data={boulders[page - 1]}/>
                                 </div>
                             </div>
                             <p>Page {page} of {boulderLength}</p>
@@ -121,8 +122,7 @@ function Boulders() {
                                 {editingBoulder ? (
                                         <BoulderForm page={page} handleSubmit={handleEditSubmit} boulders={boulders}
                                                      defaultValues={true}/>
-                                    )
-                                    : (
+                                    ) : (
                                         <>Not editing</>
                                     )}
                                 <button onClick={() => {
