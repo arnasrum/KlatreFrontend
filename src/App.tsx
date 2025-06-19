@@ -1,37 +1,52 @@
 import './App.css'
 import {useCookies} from "react-cookie";
-import { createContext, useState } from "react"
+import { createContext, useState, useEffect } from "react"
 import Login from "./pages/Login";
 import { TokenContext} from "./Context";
 import SendAPIRequest from "./pages/SendAPIRequest";
 import Boulders from "./pages/Boulders";
 import ImageViewer from "./pages/ImageViewer";
-import ImageTest from "./pages/ImageTest";
 
 
 function App() {
-    const [user, setUser] = useState<object>(null)
+    const [cookies, setCookie, removeCookie] = useCookies(['user']);
+    const [user, setUser] = useState<object>(cookies.user || null)
     const [page, setPage] = useState<string>("image")
+
+    useEffect(() => {
+        if (user) {
+            setCookie('user', user, { 
+                path: '/', 
+                maxAge: 3600 * 24 * 7, // 7 days
+                secure: false, // Set to true in production with HTTPS
+                sameSite: 'lax'
+            });
+        } else {
+            removeCookie('user', { path: '/' });
+        }
+    }, [user, setCookie, removeCookie]);
+
+    const contextValue = {
+        user,
+        setUser,
+        logout: () => {
+            setUser(null);
+            removeCookie('user', { path: '/' });
+        }
+    };
+
     return (
         <>
             <h1>Klatre</h1>
-            <TokenContext.Provider value={{"user": user, "setUser": setUser}} >
+            <TokenContext.Provider value={contextValue} >
                 {user ? (
                         <div>
                             <Boulders/>
                             <ImageViewer/>
+                            <Login/>
                         </div>
                     ) : (
                         <Login/>
-                )}
-                <h3>Testing</h3>
-                {user && page == "image" ? (
-                    <div>
-                        <ImageTest/>
-                    </div>
-
-                ) : (
-                    <></>
                 )}
             </TokenContext.Provider>
         </>

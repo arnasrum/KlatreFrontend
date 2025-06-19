@@ -1,14 +1,46 @@
 
 export default function Image(props) {
+    if (!props.data) {
+        return(
+            <>
+                <p>No image</p>
+            </>
+        )
+    }
 
-    const image = "data:image/png;base64," + props.data.image.toString();
-    console.log(props)
+    // Add validation for base64 data
+    const imageData = props.data.toString();
+    if (!imageData || imageData.trim() === '') {
+        return(
+            <>
+                <p>Empty image data</p>
+            </>
+        )
+    }
+
+    const image = imageData;
+
+    const handleImageError = (e) => {
+        console.error('Image failed to load:', {
+            dataLength: imageData.length,
+            dataPreview: imageData.substring(0, 50) + '...',
+            error: e
+        });
+    };
+
+    const handleImageLoad = () => {
+        console.log('Image loaded successfully');
+    };
+
     return(
         <>
-            {image ? (<img src={image} alt="idk" />
-            ) : (
-                <></>)
-            }
+            <img
+                src={image}
+                alt="Boulder image"
+                onError={handleImageError}
+                onLoad={handleImageLoad}
+                style={{ maxWidth: '300px', height: 'auto' }}
+            />
         </>
     );
 }

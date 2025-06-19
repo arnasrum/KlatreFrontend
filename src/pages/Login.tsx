@@ -4,15 +4,17 @@ import { TokenContext } from "../Context"
 
 function Login(): JSX.Element {
 
-    const { user, setUser } = useContext(TokenContext)
+    const { user, setUser, logout } = useContext(TokenContext)
     const googleLogin = useGoogleLogin({
         // @ts-ignore
         onSuccess: codeResponse => handleGoogleCodeResponse(codeResponse),
         onError: error => console.log("Login failed: ", error),
         flow: "auth-code"
     })
+    
     const logOut = () => {
-        googleLogout()
+        googleLogout();
+        logout(); // Use the logout function from context
     }
 
     interface CodeResponse {
@@ -55,7 +57,6 @@ function Login(): JSX.Element {
                     "token": user.access_token
                 })
             })
-                .then(response => response.json())
                 .then(responseBody => console.log(responseBody))
                 .catch(error => console.error(error))
         }
@@ -65,7 +66,8 @@ function Login(): JSX.Element {
          <>
              {user ? (
                  <div>
-                     Logged In
+                     <p>Logged In</p>
+                     <button onClick={logOut}>Logout</button>
                  </div>
              ) : (
                  <button onClick={() => googleLogin()}>Sign in with Google 🚀 </button>

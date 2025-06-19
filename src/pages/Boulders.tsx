@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
 import "./Boulders.css"
-import boulder from "./boulder.png"
 import { TokenContext} from "../Context";
 import BoulderForm from "./BoulderForm";
 import {apiUrl} from "../constants/global";
@@ -10,11 +9,12 @@ function Boulders() {
 
     const [boulders, setBoulders] = useState<Boulders>({})
     const boulderLength = Object.keys(boulders).length;
-    const [page, setPage] = useState(1)
+    const [page, setPage] = useState(0)
     const { user } = useContext(TokenContext)
     const [editingBoulder, setEditingBoulder] = useState<boolean>(false)
     const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
     const [refetch, setRefetch] = useState<boolean>(false)
+    console.log(boulders)
 
    interface Boulders extends Object{
         [key: number]: Boulder
@@ -29,9 +29,9 @@ function Boulders() {
    }
 
     useEffect(() => {
-        console.log(`${apiUrl}/boulders?access_token=${user.access_token}`)
+        console.log(`${apiUrl}/boulders?accessToken=${user.access_token}`)
         // @ts-ignore
-        fetch(`${apiUrl}/boulders?access_token=${user.access_token}`, {
+        fetch(`${apiUrl}/boulders?accessToken=${user.access_token}`, {
             method: "GET",
         })
             .then(response => response.json())
@@ -40,13 +40,13 @@ function Boulders() {
     }, [ user, refetch ]);
 
     const handleNextClick = () => {
-        if(page == boulderLength) {return}
+        if(page == boulderLength - 1) {return}
         setEditingBoulder(false)
         setAddingBoulder(false)
         setPage(prevState => prevState + 1)
     }
     const handlePreviousClick = () => {
-        if(page == 1) {return}
+        if(page == 0) {return}
         setEditingBoulder(false)
         setAddingBoulder(false)
         setPage(prevState => prevState - 1)
@@ -54,7 +54,7 @@ function Boulders() {
 
     const handleEditSubmit = (event) => {
         event.preventDefault()
-        fetch(`${apiUrl}/boulder?access_token=${user.access_token}`, {
+        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -75,24 +75,44 @@ function Boulders() {
             .catch(error => console.error(error))
     }
 
-    const handleAddSubmit = (event) => {
+    // Fix the handleAddSubmit function
+    // @ts-ignore
+    const handleAddSubmit = async (event) => {
         event.preventDefault()
-        fetch(`${apiUrl}/boulder?access_token=${user.access_token}`, {
+        let img = null
+        
+        if(event.target.elements.image.files[0]) {
+            const file = event.target.elements.image.files[0];
+            const format = event.target.elements.image.files[0].type;
+
+            // Convert file to base64 properly
+            const arrayBuffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+        
+            // Convert to base64
+            let binary = '';
+            bytes.forEach((byte) => binary += String.fromCharCode(byte));
+            img = btoa(binary);
+
+            console.log('Image converted to base64, length:', img.length);
+            img = `data:${format};base64,${img}`
+        }
+
+        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(
                 {
-                    "name": event.currentTarget.elements.name.value,
-                    "attempts": event.currentTarget.elements.attempts.value,
-                    "grade": event.currentTarget.elements.grade.value,
-                    "image": event.currentTarget.elements.image.value
+                    "name": event.target.elements.name.value,
+                    "attempts": event.target.elements.attempts.value,
+                    "grade": event.target.elements.grade.value,
+                    "image": img
                 }
             )
         })
             .then(response => response.json())
-            .then(body => console.log(body))
             .then(_ => setRefetch(prev => !prev))
             .catch(error => console.error(error))
     }
@@ -112,16 +132,15 @@ function Boulders() {
                                     <li>Grade: {boulders[page].grade}</li>
                                 </ul>
                                 <div>
-                                    <Image className="flex-items" data={boulders[page - 1]}/>
+                                    <Image className="flex-items" data={boulders[page].image}/>
                                 </div>
                             </div>
-                            <p>Page {page} of {boulderLength}</p>
+                            <p>Page {page + 1} of {boulderLength}</p>
                             <button onClick={handlePreviousClick}>Previous Boulder</button>
                             <button onClick={handleNextClick}>Next Boulder</button>
                             <div>
                                 {editingBoulder ? (
-                                        <BoulderForm page={page} handleSubmit={handleEditSubmit} boulders={boulders}
-                                                     defaultValues={true}/>
+                                    <BoulderForm page={page} handleSubmit={handleEditSubmit} boulders={boulders} defaultValues={true}/>
                                     ) : (
                                         <>Not editing</>
                                     )}
@@ -130,7 +149,6 @@ function Boulders() {
                                 }}>Edit Boulder
                                 </button>
                             </div>
-
                         </div>
                     )
                 ) : (
