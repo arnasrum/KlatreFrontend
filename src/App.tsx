@@ -17,7 +17,7 @@ function App() {
         if (user) {
             setCookie('user', user, { 
                 path: '/', 
-                maxAge: 3600 * 24 * 7, // 7 days
+                maxAge: 3600,
                 secure: false, // Set to true in production with HTTPS
                 sameSite: 'lax'
             });
@@ -42,7 +42,6 @@ function App() {
                 {user ? (
                         <div>
                             <Boulders/>
-                            <ImageViewer/>
                             <Login/>
                         </div>
                     ) : (

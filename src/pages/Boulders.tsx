@@ -52,50 +52,38 @@ function Boulders() {
         setPage(prevState => prevState - 1)
     }
 
-    const handleEditSubmit = (event) => {
-        event.preventDefault()
-        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(
-                {
-                    "id": boulders[page].id,
-                    "name": event.currentTarget.elements.name.value,
-                    "attempts": event.currentTarget.elements.attempts.value,
-                    "grade": event.currentTarget.elements.grade.value,
-                    "image": event.currentTarget.elements.image.value
-                }
-            )
-        })
-            .then(response => response.json())
-            .then(body => console.log(body))
-            .then(_ => setRefetch(prev => !prev))
-            .catch(error => console.error(error))
+
+
+    const convertImageToBase64 = async (file: File, format: string) => {
+        if(file == null || format == null) {
+            return null
+        }
+        let img = null
+        const arrayBuffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+
+        // Convert to base64
+        let binary = '';
+        bytes.forEach((byte) => binary += String.fromCharCode(byte));
+        img = btoa(binary);
+
+        console.log('Image converted to base64, length:', img.length);
+        img = `data:${format};base64,${img}`
+        return img
     }
+
 
     // Fix the handleAddSubmit function
     // @ts-ignore
     const handleAddSubmit = async (event) => {
         event.preventDefault()
-        let img = null
-        
+
+        let img: string | null = null;
+
         if(event.target.elements.image.files[0]) {
             const file = event.target.elements.image.files[0];
             const format = event.target.elements.image.files[0].type;
-
-            // Convert file to base64 properly
-            const arrayBuffer = await file.arrayBuffer();
-            const bytes = new Uint8Array(arrayBuffer);
-        
-            // Convert to base64
-            let binary = '';
-            bytes.forEach((byte) => binary += String.fromCharCode(byte));
-            img = btoa(binary);
-
-            console.log('Image converted to base64, length:', img.length);
-            img = `data:${format};base64,${img}`
+            img = await convertImageToBase64(file, format)
         }
 
         fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
@@ -112,10 +100,44 @@ function Boulders() {
                 }
             )
         })
-            .then(response => response.json())
+            //.then(response => response.json())
             .then(_ => setRefetch(prev => !prev))
             .catch(error => console.error(error))
     }
+
+    // @ts-ignore
+    const handleEditSubmit = async (event) => {
+        event.preventDefault()
+        let img: string | null = null;
+
+        if(event.target.elements.image.files[0]) {
+            const file = event.target.elements.image.files[0];
+            const format = event.target.elements.image.files[0].type;
+            img = await convertImageToBase64(file, format)
+        }
+        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(
+                {
+                    "id": boulders[page].id,
+                    "name": event.target.elements.name.value,
+                    "attempts": event.target.elements.attempts.value,
+                    "grade": event.target.elements.grade.value,
+                    "image": img
+                }
+            )
+        })
+            //.then(response => console.log(response.json()))
+            //.then(body => console.log(body))
+            .then(_ => setRefetch(prev => !prev))
+            .then(_ => console.log("Boulder updated"))
+            .catch(error => console.error(error))
+    }
+
+
 
     return(
         <>
