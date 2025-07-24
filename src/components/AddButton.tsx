@@ -1,8 +1,9 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useContext } from 'react'
 import BoulderForm from "../pages/BoulderForm";
 import {apiUrl} from "../constants/global";
-import {BoulderContext, TokenContext} from "../Context";
+import {BoulderContext} from "../Context";
 import {convertImageToBase64} from "../Helpers";
+import ReusableButton from "./ReusableButton";
 
 function AddButton() {
 
@@ -37,7 +38,9 @@ function AddButton() {
         })
             //.then(response => response.json())
             .then(_ => setRefetch((prev: boolean) => !prev))
-            .then(_ => setPage(boulderLength - 1))
+            .then(_ => {
+                if(boulders.length < 1) {return}
+                setPage(boulderLength - 1)})
             .catch(error => console.error(error))
     }
 
@@ -48,7 +51,9 @@ function AddButton() {
             ) : (
                 <></>
             )}
-            <button onClick={() => setAddingBoulder((prev: boolean) => !prev)}>Add boulder</button>
+            <ReusableButton onClick={() => setAddingBoulder((prev: boolean) => !prev)}
+                children={"Add Boulder"}
+            />
         </div>
     )
 }

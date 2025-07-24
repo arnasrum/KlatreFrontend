@@ -3,6 +3,7 @@ import { BoulderContext } from '../Context';
 import {convertImageToBase64} from "../Helpers";
 import {apiUrl} from "../constants/global";
 import BoulderForm from "../pages/BoulderForm";
+import ReusableButton from "./ReusableButton";
 
 const EditButton = () => {
 
@@ -12,6 +13,7 @@ const EditButton = () => {
     // @ts-ignore
     const handleEditSubmit = async (event) => {
         event.preventDefault()
+        if(boulders.length < 1) {return}
         let img: string | null = null;
 
         if(event.target.elements.image.files[0]) {
@@ -47,10 +49,12 @@ const EditButton = () => {
             ) : (
                 <></>
             )}
-            <button onClick={() => {
-                setEditingBoulder((prev: boolean) => !prev)
-            }}>Edit Boulder
-            </button>
+            <ReusableButton children={"Edit Boulder"}
+                            onClick={() => {
+                                if(boulders.length < 1) {return}
+                                setEditingBoulder((prev: boolean) => !prev)}
+            }
+            />
         </div>
     );
 };

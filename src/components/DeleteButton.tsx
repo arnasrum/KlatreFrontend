@@ -1,21 +1,24 @@
 import { useState, useContext } from "react"
 import {BoulderContext} from "../Context";
 import {apiUrl} from "../constants/global";
+import ReusableButton from "./ReusableButton";
 
 
 function DeleteButton() {
 
     const [confirmation, setConfirmation] = useState<boolean>(false)
-    const {boulders, page, setRefetch, accessToken} = useContext(BoulderContext)
+    const {boulders, page, setPage, setRefetch, accessToken} = useContext(BoulderContext)
 
 
 
-    // @ts-ignore
-    async function handleDeleteClick(event) {
-        event.preventDefault()
+    function handleDeleteClick() {
         console.log("Delete clicked")
+        if(boulders.length < 1) {
+            setConfirmation(false)
+            return
+        }
+        const boulderID: number = boulders[page].id
 
-        /*
         fetch(`${apiUrl}/boulder?accessToken=${accessToken}`,
             {
                 method: "DELETE",
@@ -23,25 +26,31 @@ function DeleteButton() {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    id: boulders[page].id
+                    id: boulderID
                 })
             }
         )
-         */
-        setConfirmation(false)
-    }
+            .then(_ => setRefetch((prev: boolean) => !prev))
+            .then(_ => {
+                if(page == 0) {
+                    return
+                }
+                setPage(page - 1)
+            })
+            .then(_ => setConfirmation(false))
 
+    }
     return(
         <>
             {!confirmation ? (
-                <button onClick={() => setConfirmation((prev: boolean) => !prev)}>Delete Boulder</button>
+                <ReusableButton onClick={() => setConfirmation((prev: boolean) => !prev)}>Delete Boulder</ReusableButton>
         ) : (
             <>
                 <label>
                     Are you sure?
                 </label>
-                <button onClick={handleDeleteClick}>Yes</button>
-                <button onClick={() => setConfirmation(false)}>No</button>
+                <ReusableButton onClick={handleDeleteClick} children={"Yes"}/>
+                <ReusableButton onClick={() => setConfirmation(false)} children={"No"} />
             </>
 
         )}
