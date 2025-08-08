@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Login from "./pages/Login";
 import { TokenContext } from "./Context";
 import Boulders from "./pages/Boulders";
+import Groups from "./pages/Groups";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         } else {
             removeCookie('user', { path: '/' });
         }
+        console.log(user)
     }, [user, setCookie, removeCookie]);
 
     const contextValue = {
@@ -38,7 +40,7 @@ function App() {
             <TokenContext.Provider value={contextValue} >
                 {user ? (
                         <div>
-                            <Boulders/>
+                            <Groups/>
                             <Login/>
                         </div>
                     ) : (

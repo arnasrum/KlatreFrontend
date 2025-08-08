@@ -1,14 +1,15 @@
-import { useState, useContext } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import BoulderForm from "../pages/BoulderForm";
 import {apiUrl} from "../constants/global";
-import {BoulderContext} from "../Context";
+import {BoulderContext, GroupContext} from "../Context";
 import {convertImageToBase64} from "../Helpers";
 import ReusableButton from "./ReusableButton";
 
 function AddButton() {
 
     const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
-    const {boulders, page, setPage, setRefetch, boulderLength, accessToken} = useContext(BoulderContext)
+    const {boulders, page, setPage, boulderLength, setRefetch, accessToken, placeID} = useContext(BoulderContext)
+    const { setAddRefetch } = useContext(GroupContext)
 
     // @ts-ignore
     const handleAddSubmit = async (event) => {
@@ -22,13 +23,14 @@ function AddButton() {
             img = await convertImageToBase64(file, format)
         }
 
-        fetch(`${apiUrl}/boulder?accessToken=${accessToken}`, {
+        fetch(`${apiUrl}/boulders/place?accessToken=${accessToken}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(
                 {
+                    "placeID": placeID,
                     "name": event.target.elements.name.value,
                     "attempts": event.target.elements.attempts.value,
                     "grade": event.target.elements.grade.value,
@@ -36,12 +38,11 @@ function AddButton() {
                 }
             )
         })
-            //.then(response => response.json())
-            .then(_ => setRefetch((prev: boolean) => !prev))
-            .then(_ => {
-                if(boulders.length < 1) {return}
-                setPage(boulderLength - 1)})
+            .then(_ => setAddRefetch((prev: boolean) => !prev))
             .catch(error => console.error(error))
+
+
+
     }
 
     return (
