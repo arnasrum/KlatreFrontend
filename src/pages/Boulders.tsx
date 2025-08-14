@@ -1,29 +1,28 @@
 import { useState, useEffect, useContext } from 'react'
 import "./Boulders.css"
-import {GroupContext, TokenContext} from "../Context";
-import { apiUrl } from "../constants/global";
-import Image from "./Image";
-import AddButton from "../components/AddButton";
-import EditButton from "../components/EditButton";
-import DeleteButton from "../components/DeleteButton";
-import { BoulderContext } from "../Context";
-import { convertImageToBase64 } from "../Helpers";
-import Boulder from "../interfaces/Boulder";
+import {GroupContext, TokenContext, BoulderContext } from "../Context.tsx";
+import Image from "./Image.tsx";
+import AddButton from "../components/AddButton.tsx";
+import EditButton from "../components/EditButton.tsx";
+import DeleteButton from "../components/DeleteButton.tsx";
+import Boulder from "../interfaces/Boulder.ts";
+import ReusableButton from "../components/ReusableButton.tsx";
 
 
 interface BoulderProps{
-    boulders: Array<Boulder>
-    setBoulders: Function
+    boulders: Array<Boulder> | null
+    setBoulders: React.Dispatch<any>,
+    isLoading?: boolean // Add this
+    placeID: number,
+    refetchBoulders: () => void
+
 }
 
 function Boulders(props: BoulderProps) {
-
-    //const [boulders, setBoulders] = useState<Boulders>({})
-    const boulders = props.boulders;
-    const setBoulders = props.setBoulders;
-    const boulderLength = Object.keys(boulders).length;
+    const { placeID, boulders, setBoulders, refetchBoulders, isLoading = false } = props
+    const boulderLength = boulders?.length || 0
     const { user } = useContext(TokenContext)
-    const { setRefetch, placeID, groupID, page, setPage } = useContext(GroupContext)
+    const [page, setPage] = useState<number>(0)
 
 
     const boulderContext = {
@@ -31,35 +30,40 @@ function Boulders(props: BoulderProps) {
         setBoulders: setBoulders,
         page: page,
         setPage: setPage,
-        setRefetch: setRefetch,
         boulderLength: boulderLength,
         accessToken: user.access_token,
         placeID: placeID,
     }
 
-   interface Boulders extends Object{
-        [key: number]: Boulder
-   }
+    useEffect(() => {
+        setPage(0)
+    }, [placeID]);
 
     useEffect(() => {
         if(boulders && boulderLength > 0) {
-            setPage((prev) => {
+            setPage((prev: number) => {
                 if(prev == page) {return prev}
                 return boulders.length - 1}
             )
         }
-    }, [boulders, placeID, groupID])
+    }, [boulders])
 
 
     const handleNextClick = () => {
         if(page == boulderLength - 1) {return}
-        setPage(prevState => prevState + 1)
+        setPage((prevState: number) => prevState + 1)
     }
     const handlePreviousClick = () => {
         if(page == 0) {return}
-        setPage(prevState => prevState - 1)
+        setPage((prevState: number) => prevState - 1)
     }
 
+    // In your render logic:
+    if (isLoading) {
+        return <div>Loading boulders...</div>
+    }
+
+    console.log("boulders: ", boulders)
     return(
         <BoulderContext.Provider value={boulderContext}>
             {
@@ -79,17 +83,17 @@ function Boulders(props: BoulderProps) {
                                 </div>
                             </div>
                             <p>Page {page + 1} of {boulderLength}</p>
-                            <button onClick={handlePreviousClick}>Previous Boulder</button>
-                            <button onClick={handleNextClick}>Next Boulder</button>
+                            <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
+                            <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
                         </div>
                     )
                 ) : (
                     <p>Boulder undefined</p>
                 )
             }
-            <AddButton/>
-            <EditButton/>
-            <DeleteButton/>
+            <AddButton page={page} setPage={setPage} boulders={boulders} placeID={placeID} refetchBoulders={refetchBoulders}/>
+            <EditButton page={page} boulders={boulders} placeID={placeID} refetchBoulders={refetchBoulders}/>
+            <DeleteButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
         </BoulderContext.Provider>
     );
 }

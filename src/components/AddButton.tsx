@@ -1,18 +1,32 @@
-import { useState, useEffect, useContext } from 'react'
-import BoulderForm from "../pages/BoulderForm";
-import {apiUrl} from "../constants/global";
-import {BoulderContext, GroupContext} from "../Context";
-import {convertImageToBase64} from "../Helpers";
-import ReusableButton from "./ReusableButton";
+import { useState, useContext } from 'react'
+import BoulderForm from "../pages/BoulderForm.tsx";
+import {apiUrl} from "../constants/global.ts";
+import {GroupContext, TokenContext} from "../Context.tsx";
+import {convertImageToBase64} from "../Helpers.ts";
+import ReusableButton from "./ReusableButton.tsx";
+import Boulder from "../interfaces/Boulder.ts";
 
-function AddButton() {
+
+interface AddButtonProps {
+    page: number,
+    setPage: (page: number) => void,
+    boulders: Array<Boulder> | null,
+    placeID: number,
+    refetchBoulders: () => void,
+}
+
+function AddButton({
+    page,
+    setPage,
+    boulders,
+    placeID,
+    refetchBoulders,
+    }: AddButtonProps) {
 
     const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
-    const {boulders, page, setPage, boulderLength, setRefetch, accessToken, placeID} = useContext(BoulderContext)
-    const { setAddRefetch } = useContext(GroupContext)
+    const { user } = useContext(TokenContext)
 
-    // @ts-ignore
-    const handleAddSubmit = async (event) => {
+    const handleAddSubmit = async (event: any) => {
         event.preventDefault()
 
         let img: string | null = null;
@@ -23,7 +37,7 @@ function AddButton() {
             img = await convertImageToBase64(file, format)
         }
 
-        fetch(`${apiUrl}/boulders/place?accessToken=${accessToken}`, {
+        fetch(`${apiUrl}/boulders/place?accessToken=${user.access_token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -38,11 +52,10 @@ function AddButton() {
                 }
             )
         })
-            .then(_ => setAddRefetch((prev: boolean) => !prev))
+            .then(_ => refetchBoulders())
+            .then(_ => setPage(boulders!.length - 1))
+            .then(_ => setAddingBoulder(false))
             .catch(error => console.error(error))
-
-
-
     }
 
     return (
@@ -52,9 +65,7 @@ function AddButton() {
             ) : (
                 <></>
             )}
-            <ReusableButton onClick={() => setAddingBoulder((prev: boolean) => !prev)}
-                children={"Add Boulder"}
-            />
+            <ReusableButton onClick={() => setAddingBoulder((prev: boolean) => !prev)}> Add Boulder </ReusableButton>
         </div>
     )
 }

@@ -1,63 +1,69 @@
+import Boulder from "../interfaces/Boulder.ts";
 
-function BoulderForm(props) {
-    const handleSubmit = props.handleSubmit
-    const boulders = props.boulders
-    const page = props.page
-    const defaultValues = props.defaultValues
-
-    return(
-        <>
-            {
-                defaultValues ? (
-                    <form onSubmit={handleSubmit}>
-                        <label>
-                            name:
-                            <input id="name" defaultValue={boulders[page].name}/>
-                        </label>
-                        <label>
-                            attempts:
-                            <input id="attempts" defaultValue={boulders[page].attempts}/>
-                        </label>
-                        <label>
-                            grade:
-                            <input id="grade" defaultValue={boulders[page].grade}/>
-                        </label>
-                        <label>
-                            Image:
-                            <input id="image" type="file" onClick={() => {
-                            }}/>
-                        </label>
-                        <button type={"submit"}>Submit</button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleSubmit}>
-                        <label>
-                            name:
-                            <input id="name"/>
-                        </label>
-                        <label>
-                            attempts:
-                            <input id="attempts"/>
-                        </label>
-                        <label>
-                            grade:
-                            <input id="grade"/>
-                        </label>
-                        <label>
-                            Image:
-                            <input id="image" type="file" onClick={() => {
-                            }}/>
-                        </label>
-                        <button type={"submit"}>Submit</button>
-                    </form>
-
-                )
-            }
-
-
-        </>
-    )
-
+interface BoulderFormProps {
+    handleSubmit: (event: React.FormEvent) => void;
+    boulders?: Array<Boulder> | null;
+    page?: number;
+    defaultValues?: boolean;
 }
 
-export default BoulderForm
+function BoulderForm({ handleSubmit, boulders, page, defaultValues }: BoulderFormProps) {
+
+    const getDefaultValue = (field: string) => {
+        if(!boulders) {
+            return '';
+        }
+        if(field == "name") {
+            return defaultValues && boulders?.[page!] ? boulders[page!].name : '';
+        }
+        if(field == "attempts") {
+            return defaultValues && boulders?.[page!] ? boulders[page!].attempts : '';
+        }
+        if(field == "grade") {
+            return defaultValues && boulders?.[page!] ? boulders[page!].grade : '';
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <label>
+                Name:
+                <input 
+                    id="name" 
+                    name="name"
+                    defaultValue={getDefaultValue('name')}
+                    required
+                />
+            </label>
+            <label>
+                Attempts:
+                <input 
+                    id="attempts" 
+                    name="attempts"
+                    type="number"
+                    defaultValue={getDefaultValue('attempts')}
+                />
+            </label>
+            <label>
+                Grade:
+                <input 
+                    id="grade" 
+                    name="grade"
+                    defaultValue={getDefaultValue('grade')}
+                />
+            </label>
+            <label>
+                Image:
+                <input 
+                    id="image" 
+                    name="image"
+                    type="file" 
+                    accept="image/*"
+                />
+            </label>
+            <button type="submit">Submit</button>
+        </form>
+    );
+}
+
+export default BoulderForm;
