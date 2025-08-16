@@ -6,5 +6,4 @@ interface InputField {
     name: string
 }
 
-
 export default InputField;

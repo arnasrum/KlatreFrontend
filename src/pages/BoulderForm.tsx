@@ -16,11 +16,11 @@ function BoulderForm({ handleSubmit, boulders, page, defaultValues }: BoulderFor
         if(field == "name") {
             return defaultValues && boulders?.[page!] ? boulders[page!].name : '';
         }
-        if(field == "attempts") {
-            return defaultValues && boulders?.[page!] ? boulders[page!].attempts : '';
-        }
         if(field == "grade") {
             return defaultValues && boulders?.[page!] ? boulders[page!].grade : '';
+        }
+        if(field == "description") {
+            return defaultValues && boulders?.[page!] ? boulders[page!].description : '';
         }
     };
 
@@ -36,20 +36,18 @@ function BoulderForm({ handleSubmit, boulders, page, defaultValues }: BoulderFor
                 />
             </label>
             <label>
-                Attempts:
-                <input 
-                    id="attempts" 
-                    name="attempts"
-                    type="number"
-                    defaultValue={getDefaultValue('attempts')}
-                />
-            </label>
-            <label>
                 Grade:
                 <input 
                     id="grade" 
                     name="grade"
                     defaultValue={getDefaultValue('grade')}
+                />
+            </label>
+            <label>
+                Description:
+                <textarea
+                    id="description"
+                    name="description"
                 />
             </label>
             <label>

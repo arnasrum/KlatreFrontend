@@ -126,6 +126,10 @@ function Groups() {
         name: group.group.name
     }));
 
+    function refetchGroupsHandler() {
+        setRefetchGroups((prev: boolean) => !prev)
+    }
+
     return (
         <GroupContext.Provider value={groupContext}>
             <h2>Groups</h2>
@@ -140,7 +144,7 @@ function Groups() {
                 }}
                 activeColor="#007bff"
             />
-            <Places places={getSelectedGroupPlaces()} groupID={selectedGroupId}/>
+            <Places places={getSelectedGroupPlaces()} groupID={selectedGroupId} refetchGroups={refetchGroupsHandler}/>
         </GroupContext.Provider>
     );
 }

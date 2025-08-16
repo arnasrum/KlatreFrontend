@@ -11,9 +11,10 @@ import InputField from "../interfaces/InputField.ts";
 interface PlacesProps {
     places?: Array<Place>
     groupID?: number | null
+    refetchGroups: () => void
 }
 
-function Places({places, groupID = null}: PlacesProps) {
+function Places({places, refetchGroups, groupID = null}: PlacesProps) {
 
     const [selectedPlace, setSelectedPlace] = useState<number | null>(null);
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
@@ -33,7 +34,6 @@ function Places({places, groupID = null}: PlacesProps) {
         })
             .then(response => response.json())
             .then(data => setBoulders(data))
-            .then(_ => console.log(boulders))
             .catch(error => console.error(error))
 
     }, [selectedPlace, refetchBoulders]);
@@ -67,15 +67,17 @@ function Places({places, groupID = null}: PlacesProps) {
             <p>No places</p>
         )
     }
+
+
     const addPlaceFields: Array<InputField> = [
         {"label": "Place Name", "type": "string", "name": "name"},
         {"label": "Description", "type": "string", "name": "description"},
     ]
 
-    function handleAddPlaceSubmit(event: React.FormEvent<HTMLFormElement>) {
-
+    function handleAddPlaceSubmit(event: React.FormEvent<any>) {
+        event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        fetch(`http://localhost:8080/places?accessToken=${user.access_token}&groupID=${groupID}`, {
+        fetch(`http://localhost:8080/groups/place?accessToken=${user.access_token}&groupID=${groupID}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -85,6 +87,10 @@ function Places({places, groupID = null}: PlacesProps) {
                 "description": formData.get("description") as string
             })
         })
+            //.then(response => response.json())
+            .then(_ => refetchGroups())
+            .then(_ => setShowPlaceModal(false))
+            .catch(error => console.error(error))
 
     }
 
@@ -92,7 +98,7 @@ function Places({places, groupID = null}: PlacesProps) {
         return(
             <>
                 <p>Add a place</p>
-                <AbstractForm fields={addPlaceFields} handleSubmit={() => {}} />
+                <AbstractForm fields={addPlaceFields} handleSubmit={handleAddPlaceSubmit} />
                 <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Close</ReusableButton>
             </>
         )
@@ -108,7 +114,7 @@ function Places({places, groupID = null}: PlacesProps) {
                 title="Places"
             />
             {selectedPlace &&
-                <Boulders placeID={selectedPlace} boulders={boulders} setBoulders={setBoulders} refetchBoulders={refetchBouldersHandler}/>
+                <Boulders placeID={selectedPlace} boulders={boulders} refetchBoulders={refetchBouldersHandler}/>
             }
         </>
     );

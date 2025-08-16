@@ -16,7 +16,7 @@ function AddGroupForm() {
         }
 
         const formData = new FormData(e.currentTarget);
-        console.log(user.access_token)
+        console.log(formData.get("description") as string)
 
         fetch(`${apiUrl}/groups?accessToken=${user.access_token}`, {
             method: "POST",
@@ -74,7 +74,7 @@ function AddGroupForm() {
                 </label>
                 <label>
                     Description:
-                    <textarea id="description" name="name"/>
+                    <textarea id="description" name="description"/>
                 </label>
                 <label>
                     Invite People (Email addresses):

@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import "./Boulders.css"
-import {GroupContext, TokenContext, BoulderContext } from "../Context.tsx";
 import Image from "./Image.tsx";
 import AddButton from "../components/AddButton.tsx";
 import EditButton from "../components/EditButton.tsx";
@@ -11,7 +10,6 @@ import ReusableButton from "../components/ReusableButton.tsx";
 
 interface BoulderProps{
     boulders: Array<Boulder> | null
-    setBoulders: React.Dispatch<any>,
     isLoading?: boolean // Add this
     placeID: number,
     refetchBoulders: () => void
@@ -19,21 +17,9 @@ interface BoulderProps{
 }
 
 function Boulders(props: BoulderProps) {
-    const { placeID, boulders, setBoulders, refetchBoulders, isLoading = false } = props
+    const { placeID, boulders, refetchBoulders, isLoading = false } = props
     const boulderLength = boulders?.length || 0
-    const { user } = useContext(TokenContext)
     const [page, setPage] = useState<number>(0)
-
-
-    const boulderContext = {
-        boulders: boulders,
-        setBoulders: setBoulders,
-        page: page,
-        setPage: setPage,
-        boulderLength: boulderLength,
-        accessToken: user.access_token,
-        placeID: placeID,
-    }
 
     useEffect(() => {
         setPage(0)
@@ -63,9 +49,8 @@ function Boulders(props: BoulderProps) {
         return <div>Loading boulders...</div>
     }
 
-    console.log("boulders: ", boulders)
     return(
-        <BoulderContext.Provider value={boulderContext}>
+        <>
             {
                 boulders ? (
                     boulderLength < 1 ? (
@@ -75,7 +60,6 @@ function Boulders(props: BoulderProps) {
                             <h3>{boulders[page].name}</h3>
                             <div className="Boulder">
                                 <ul className="flex-items">
-                                    <li>Attempts: {boulders[page].attempts}</li>
                                     <li>Grade: {boulders[page].grade}</li>
                                 </ul>
                                 <div>
@@ -91,10 +75,10 @@ function Boulders(props: BoulderProps) {
                     <p>Boulder undefined</p>
                 )
             }
-            <AddButton page={page} setPage={setPage} boulders={boulders} placeID={placeID} refetchBoulders={refetchBoulders}/>
-            <EditButton page={page} boulders={boulders} placeID={placeID} refetchBoulders={refetchBoulders}/>
+            <AddButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
+            <EditButton page={page} boulders={boulders} refetchBoulders={refetchBoulders}/>
             <DeleteButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
-        </BoulderContext.Provider>
+        </>
     );
 }
 

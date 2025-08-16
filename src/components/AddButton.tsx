@@ -1,7 +1,7 @@
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import BoulderForm from "../pages/BoulderForm.tsx";
 import {apiUrl} from "../constants/global.ts";
-import {GroupContext, TokenContext} from "../Context.tsx";
+import {TokenContext} from "../Context.tsx";
 import {convertImageToBase64} from "../Helpers.ts";
 import ReusableButton from "./ReusableButton.tsx";
 import Boulder from "../interfaces/Boulder.ts";
@@ -11,7 +11,6 @@ interface AddButtonProps {
     page: number,
     setPage: (page: number) => void,
     boulders: Array<Boulder> | null,
-    placeID: number,
     refetchBoulders: () => void,
 }
 
@@ -19,15 +18,32 @@ function AddButton({
     page,
     setPage,
     boulders,
-    placeID,
     refetchBoulders,
     }: AddButtonProps) {
 
+    const boulderLength = boulders?.length || 0
     const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
+    const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
+
+    useEffect(() => {
+        if(boulders && boulderLength > 0 && pageToLast) {
+            const lastPage = boulderLength - 1
+            if(page !== lastPage) {
+                setPage(lastPage)
+                setPageToLast(false)
+            }
+        }
+    }, [boulders])
+
 
     const handleAddSubmit = async (event: any) => {
         event.preventDefault()
+
+        if(!boulders) {
+            return
+        }
+
 
         let img: string | null = null;
 
@@ -44,16 +60,17 @@ function AddButton({
             },
             body: JSON.stringify(
                 {
-                    "placeID": placeID,
+                    "placeID": boulders[page].place,
                     "name": event.target.elements.name.value,
-                    "attempts": event.target.elements.attempts.value,
                     "grade": event.target.elements.grade.value,
                     "image": img
                 }
             )
         })
-            .then(_ => refetchBoulders())
-            .then(_ => setPage(boulders!.length - 1))
+            .then(_ => {
+                setPageToLast(true)
+                refetchBoulders()
+            })
             .then(_ => setAddingBoulder(false))
             .catch(error => console.error(error))
     }

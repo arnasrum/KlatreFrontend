@@ -8,7 +8,7 @@ import Boulder from "../interfaces/Boulder.ts";
 interface DeleteButtonProps {
     page: number,
     setPage: (page: number) => void,
-    boulders: Array<Boulder>,
+    boulders: Array<Boulder> | null,
     refetchBoulders: () => void,
 }
 
@@ -26,6 +26,9 @@ function DeleteButton({page, setPage, boulders, refetchBoulders}: DeleteButtonPr
     const { user } = useContext(TokenContext)
 
     function handleDeleteClick() {
+        if(!boulders) {
+            return
+        }
         if(boulders.length < 1) {
             setConfirmation(false)
             return

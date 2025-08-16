@@ -1,10 +1,10 @@
 interface Boulder {
     id: number,
     name: string,
-    attempts: number,
     grade: string,
-    image: string
+    image: string,
+    place: number,
+    description: string,
 }
-
 
 export default Boulder;

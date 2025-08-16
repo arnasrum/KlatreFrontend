@@ -9,7 +9,6 @@ import Boulder from "../interfaces/Boulder.ts";
 interface EditButtonProps {
     page: number,
     boulders: Array<Boulder> | null,
-    placeID: number,
     refetchBoulders: () => void,
 }
 
@@ -19,7 +18,6 @@ const EditButton = ( {page, boulders, refetchBoulders} : EditButtonProps
 ) => {
 
     const [editingBoulder, setEditingBoulder] = useState<boolean>(false)
-    //const {boulders, page, setRefetch, accessToken} = useContext(BoulderContext)
     const { user } = useContext(TokenContext);
 
 
@@ -35,24 +33,30 @@ const EditButton = ( {page, boulders, refetchBoulders} : EditButtonProps
           const format = event.target.elements.image.files[0].type;
           img = await convertImageToBase64(file, format)
         }
+
+        let updateValues: object = {"placeID": boulders[page].place, "boulderID": boulders[page].id}
+        if(event.target.elements.name.value != boulders[page].name) {
+            updateValues = {...updateValues, "name": event.target.elements.name.value}
+        }
+        if(event.target.elements.grade.value != boulders[page].grade) {
+            updateValues = {...updateValues, "grade": event.target.elements.grade.value}
+        }
+        if(img) {
+            updateValues = {...updateValues, "image": img}
+        }
+        console.log(updateValues)
+
         fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },
                 body: JSON.stringify(
-                    {
-                        "id": boulders[page].id,
-                        "name": event.target.elements.name.value,
-                        "attempts": event.target.elements.attempts.value,
-                        "grade": event.target.elements.grade.value,
-                        "image": img
-                    }
+                    updateValues
               )
         })
             .then(_ => refetchBoulders())
             .then(_ => setEditingBoulder(false))
-            .then(_ => console.log("Boulder updated"))
             .catch(error => console.error(error))
     }
 

@@ -1,5 +1,12 @@
 
-export default function Image(props) {
+interface ImageProps {
+    data: string | null,
+    className?: string
+}
+
+
+
+export default function Image(props: ImageProps) {
     if (!props.data) {
         return(
             <>
@@ -20,7 +27,7 @@ export default function Image(props) {
 
     const image = imageData;
 
-    const handleImageError = (e) => {
+    const handleImageError = (e: React.SyntheticEvent) => {
         console.error('Image failed to load:', {
             dataLength: imageData.length,
             dataPreview: imageData.substring(0, 50) + '...',
@@ -33,14 +40,12 @@ export default function Image(props) {
     };
 
     return(
-        <>
-            <img
-                src={image}
-                alt="Boulder image"
-                onError={handleImageError}
-                onLoad={handleImageLoad}
-                style={{ maxWidth: '300px', height: 'auto' }}
-            />
-        </>
+        <img
+            src={image}
+            alt="Boulder image"
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+            style={{ maxWidth: '300px', height: 'auto' }}
+        />
     );
 }
