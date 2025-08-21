@@ -8,7 +8,7 @@ import Boulder from "../interfaces/Boulder.ts";
 interface DeleteButtonProps {
     page: number,
     setPage: (page: number) => void,
-    boulders: Array<Boulder> | null,
+    boulders: Array<Boulder> | undefined,
     refetchBoulders: () => void,
 }
 
@@ -35,7 +35,7 @@ function DeleteButton({page, setPage, boulders, refetchBoulders}: DeleteButtonPr
         }
         const boulderID: number = boulders[page].id
 
-        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`,
+        fetch(`${apiUrl}/boulders?accessToken=${user.access_token}`,
             {
                 method: "DELETE",
                 headers: {

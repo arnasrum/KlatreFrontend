@@ -5,8 +5,10 @@ import TabContainer from "../components/TabContainer.tsx";
 import Boulders from "./Boulders.tsx";
 import Boulder from "../interfaces/Boulder.ts";
 import {TokenContext} from "../Context.tsx";
-import AbstractForm from "./AbstractForm.tsx";
+import AbstractForm from "../components/AbstractForm.tsx";
 import InputField from "../interfaces/InputField.ts";
+import BoulderData from "../interfaces/BoulderData.ts";
+import {apiUrl} from "../constants/global.ts";
 
 interface PlacesProps {
     places?: Array<Place>
@@ -18,7 +20,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
 
     const [selectedPlace, setSelectedPlace] = useState<number | null>(null);
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
-    const [boulders, setBoulders] = useState<Array<Boulder>>([]);
+    const [boulders, setBoulders] = useState<Array<BoulderData>>([]);
     const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
     const { user } = useContext(TokenContext);
 
@@ -26,14 +28,19 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         if(!selectedPlace) {
             return
         }
-        fetch(`http://localhost:8080/boulders/place?accessToken=${user.access_token}&placeID=${selectedPlace}`, {
+        console.log(`${apiUrl}/boulders/place?accessToken=${user.access_token}&placeID=${selectedPlace}`)
+        fetch(`${apiUrl}/boulders/place?accessToken=${user.access_token}&placeID=${selectedPlace}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json"
             }
         })
             .then(response => response.json())
-            .then(data => setBoulders(data))
+            .then(data => {
+                setBoulders(data)
+                return data
+            })
+            .then(data => {console.log(data)})
             .catch(error => console.error(error))
 
     }, [selectedPlace, refetchBoulders]);
@@ -114,7 +121,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                 title="Places"
             />
             {selectedPlace &&
-                <Boulders placeID={selectedPlace} boulders={boulders} refetchBoulders={refetchBouldersHandler}/>
+                <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler}/>
             }
         </>
     );

@@ -8,7 +8,7 @@ import Boulder from "../interfaces/Boulder.ts";
 
 interface EditButtonProps {
     page: number,
-    boulders: Array<Boulder> | null,
+    boulders: Array<Boulder> | undefined,
     refetchBoulders: () => void,
 }
 
@@ -46,7 +46,7 @@ const EditButton = ( {page, boulders, refetchBoulders} : EditButtonProps
         }
         console.log(updateValues)
 
-        fetch(`${apiUrl}/boulder?accessToken=${user.access_token}`, {
+        fetch(`${apiUrl}/boulders?accessToken=${user.access_token}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"

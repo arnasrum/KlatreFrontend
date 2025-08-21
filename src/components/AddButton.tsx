@@ -10,7 +10,7 @@ import Boulder from "../interfaces/Boulder.ts";
 interface AddButtonProps {
     page: number,
     setPage: (page: number) => void,
-    boulders: Array<Boulder> | null,
+    boulders: Array<Boulder> | undefined,
     refetchBoulders: () => void,
 }
 

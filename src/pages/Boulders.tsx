@@ -6,10 +6,12 @@ import EditButton from "../components/EditButton.tsx";
 import DeleteButton from "../components/DeleteButton.tsx";
 import Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
+import BoulderData from "../interfaces/BoulderData.ts";
+import RouteSends from "./RouteSends.tsx";
 
 
 interface BoulderProps{
-    boulders: Array<Boulder> | null
+    boulderData: Array<BoulderData> | undefined
     isLoading?: boolean // Add this
     placeID: number,
     refetchBoulders: () => void
@@ -17,7 +19,8 @@ interface BoulderProps{
 }
 
 function Boulders(props: BoulderProps) {
-    const { placeID, boulders, refetchBoulders, isLoading = false } = props
+    const { placeID, boulderData, refetchBoulders, isLoading = false } = props
+    const boulders: Array<Boulder> | undefined = boulderData?.map((boulder: BoulderData) => boulder.boulder)
     const boulderLength = boulders?.length || 0
     const [page, setPage] = useState<number>(0)
 
@@ -44,37 +47,35 @@ function Boulders(props: BoulderProps) {
         setPage((prevState: number) => prevState - 1)
     }
 
-    // In your render logic:
     if (isLoading) {
         return <div>Loading boulders...</div>
     }
 
     return(
         <>
-            {
-                boulders ? (
-                    boulderLength < 1 ? (
-                        <p>Please insert some boulders</p>
-                    ) : (
+            {boulders && boulderLength > 0 ? (
+                <div>
+                    <h3>{boulders[page].name}</h3>
+                    <div className="Boulder">
+                        <ul className="flex-items">
+                            <li>Grade: {boulders[page].grade}</li>
+                        </ul>
                         <div>
-                            <h3>{boulders[page].name}</h3>
-                            <div className="Boulder">
-                                <ul className="flex-items">
-                                    <li>Grade: {boulders[page].grade}</li>
-                                </ul>
-                                <div>
-                                    <Image className="flex-items" data={boulders[page].image}/>
-                                </div>
-                            </div>
-                            <p>Page {page + 1} of {boulderLength}</p>
-                            <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
-                            <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
+                            <Image className="flex-items" data={boulders[page].image}/>
                         </div>
-                    )
-                ) : (
-                    <p>Boulder undefined</p>
-                )
-            }
+                    </div>
+                    <p>Page {page + 1} of {boulderLength}</p>
+                    <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
+                    <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
+                </div>
+            ) : (
+                <p>No boulders</p>
+
+            )}
+            { boulderData && boulderData[page] && boulderData[page].routeSend && (
+                <RouteSends routeSend={boulderData[page].routeSend}/>
+            )}
+
             <AddButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
             <EditButton page={page} boulders={boulders} refetchBoulders={refetchBoulders}/>
             <DeleteButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
