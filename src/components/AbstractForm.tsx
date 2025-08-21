@@ -1,4 +1,4 @@
-import ReusableButton from "../components/ReusableButton.tsx";
+import ReusableButton from "./ReusableButton.tsx";
 import InputField from "../interfaces/InputField.ts";
 
 interface FormProps{
