@@ -12,6 +12,7 @@ interface AddButtonProps {
     setPage: (page: number) => void,
     boulders: Array<Boulder> | undefined,
     refetchBoulders: () => void,
+    placeID: number,
 }
 
 function AddButton({
@@ -19,6 +20,7 @@ function AddButton({
     setPage,
     boulders,
     refetchBoulders,
+    placeID,
     }: AddButtonProps) {
 
     const boulderLength = boulders?.length || 0
@@ -40,11 +42,6 @@ function AddButton({
     const handleAddSubmit = async (event: any) => {
         event.preventDefault()
 
-        if(!boulders) {
-            return
-        }
-
-
         let img: string | null = null;
 
         if(event.target.elements.image.files[0]) {
@@ -53,14 +50,15 @@ function AddButton({
             img = await convertImageToBase64(file, format)
         }
 
-        fetch(`${apiUrl}/boulders/place?accessToken=${user.access_token}`, {
+        fetch(`${apiUrl}/boulders/place`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token
             },
             body: JSON.stringify(
                 {
-                    "placeID": boulders[page].place,
+                    "placeID": placeID,
                     "name": event.target.elements.name.value,
                     "grade": event.target.elements.grade.value,
                     "image": img

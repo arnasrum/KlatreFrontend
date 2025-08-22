@@ -50,8 +50,12 @@ function Groups() {
         }
         
         setIsLoading(true);
-        fetch(`http://localhost:8080/groups?accessToken=${user.access_token}`, {
+        fetch(`http://localhost:8080/groups`, {
             method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token
+            }
         })
             .then(response => {
                 if (!response.ok) {

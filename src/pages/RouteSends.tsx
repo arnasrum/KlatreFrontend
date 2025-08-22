@@ -1,50 +1,40 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import {apiUrl} from "../constants/global.ts";
 import RouteSend from "../interfaces/RouteSend.ts";
+import ReusableButton from "../components/ReusableButton.tsx";
+import {TokenContext} from "../Context.tsx";
 
 
 type RouteSendProps = {
     routeSend: RouteSend | null,
+    boulderID: number,
 }
 
 
 function RouteSends(props: RouteSendProps) {
 
-    const { routeSend } = props
-    const [sends, setSends] = useState<Array<object>>([])
-
-
-    useEffect(() => {
-
-        fetch(`${apiUrl}/sends`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },
-        })
-            .then(response => response.json())
-            .then(data => setSends(data))
-            .catch(error => console.error(error))
-    }, [sends]);
-
+    const { routeSend, boulderID } = props
+    const { user } = useContext(TokenContext)
 
     function handleAddClick() {
 
-            fetch(`${apiUrl}/sends`, {
+            fetch(`${apiUrl}/boulders/place/sends?accessToken`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + user.access_token
                 },
                 body: JSON.stringify({
-                    "name": "test",
-                    "description": "test",
-                    "image": "test"
+                    "attempts": 0,
+                    "boulderID": boulderID
                 })
             })
-                .then(response => response.json())
                 .catch(error => console.error(error))
     }
 
+    function handleDeleteClick() {
+
+    }
 
     return (
         <>
@@ -58,10 +48,8 @@ function RouteSends(props: RouteSendProps) {
             ) : (
                 <h2>No Send</h2>
             )}
-
-
-
-
+            <ReusableButton type="button" onClick={handleAddClick}>Add Send</ReusableButton>
+            <ReusableButton type="button" onClick={handleDeleteClick}>Delete Send</ReusableButton>
         </>
     )
 }

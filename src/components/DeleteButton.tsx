@@ -35,11 +35,12 @@ function DeleteButton({page, setPage, boulders, refetchBoulders}: DeleteButtonPr
         }
         const boulderID: number = boulders[page].id
 
-        fetch(`${apiUrl}/boulders?accessToken=${user.access_token}`,
+        fetch(`${apiUrl}/boulders?accessToken`,
             {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + user.access_token
                 },
                 body: JSON.stringify({
                     id: boulderID

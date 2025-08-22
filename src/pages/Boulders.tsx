@@ -26,7 +26,7 @@ function Boulders(props: BoulderProps) {
 
     useEffect(() => {
         setPage(0)
-    }, [placeID]);
+    }, [placeID, boulderData]);
 
     useEffect(() => {
         if(boulders && boulderLength > 0) {
@@ -53,7 +53,7 @@ function Boulders(props: BoulderProps) {
 
     return(
         <>
-            {boulders && boulderLength > 0 ? (
+            {boulders && boulderLength > 0 && page < boulderLength ? (
                 <div>
                     <h3>{boulders[page].name}</h3>
                     <div className="Boulder">
@@ -72,11 +72,11 @@ function Boulders(props: BoulderProps) {
                 <p>No boulders</p>
 
             )}
-            { boulderData && boulderData[page] && boulderData[page].routeSend && (
-                <RouteSends routeSend={boulderData[page].routeSend}/>
+            { boulderData && boulderData[page] && (
+                <RouteSends routeSend={boulderData[page].routeSend} boulderID={boulderData[page].boulder.id}/>
             )}
 
-            <AddButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
+            <AddButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders} placeID={placeID}/>
             <EditButton page={page} boulders={boulders} refetchBoulders={refetchBoulders}/>
             <DeleteButton page={page} setPage={setPage} boulders={boulders} refetchBoulders={refetchBoulders}/>
         </>

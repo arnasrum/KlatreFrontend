@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import {BoulderContext, TokenContext} from "../Context.tsx";
+import {TokenContext} from "../Context.tsx";
 import {convertImageToBase64} from "../Helpers.ts";
 import {apiUrl} from "../constants/global.ts";
 import BoulderForm from "../pages/BoulderForm.tsx";
@@ -14,13 +14,9 @@ interface EditButtonProps {
 
 
 
-const EditButton = ( {page, boulders, refetchBoulders} : EditButtonProps
-) => {
-
+function EditButton( {page, boulders, refetchBoulders} : EditButtonProps) {
     const [editingBoulder, setEditingBoulder] = useState<boolean>(false)
     const { user } = useContext(TokenContext);
-
-
 
     // @ts-ignore
     const handleEditSubmit = async (event) => {
@@ -46,10 +42,11 @@ const EditButton = ( {page, boulders, refetchBoulders} : EditButtonProps
         }
         console.log(updateValues)
 
-        fetch(`${apiUrl}/boulders?accessToken=${user.access_token}`, {
+        fetch(`${apiUrl}/boulders?accessToken`, {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token
             },
                 body: JSON.stringify(
                     updateValues

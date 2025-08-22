@@ -28,11 +28,11 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         if(!selectedPlace) {
             return
         }
-        console.log(`${apiUrl}/boulders/place?accessToken=${user.access_token}&placeID=${selectedPlace}`)
-        fetch(`${apiUrl}/boulders/place?accessToken=${user.access_token}&placeID=${selectedPlace}`, {
+        fetch(`${apiUrl}/boulders/place?placeID=${selectedPlace}`, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token
             }
         })
             .then(response => response.json())
@@ -84,10 +84,11 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
     function handleAddPlaceSubmit(event: React.FormEvent<any>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        fetch(`http://localhost:8080/groups/place?accessToken=${user.access_token}&groupID=${groupID}`, {
+        fetch(`http://localhost:8080/groups/place?groupID=${groupID}`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token,
             },
             body: JSON.stringify({
                 "name": formData.get("name") as string,

@@ -1,15 +1,14 @@
 import './App.css'
 import {useCookies} from "react-cookie";
 import { useState, useEffect } from "react"
-import Login from "./pages/Login";
-import { TokenContext } from "./Context";
-import Boulders from "./pages/Boulders";
-import Groups from "./pages/Groups";
+import Login from "./pages/Login.tsx";
+import { TokenContext } from "./Context.tsx";
+import Groups from "./pages/Groups.tsx";
 
 
 function App() {
     const [cookies, setCookie, removeCookie] = useCookies(['user']);
-    const [user, setUser] = useState<object>(cookies.user || null)
+    const [user, setUser] = useState<object | null>(cookies.user || null)
 
     useEffect(() => {
         if (user) {

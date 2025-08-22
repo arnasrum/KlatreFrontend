@@ -1,12 +1,11 @@
-import { useGoogleLogin, GoogleLogin, googleLogout } from '@react-oauth/google';
-import { useState, useEffect, useContext } from 'react';
-import { TokenContext } from "../Context"
+import { useGoogleLogin, googleLogout } from '@react-oauth/google';
+import { useEffect, useContext } from 'react';
+import { TokenContext } from "../Context.tsx"
 
 function Login(): JSX.Element {
 
     const { user, setUser, logout } = useContext(TokenContext)
     const googleLogin = useGoogleLogin({
-        // @ts-ignore
         onSuccess: codeResponse => handleGoogleCodeResponse(codeResponse),
         onError: error => console.log("Login failed: ", error),
         flow: "auth-code"
@@ -22,27 +21,29 @@ function Login(): JSX.Element {
     }
 
     const handleGoogleCodeResponse = (codeResponse: CodeResponse) =>  {
-        const GOOGLE_CLIENT_ID = "733167968471-7runi5g0s0gahprbah0lj1460ua2jjv3.apps.googleusercontent.com"
-        const GOOGLE_CLIENT_SECRET = "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"
-        const requestBody = {
-            "client_id": GOOGLE_CLIENT_ID,
-            "client_secret": GOOGLE_CLIENT_SECRET,
-            "grant_type": "authorization_code",
-            "code": codeResponse.code,
-            "redirect_uri": "postmessage"
+        const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+        if (!GOOGLE_CLIENT_ID) {
+            console.error("VITE_GOOGLE_CLIENT_ID is not defined");
+            return;
         }
-        fetch("https://oauth2.googleapis.com/token", {
+
+        fetch("http://localhost:8080/google_oauth_exchange", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${codeResponse.code}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                code: codeResponse.code
+            })
         })
             .then(response => response.json())
-            .then(data => setUser(data))
+            .then(data => {
+                setUser(data)
+                console.log(data)
+                return data
+            })
             .catch(error => console.log(error))
-        return
     }
 
 
@@ -67,10 +68,10 @@ function Login(): JSX.Element {
              {user ? (
                  <div>
                      <p>Logged In</p>
-                     <button onClick={logOut}>Logout</button>
+                     <button type="button" onClick={logOut}>Logout</button>
                  </div>
              ) : (
-                 <button onClick={() => googleLogin()}>Sign in with Google 🚀 </button>
+                 <button type="button" onClick={() => googleLogin()}>Sign in with Google 🚀 </button>
              )}
          </>
     );
