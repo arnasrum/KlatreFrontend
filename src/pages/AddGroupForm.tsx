@@ -16,9 +16,7 @@ function AddGroupForm() {
         }
 
         const formData = new FormData(e.currentTarget);
-        console.log(formData.get("description") as string)
-
-        fetch(`${apiUrl}/groups?accessToken`, {
+        fetch(`${apiUrl}/groups`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
