@@ -1,65 +1,40 @@
 import { useState, useContext } from "react"
-import {TokenContext} from "../Context.tsx";
-import {apiUrl} from "../constants/global.ts";
 import ReusableButton from "./ReusableButton.tsx";
-import Boulder from "../interfaces/Boulder.ts";
 
 
 interface DeleteButtonProps {
-    page: number,
-    setPage: (page: number) => void,
-    boulders: Array<Boulder> | undefined,
-    refetchBoulders: () => void,
+    onDelete: () => void,
+    disabled?: boolean,
+    children?: React.ReactNode,
+
 }
 
 
-function DeleteButton({page, setPage, boulders, refetchBoulders}: DeleteButtonProps) {
+function DeleteButton(props: DeleteButtonProps) {
 
-
-    if(!boulders || boulders.length < 1) {
-        return(
-            <ReusableButton disabled>Delete Boulder </ReusableButton>
-        )
-    }
+    const { onDelete, disabled, children } = props
 
     const [confirmation, setConfirmation] = useState<boolean>(false)
-    const { user } = useContext(TokenContext)
+
 
     function handleDeleteClick() {
-        if(!boulders) {
+        if(disabled) {
             return
         }
-        if(boulders.length < 1) {
-            setConfirmation(false)
-            return
-        }
-        const boulderID: number = boulders[page].id
+        onDelete()
+        setConfirmation(false)
+    }
 
-        fetch(`${apiUrl}/boulders?accessToken`,
-            {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + user.access_token
-                },
-                body: JSON.stringify({
-                    id: boulderID
-                })
-            }
-        )
-            .then(_ => refetchBoulders())
-            .then(_ => {
-                if(page == 0) {
-                    return
-                }
-                setPage(page - 1)
-            })
-            .then(_ => setConfirmation(false))
+
+    if(disabled) {
+        return(
+            <ReusableButton disabled>Delete Boulder</ReusableButton>
+        );
     }
     return(
         <>
             {!confirmation ? (
-                <ReusableButton onClick={() => setConfirmation((prev: boolean) => !prev)}>Delete Boulder</ReusableButton>
+                <ReusableButton onClick={() => setConfirmation((prev: boolean) => !prev)}>{children}</ReusableButton>
         ) : (
             <>
                 <label> Are you sure? </label>

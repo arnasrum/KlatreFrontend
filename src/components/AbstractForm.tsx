@@ -17,7 +17,7 @@ function Form({fields, handleSubmit}: FormProps) {
                        return (
                            <label key={index}>
                                {field.label}
-                               <input key={index} type={field.type} name={field.name}/>
+                               <input key={index} type={field.type} name={field.name} required={field.required} accept={field.accept}/>
                            </label>
                        )
                    })
