@@ -2,9 +2,11 @@ import { useState, forwardRef, useImperativeHandle } from "react";
 import "npm:react-image-crop@11.0.10/dist/ReactCrop.css";
 import "./ImageField.css";
 import ReusableButton from "./ReusableButton.tsx";
-import Cropper from "npm:react-easy-crop@5.5.0";
+import  {default as Cropper} from 'react-easy-crop';
 import cropImageAsFile from "../scripts/CropImage.ts"
+import * as React from "npm:@types/react@18.3.23";
 
+type CroppedArea = { x: number; y: number; width: number; height: number };
 type CroppedAreaPixels = { x: number; y: number; width: number; height: number };
 
 interface ImageFieldProps {
@@ -36,6 +38,7 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files.length > 0) {
             setCrop({x: 0, y: 0});
+            setZoom(1);
             const reader = new FileReader();
             reader.addEventListener("load", () => {
                 setImageSource(reader.result?.toString() || "");
@@ -45,12 +48,14 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         }
     }
 
-    function handleCropping(croppedArea: any, croppedAreaPixels: any) {
+    function handleCropping(croppedArea: CroppedArea, croppedAreaPixels: CroppedAreaPixels) {
         setCroppedAreaPixels(croppedAreaPixels);
     }
 
     const handleCropDone = () => {
         setShowCropModal(false);
+        if (!croppedAreaPixels) {return}
+
         cropImageAsFile(imgSource,
             croppedAreaPixels.x,
             croppedAreaPixels.y,
@@ -58,8 +63,8 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
             croppedAreaPixels.height,
             "newImg.png")
                 .then(base64String => {
-                    setCroppedImage(base64String);
-                    onChange?.({ target: { name, value: base64String } });
+                    setCroppedImage(base64String.toString());
+                    onChange?.({ target: { name, value: base64String.toString() } });
                 })
     };
 
@@ -67,12 +72,16 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         setShowCropModal(false);
         setImageSource("");
         setCroppedAreaPixels(undefined);
+        setCrop({x: 0, y: 0})
+        setZoom(1)
     };
 
     function handleDeleteClick() {
         setImageSource("")
         setCroppedImage("")
         setCroppedAreaPixels(undefined)
+        setCrop({x: 0, y: 0})
+        setZoom(1)
         onChange?.({ target: { name, value: "" } });
     }
 
@@ -107,7 +116,10 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                                 onZoomChange={setZoom}
                                 image={imgSource}
                                 aspect={4/3}
-                                restrictPosition={true}
+                                objectFit="cover"
+                                cropShape="rect"
+                                restrictPosition
+                                style={{ containerStyle: { width: "100%", height: "100%" }, cropShape: "rect"}}
                             />
                         </div>
                         <div className="zoom-control-container">
