@@ -4,8 +4,10 @@ import "./Groups.css";
 import AddGroupForm from "./AddGroupForm.tsx";
 import TabContainer from "../components/TabContainer.tsx";
 import Places from "./Places.tsx";
-import Place from "../interfaces/Place.ts"
+import Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
+import DeleteButton from "../components/DeleteButton.tsx";
+import { apiUrl } from "../constants/global.ts";
 
 interface Groups {
     group: Group,
@@ -25,6 +27,7 @@ function Groups() {
     const [refetchGroups, setRefetchGroups] = useState<boolean>(false);
     const [addRefetch, setAddRefetch] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     
     // Modal states
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
@@ -50,7 +53,7 @@ function Groups() {
         }
         
         setIsLoading(true);
-        fetch(`http://localhost:8080/groups`, {
+        fetch(`${apiUrl}/groups`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -70,10 +73,30 @@ function Groups() {
             .catch(error => {
                 setGroups([]);
                 setIsLoading(false);
+                setError(error.message || "An unexptected error occurred while loading groups")
                 console.error(error);
             });
     }, [refetchGroups, user?.access_token]);
 
+    
+    function handleDeleteClick() {
+        fetch(`${apiUrl}/groups`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + user.access_token
+            },
+            method: "DELETE",
+            body: JSON.stringify({
+                groupID: selectedGroupId,
+            })
+        })
+            .then(response => setRefetchGroups(!refetchGroups))
+            .catch(error => {
+                console.log(error)
+                setError(error.message || "An unexpected error occurred while loading groups")
+            })
+    } 
+    
     // Helper functions
     const selectGroup = (groupId: number) => {
         setSelectedGroupId(groupId);
@@ -137,7 +160,6 @@ function Groups() {
     return (
         <GroupContext.Provider value={groupContext}>
             <h2>Groups</h2>
-            
             <TabContainer
                 title="Groups"
                 items={groupItems}
@@ -148,6 +170,9 @@ function Groups() {
                 }}
                 activeColor="#007bff"
             />
+            {getSelectedGroup() && (
+                <DeleteButton onDelete={handleDeleteClick}>Delete Group</DeleteButton>
+            )}
             <Places places={getSelectedGroupPlaces()} groupID={selectedGroupId} refetchGroups={refetchGroupsHandler}/>
         </GroupContext.Provider>
     );

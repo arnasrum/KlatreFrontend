@@ -13,7 +13,6 @@ interface DeleteButtonProps {
 function DeleteButton(props: DeleteButtonProps) {
 
     const { onDelete, disabled, children } = props
-
     const [confirmation, setConfirmation] = useState<boolean>(false)
 
 
@@ -28,7 +27,7 @@ function DeleteButton(props: DeleteButtonProps) {
 
     if(disabled) {
         return(
-            <ReusableButton disabled>Delete Boulder</ReusableButton>
+            <ReusableButton disabled>{children}</ReusableButton>
         );
     }
     return(
