@@ -18,7 +18,7 @@ function RouteSends(props: RouteSendProps) {
 
     function handleAddClick() {
 
-            fetch(`${apiUrl}/boulders/place/sends?accessToken`, {
+            fetch(`${apiUrl}/boulders/place/sends`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

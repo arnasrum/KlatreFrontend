@@ -21,7 +21,6 @@ function App() {
         } else {
             removeCookie('user', { path: '/' });
         }
-        console.log(user)
     }, [user, setCookie, removeCookie]);
 
     const contextValue = {
