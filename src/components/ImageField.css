@@ -1,0 +1,71 @@
+
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal content container */
+.crop-modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 28px 22px 18px 22px;
+  box-shadow: 0 12px 30px 0 rgba(0, 0, 0, 0.32);
+  min-width: 600px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Modal title */
+.crop-modal-title {
+  margin: 0 0 18px 0;
+}
+
+/* Cropper container */
+.crop-container {
+  position: relative;
+  width: 600px;
+  height: 450px;
+  margin-bottom: 20px;
+}
+
+/* Zoom control container */
+.zoom-control-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+/* Zoom slider */
+.zoom-slider {
+  width: 200px;
+  margin: 0 10px;
+}
+
+/* Button container */
+.crop-button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Image controls container (for edit/delete buttons) */
+.image-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
