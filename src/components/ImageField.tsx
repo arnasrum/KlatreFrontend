@@ -3,7 +3,7 @@ import "npm:react-image-crop@11.0.10/dist/ReactCrop.css";
 import "./ImageField.css";
 import ReusableButton from "./ReusableButton.tsx";
 import  {default as Cropper} from 'react-easy-crop';
-import cropImageAsFile from "../scripts/CropImage.ts"
+import cropImageAsBase64 from "../scripts/CropImage.ts"
 import * as React from "npm:@types/react@18.3.23";
 
 type CroppedArea = { x: number; y: number; width: number; height: number };
@@ -56,15 +56,15 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         setShowCropModal(false);
         if (!croppedAreaPixels) {return}
 
-        cropImageAsFile(imgSource,
+        cropImageAsBase64(imgSource,
             croppedAreaPixels.x,
             croppedAreaPixels.y,
             croppedAreaPixels.width,
             croppedAreaPixels.height,
             "newImg.png")
-                .then(base64String => {
-                    setCroppedImage(base64String.toString());
-                    onChange?.({ target: { name, value: base64String.toString() } });
+                .then((base64String: string) => {
+                    setCroppedImage(base64String);
+                    onChange?.({ target: { name, value: base64String } });
                 })
     };
 
