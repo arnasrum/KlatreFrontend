@@ -5,19 +5,16 @@ import InputField from "../interfaces/InputField.ts";
 
 interface FormButtonProps {
     children: React.ReactNode,
-    formSubmit: (event: any) => void,
+    formSubmit: (event: React.FormEvent) => void,
     fields: Array<InputField>,
-
 }
 
-
-
-function EditButton( props : FormButtonProps) {
+function FormButton( props : FormButtonProps) {
 
     const { children, formSubmit, fields } = props
     const [showForm, setShowForm] = useState<boolean>(false)
 
-    function handleSubmit(event: any) {
+    function handleSubmit(event: React.FormEvent) {
         event.preventDefault()
         formSubmit(event)
         setShowForm(false)
@@ -35,4 +32,4 @@ function EditButton( props : FormButtonProps) {
     );
 }
 
-export default EditButton;
+export default FormButton;

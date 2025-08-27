@@ -52,31 +52,17 @@ function Boulders(props: BoulderProps) {
         setPage((prevState: number) => prevState - 1)
     }
 
-    const handleAddSubmit = async (event: any) => {
-        event.preventDefault()
+    const handleAddSubmit = async (event: React.FormEvent) => {
 
-        let img: string | null = null;
-
-        if(event.target.elements.image.files[0]) {
-            const file = event.target.elements.image.files[0];
-            const format = event.target.elements.image.files[0].type;
-            img = await convertImageToBase64(file, format)
-        }
-
-        fetch(`${apiUrl}/boulders/place`, {
+        const formData = new FormData(event.target as HTMLFormElement)
+        formData.set("placeID", placeID)
+        fetch(`${apiUrl}/boulders/place/add`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
+                "Authorization": "Bearer " + user.access_token,
+                //"Content-Type": "application/json"
             },
-            body: JSON.stringify(
-                {
-                    "placeID": placeID,
-                    "name": event.target.elements.name.value,
-                    "grade": event.target.elements.grade.value,
-                    "image": img
-                }
-            )
+            body: formData
         })
             .then(_ => {
                 setPageToLast(true)
@@ -85,41 +71,24 @@ function Boulders(props: BoulderProps) {
             .catch(error => console.error(error))
     }
 
-    const handleEditSubmit = async (event: any) => {
-        event.preventDefault()
-        if(!boulders || boulders.length < 1) {return}
-        let img: string | null = null;
+    const handleEditSubmit = async (event: React.FormEvent) => {
+    if (!boulders || boulders.length < 1) { return }
 
-        if(event.target.elements.image.files[0]) {
-            const file = event.target.elements.image.files[0];
-            const format = event.target.elements.image.files[0].type;
-            img = await convertImageToBase64(file, format)
-        }
+    const formData = new FormData(event.target as HTMLFormElement);
+    formData.set("placeID", boulders[page].place.toString());
+    formData.set("boulderID", boulders[page].id.toString());
 
-        let updateValues: object = {"placeID": boulders[page].place, "boulderID": boulders[page].id}
-        if(event.target.elements.name.value != boulders[page].name) {
-            updateValues = {...updateValues, "name": event.target.elements.name.value}
-        }
-        if(event.target.elements.grade.value != boulders[page].grade) {
-            updateValues = {...updateValues, "grade": event.target.elements.grade.value}
-        }
-        if(img) {
-            updateValues = {...updateValues, "image": img}
-        }
-
-        fetch(`${apiUrl}/boulders`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
-            },
-            body: JSON.stringify(
-                updateValues
-            )
-        })
-            .then(_ => refetchBoulders())
-            .catch(error => console.error(error))
-    }
+    fetch(`${apiUrl}/boulders/place/update`, {
+        method: "PUT",
+        headers: {
+            "Authorization": "Bearer " + user.access_token,
+            // Remove Content-Type header to let browser set it for FormData
+        },
+        body: formData
+    })
+        .then(_ => refetchBoulders())
+        .catch(error => console.error(error))
+}
 
     function handleDeleteClick() {
         if(!boulders) {
@@ -127,7 +96,7 @@ function Boulders(props: BoulderProps) {
         }
         const boulderID: number = boulders[page].id
 
-        fetch(`${apiUrl}/boulders?accessToken`,
+        fetch(`${apiUrl}/boulders`,
             {
                 method: "DELETE",
                 headers: {
@@ -151,7 +120,16 @@ function Boulders(props: BoulderProps) {
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
         {"label": "Grade", "type": "string", "name": "grade", "required": true},
-        {"label": "Image", "type": "file", "name": "image", "required": false, "accept": "image/*"},
+        {"label": "Image", 
+            "type": "image", 
+            "name": "image", 
+            "required": false, 
+            "accept": "image/*",
+            enableCropping: true,
+            aspectRatio: 4/3,
+            targetWidth: 800,
+            targetHeight: 600
+        },
     ]
 
 

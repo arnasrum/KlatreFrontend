@@ -1,5 +1,8 @@
 import ReusableButton from "./ReusableButton.tsx";
 import InputField from "../interfaces/InputField.ts";
+import ImageField from "./ImageField.tsx"
+import ImageCropper from "./ImageCropper.tsx"
+import { useState } from "react";
 
 interface FormProps{
     fields: Array<InputField>,
@@ -8,19 +11,31 @@ interface FormProps{
 
 function Form({fields, handleSubmit}: FormProps) {
 
-
    return(
        <>
-           <form onSubmit={handleSubmit}>
+           <form onSubmit={handleSubmit} id="form">
                {
                    fields.map((field: InputField, index: number) => {
-                       return (
-                           <label key={index}>
-                               {field.label}
-                               <input key={index} type={field.type} name={field.name} required={field.required} accept={field.accept}/>
-                           </label>
-                       )
-                   })
+                       if(field.type == "image") {
+                            return(
+                                <ImageField
+                                    key={field.name || index}
+                                    name="image"
+                                />
+                            );
+                       } else {
+                           return (
+                               <label key={field.name || index}>
+                                   {field.label}
+                                   <input 
+                                       type={field.type} 
+                                       name={field.name} 
+                                       required={field.required}
+                                       accept={field.accept} 
+                                   />
+                               </label>
+                           )
+                       }})
                }
                <ReusableButton type="submit">Submit</ReusableButton>
            </form>
