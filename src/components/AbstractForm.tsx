@@ -1,8 +1,6 @@
 import ReusableButton from "./ReusableButton.tsx";
 import InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
-import ImageCropper from "./ImageCropper.tsx"
-import { useState } from "react";
 
 interface FormProps{
     fields: Array<InputField>,

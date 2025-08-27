@@ -52,10 +52,9 @@ function Boulders(props: BoulderProps) {
         setPage((prevState: number) => prevState - 1)
     }
 
-    const handleAddSubmit = async (event: React.FormEvent) => {
-
+    function handleAddSubmit(event: React.FormEvent) {
         const formData = new FormData(event.target as HTMLFormElement)
-        formData.set("placeID", placeID)
+        formData.set("placeID", placeID.toString())
         fetch(`${apiUrl}/boulders/place/add`, {
             method: "POST",
             headers: {
@@ -71,24 +70,24 @@ function Boulders(props: BoulderProps) {
             .catch(error => console.error(error))
     }
 
-    const handleEditSubmit = async (event: React.FormEvent) => {
-    if (!boulders || boulders.length < 1) { return }
+    function handleEditSubmit(event: React.FormEvent){
+        if (!boulders || boulders.length < 1) { return }
 
-    const formData = new FormData(event.target as HTMLFormElement);
-    formData.set("placeID", boulders[page].place.toString());
-    formData.set("boulderID", boulders[page].id.toString());
+        const formData = new FormData(event.target as HTMLFormElement);
+        formData.set("placeID", boulders[page].place.toString());
+        formData.set("boulderID", boulders[page].id.toString());
 
-    fetch(`${apiUrl}/boulders/place/update`, {
-        method: "PUT",
-        headers: {
-            "Authorization": "Bearer " + user.access_token,
-            // Remove Content-Type header to let browser set it for FormData
-        },
-        body: formData
-    })
-        .then(_ => refetchBoulders())
-        .catch(error => console.error(error))
-}
+        fetch(`${apiUrl}/boulders/place/update`, {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + user.access_token,
+                // Remove Content-Type header to let browser set it for FormData
+            },
+            body: formData
+        })
+            .then(_ => refetchBoulders())
+            .catch(error => console.error(error))
+    }
 
     function handleDeleteClick() {
         if(!boulders) {
@@ -126,7 +125,6 @@ function Boulders(props: BoulderProps) {
             "required": false, 
             "accept": "image/*",
             enableCropping: true,
-            aspectRatio: 4/3,
             targetWidth: 800,
             targetHeight: 600
         },
