@@ -1,12 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { TokenContext, GroupContext } from "../Context.tsx";
-import { useCookies} from "react-cookie";
 import AddGroupForm from "./AddGroupForm.tsx";
-import TabContainer from "../components/TabContainer.tsx";
-import Places from "./Places.tsx";
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
-import DeleteButton from "../components/DeleteButton.tsx";
 import { apiUrl } from "../constants/global.ts";
 import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
 import type Group from "../interfaces/Group.ts";
