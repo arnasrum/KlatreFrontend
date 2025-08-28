@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import tsconfigPaths from "vite-tsconfig-paths"
@@ -11,12 +13,12 @@ export default defineConfig({
 })
 
 declare module "*.css" {
-  const content: string;
+  const content: Record<string, string>;
   export default content;
 }
 
 declare module "*.scss" {
-  const content: string;
+  const content: Record<string, string>;
   export default content;
 }
 

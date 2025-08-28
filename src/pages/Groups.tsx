@@ -9,17 +9,15 @@ import ReusableButton from "../components/ReusableButton.tsx";
 import DeleteButton from "../components/DeleteButton.tsx";
 import { apiUrl } from "../constants/global.ts";
 import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
+import type Group from "../interfaces/Group.ts";
+import {useNavigate} from "react-router";
 
 interface Groups {
     group: Group,
     places: Array<Place>
 }
 
-interface Group {
-    id: number,
-    name: string,
-    description: string,
-}
+
 
 
 function Groups() {
@@ -34,6 +32,7 @@ function Groups() {
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
 
     const { user } = useContext(TokenContext)
+    const navigate = useNavigate();
 
     // Use custom hook for boulder management
     const groupContext = {
@@ -68,13 +67,14 @@ function Groups() {
                 return response.json();
             })
             .then(responseBody => {
+                console.log(responseBody)
                 setGroups(Array.isArray(responseBody) ? responseBody : []);
             })
             .finally(() => setIsLoading(false))
             .catch(error => {
                 setGroups([]);
                 setIsLoading(false);
-                setError(error.message || "An unexptected error occurred while loading groups")
+                setError(error.message || "An unexpected error occurred while loading groups")
                 console.error(error);
             });
     }, [refetchGroups, user?.access_token]);
@@ -151,17 +151,26 @@ function Groups() {
     const groupItems = groups.map(group => ({
         id: group.group.id,
         name: group.group.name,
-        description: group.group.description
+        description: group.group.description,
+        uuid: group.group.uuid,
     }));
 
     function refetchGroupsHandler() {
         setRefetchGroups((prev: boolean) => !prev)
     }
 
+    function navigateToGroup(uuid: string, id: number) {
+        navigate(`/groups/${uuid}?id=${id}`, {
+            state: {
+                groupData: groups.find((group: Groups) => group.group.uuid === uuid)
+            }
+        })
+    }
+
     return (
         <GroupContext.Provider value={groupContext}>
             <Grid templateColumns="repeat(3, 1fr)" gap={4} p={4}>
-                {groupItems.map(item => (
+                {groupItems.map((item: Group) => (
                     <GridItem key={crypto.randomUUID()} >
                        <Card.Root width="320px">
                            <Card.Body gap={2}>
@@ -175,7 +184,11 @@ function Groups() {
                                </Blockquote.Root>
                            </Card.Body>
                            <Card.Footer justifyContent="flex-end">
-                               <ReusableButton type="button" className="solid button-auto-width">View</ReusableButton>
+                               <ReusableButton
+                                   type="button"
+                                   className="solid button-auto-width"
+                                   onClick={() => navigateToGroup(item.uuid, item.id)}
+                               >View</ReusableButton>
                            </Card.Footer>
                        </Card.Root>
                     </GridItem>

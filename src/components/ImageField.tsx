@@ -1,4 +1,4 @@
-import { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import "./ImageField.css";
 import ReusableButton from "./ReusableButton.tsx";
 import  {default as Cropper} from 'react-easy-crop';
@@ -117,7 +117,7 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                                 objectFit="cover"
                                 cropShape="rect"
                                 restrictPosition
-                                style={{ containerStyle: { width: "100%", height: "100%" }, cropShape: "rect"}}
+                                style={{ containerStyle: { "width": "100%", "height": "100%" }}}
                             />
                         </div>
                         <div className="zoom-control-container">

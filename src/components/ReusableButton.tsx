@@ -10,7 +10,7 @@ interface ButtonProps {
     disabled?: boolean,
 }
 
-const ReusableButton: React.FC<ButtonProps> = (props: ButtonProps) => {
+const ReusableButton = (props: ButtonProps) => {
 
     return (
         <button

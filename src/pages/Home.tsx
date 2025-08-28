@@ -8,11 +8,6 @@ import {useNavigate} from "react-router-dom"
 function Home() {
     const [cookies, setCookie, removeCookie] = useCookies(['user']);
     const [user, setUser] = useState<object | null>(cookies.user || null)
-    const nav = useNavigate()
-
-    function goToTest() {
-        nav("/test")
-    }
 
     useEffect(() => {
         if (user) {
@@ -43,7 +38,6 @@ function Home() {
                 {user ? (
                     <div>
                         <Groups/>
-                        <button type="button" onClick={goToTest}>Test</button>
                         <Login/>
                     </div>
                 ) : (

@@ -1,17 +1,18 @@
 import {useCookies} from "react-cookie";
-import { useState, useEffect } from "react"
-import Login from "./pages/Login.tsx";
-import { TokenContext } from "./Context.tsx";
-import Groups from "./pages/Groups.tsx";
+import {useEffect, useState} from "react"
+import {TokenContext} from "./Context.tsx";
 import Home from "./pages/Home.tsx";
 import Test from "./pages/Test.tsx";
+import Group from "./pages/Group.tsx";
 import "./App.css"
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import {createBrowserRouter, RouterProvider} from 'react-router-dom'
+import type User from "./interfaces/User.ts";
+import {apiUrl} from "./constants/global.ts";
 
 
 function App() {
     const [cookies, setCookie, removeCookie] = useCookies(['user']);
-    const [user, setUser] = useState<object | null>(cookies.user || null)
+    const [user, setUser] = useState<User | null>(cookies.user || null)
 
     useEffect(() => {
         if (user) {
@@ -35,15 +36,33 @@ function App() {
         }
     };
 
+    const router = createBrowserRouter([
+        {
+            path: "/",
+            element: <Home/>
+        },
+        {
+            path: "groups/:groupUUID",
+            element: <Group/>,
+            loader: async ({ params, request }) => {
+                const id = new URL(request.url).searchParams.get('id')
+                return await fetch(`${apiUrl}/api/place?groupID=${id}`, {
+                    headers: {
+                        "Authorization": "Bearer " + user.access_token
+                    }
+                })
+            }
+        },
+        {
+            path: "/test",
+            element: <Test/>
+        }
+
+    ])
+
     return (
         <TokenContext.Provider value={contextValue}>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/test" element={<Test />} />
-
-                </Routes>
-            </BrowserRouter>
+            <RouterProvider router={router}/>
         </TokenContext.Provider>
     )
 }
