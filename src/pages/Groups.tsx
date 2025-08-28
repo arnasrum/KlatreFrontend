@@ -1,10 +1,9 @@
 import { useState, useEffect, useContext } from "react";
 import { TokenContext, GroupContext } from "../Context.tsx";
-import "./Groups.css";
 import AddGroupForm from "./AddGroupForm.tsx";
 import TabContainer from "../components/TabContainer.tsx";
 import Places from "./Places.tsx";
-import Place from "../interfaces/Place.ts";
+import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import DeleteButton from "../components/DeleteButton.tsx";
 import { apiUrl } from "../constants/global.ts";

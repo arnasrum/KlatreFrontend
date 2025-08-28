@@ -1,4 +1,4 @@
-interface Boulder {
+export default interface Boulder {
     id: number,
     name: string,
     grade: string,
@@ -6,5 +6,3 @@ interface Boulder {
     place: number,
     description: string,
 }
-
-export default Boulder;

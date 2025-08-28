@@ -1,9 +1,7 @@
-import Boulder from './Boulder.ts';
-import RouteSend from "./RouteSend.ts";
+import type Boulder from './Boulder.ts';
+import type RouteSend from "./RouteSend.ts";
 
-type BoulderData = {
+export type BoulderData = {
     boulder: Boulder,
     routeSend: RouteSend | null,
 };
-
-export default BoulderData;

@@ -1,5 +1,6 @@
+import React from "react";
 import ReusableButton from "./ReusableButton.tsx";
-import InputField from "../interfaces/InputField.ts";
+import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
 
 interface FormProps{

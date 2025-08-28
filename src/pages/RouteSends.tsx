@@ -1,6 +1,6 @@
-import { useState, useEffect, useContext } from "react"
+import { useContext } from "react"
 import {apiUrl} from "../constants/global.ts";
-import RouteSend from "../interfaces/RouteSend.ts";
+import type RouteSend from "../interfaces/RouteSend.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import {TokenContext} from "../Context.tsx";
 
@@ -18,16 +18,15 @@ function RouteSends(props: RouteSendProps) {
 
     function handleAddClick() {
 
+            const formData = new FormData();
+            formData.set("boulderID", boulderID.toString());
+            formData.set("attempts", "0");
             fetch(`${apiUrl}/boulders/place/sends`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + user.access_token
                 },
-                body: JSON.stringify({
-                    "attempts": 0,
-                    "boulderID": boulderID
-                })
+                body: formData
             })
                 .catch(error => console.error(error))
     }

@@ -1,13 +1,12 @@
-import { useState, useEffect, useContext } from 'react';
-import Place from "../interfaces/Place.ts";
+import React, { useState, useEffect, useContext } from 'react';
+import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import TabContainer from "../components/TabContainer.tsx";
 import Boulders from "./Boulders.tsx";
-import Boulder from "../interfaces/Boulder.ts";
 import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import InputField from "../interfaces/InputField.ts";
-import BoulderData from "../interfaces/BoulderData.ts";
+import type InputField from "../interfaces/InputField.ts";
+import type {BoulderData} from "../interfaces/BoulderData.ts";
 import {apiUrl} from "../constants/global.ts";
 
 interface PlacesProps {

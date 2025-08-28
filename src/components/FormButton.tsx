@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ReusableButton from "./ReusableButton.tsx";
 import AbstractForm from "./AbstractForm.tsx";
-import InputField from "../interfaces/InputField.ts";
+import type InputField from "../interfaces/InputField.ts";
 
 interface FormButtonProps {
     children: React.ReactNode,

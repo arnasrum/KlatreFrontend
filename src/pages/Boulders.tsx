@@ -1,15 +1,14 @@
-import { useState, useEffect, useContext } from 'react'
-import "./Boulders.css"
+import React, { useState, useEffect, useContext } from 'react'
 import Image from "./Image.tsx";
 import DeleteButton from "../components/DeleteButton.tsx";
-import Boulder from "../interfaces/Boulder.ts";
+import type Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
-import BoulderData from "../interfaces/BoulderData.ts";
+import type {BoulderData} from "../interfaces/BoulderData.ts";
 import RouteSends from "./RouteSends.tsx";
 import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
-import {convertImageToBase64} from "../Helpers.ts";
 import FormButton from "../components/FormButton.tsx";
+import "./Boulders.css"
 
 
 interface BoulderProps{
