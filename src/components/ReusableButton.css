@@ -1,0 +1,19 @@
+
+.solid{
+    color: white;
+    background-color: #000000;
+    border: 3px solid;
+}
+
+.button-half-width{
+    width: 50%;
+}
+
+.button-full-width{
+    width: 100%;
+}
+
+.button-auto-width{
+    width: auto;
+    flex:1
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { TokenContext, GroupContext } from "../Context.tsx";
+import { useCookies} from "react-cookie";
 import AddGroupForm from "./AddGroupForm.tsx";
 import TabContainer from "../components/TabContainer.tsx";
 import Places from "./Places.tsx";
@@ -7,6 +8,7 @@ import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import DeleteButton from "../components/DeleteButton.tsx";
 import { apiUrl } from "../constants/global.ts";
+import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
 
 interface Groups {
     group: Group,
@@ -31,8 +33,8 @@ function Groups() {
     // Modal states
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
 
-    const { user } = useContext(TokenContext);
-    
+    const { user } = useContext(TokenContext)
+
     // Use custom hook for boulder management
     const groupContext = {
         refetch: refetchGroups,
@@ -145,11 +147,11 @@ function Groups() {
             </GroupContext.Provider>
         );
     }
-
-    // Prepare data for TabContainer
+    
     const groupItems = groups.map(group => ({
         id: group.group.id,
-        name: group.group.name
+        name: group.group.name,
+        description: group.group.description
     }));
 
     function refetchGroupsHandler() {
@@ -158,21 +160,28 @@ function Groups() {
 
     return (
         <GroupContext.Provider value={groupContext}>
-            <h2>Groups</h2>
-            <TabContainer
-                title="Groups"
-                items={groupItems}
-                selectedId={selectedGroupId}
-                onItemSelect={selectGroup}
-                onAddClick={() => {
-                    setShowGroupModal(true);
-                }}
-                activeColor="#007bff"
-            />
-            {getSelectedGroup() && (
-                <DeleteButton onDelete={handleDeleteClick}>Delete Group</DeleteButton>
-            )}
-            <Places places={getSelectedGroupPlaces()} groupID={selectedGroupId} refetchGroups={refetchGroupsHandler}/>
+            <Grid templateColumns="repeat(3, 1fr)" gap={4} p={4}>
+                {groupItems.map(item => (
+                    <GridItem key={crypto.randomUUID()} >
+                       <Card.Root width="320px">
+                           <Card.Body gap={2}>
+                               <h2>
+                                   <strong>{item.name}</strong>
+                               </h2>
+                               <Blockquote.Root>
+                                   <Blockquote.Content>
+                                       This is an placeholder description for the group
+                                   </Blockquote.Content>
+                               </Blockquote.Root>
+                           </Card.Body>
+                           <Card.Footer justifyContent="flex-end">
+                               <ReusableButton type="button" className="solid button-auto-width">View</ReusableButton>
+                           </Card.Footer>
+                       </Card.Root>
+                    </GridItem>
+                ))}
+            </Grid>
+
         </GroupContext.Provider>
     );
 }

@@ -3,7 +3,10 @@ import { useState, useEffect } from "react"
 import Login from "./pages/Login.tsx";
 import { TokenContext } from "./Context.tsx";
 import Groups from "./pages/Groups.tsx";
+import Home from "./pages/Home.tsx";
+import Test from "./pages/Test.tsx";
 import "./App.css"
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 
 function App() {
@@ -33,19 +36,15 @@ function App() {
     };
 
     return (
-        <>
-            <h1>Klatre</h1>
-            <TokenContext.Provider value={contextValue} >
-                {user ? (
-                        <div>
-                            <Groups/>
-                            <Login/>
-                        </div>
-                    ) : (
-                        <Login/>
-                )}
-            </TokenContext.Provider>
-        </>
+        <TokenContext.Provider value={contextValue}>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/test" element={<Test />} />
+
+                </Routes>
+            </BrowserRouter>
+        </TokenContext.Provider>
     )
 }
 

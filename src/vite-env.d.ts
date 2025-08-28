@@ -1,4 +1,14 @@
-/// <reference types="vite/client" />
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+import tsconfigPaths from "vite-tsconfig-paths"
+
+export default defineConfig({
+    plugins: [
+        react(),
+        reactRouter(),
+        tsconfigPaths()
+    ],
+})
 
 declare module "*.css" {
   const content: string;

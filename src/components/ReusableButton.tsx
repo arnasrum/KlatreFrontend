@@ -1,12 +1,13 @@
 import React from "react";
+import "./ReusableButton.css";
 
 interface ButtonProps {
-    onClick?: () => void,
     children: React.ReactNode,
+    type?: "button" | "submit" | "reset",
+    onClick?: () => void,
     className?: string,
     style?: React.CSSProperties,
     disabled?: boolean,
-    type?: "button" | "submit" | "reset",
 }
 
 const ReusableButton: React.FC<ButtonProps> = (props: ButtonProps) => {
