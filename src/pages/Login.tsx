@@ -1,6 +1,7 @@
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import React, { useEffect, useContext } from 'react';
 import { TokenContext } from "../Context.tsx"
+import {apiUrl} from "../constants/global.ts";
 
 function Login(): JSX.Element {
 
@@ -28,7 +29,7 @@ function Login(): JSX.Element {
             return;
         }
 
-        fetch("http://localhost:8080/google_oauth_exchange", {
+        fetch(`${apiUrl}/google_oauth_exchange`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -49,7 +50,7 @@ function Login(): JSX.Element {
 
     useEffect(() => {
         if(user) {
-            fetch("http://localhost:8080/google_login", {
+            fetch(`${apiUrl}/google_login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

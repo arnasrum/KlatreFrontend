@@ -155,10 +155,11 @@ function Groups() {
         setRefetchGroups((prev: boolean) => !prev)
     }
 
-    function navigateToGroup(uuid: string, id: number) {
-        navigate(`/groups/${uuid}?id=${id}`, {
+    function navigateToGroup(uuid: string, group: Group) {
+        console.log("navigate to group: ", group)
+        navigate(`/groups/${uuid}`, {
             state: {
-                groupData: groups.find((group: Groups) => group.group.uuid === uuid)
+                groupData: group
             }
         })
     }
@@ -183,7 +184,7 @@ function Groups() {
                                <ReusableButton
                                    type="button"
                                    className="solid button-auto-width"
-                                   onClick={() => navigateToGroup(item.uuid, item.id)}
+                                   onClick={() => navigateToGroup(item.uuid, item)}
                                >View</ReusableButton>
                            </Card.Footer>
                        </Card.Root>

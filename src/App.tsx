@@ -43,15 +43,7 @@ function App() {
         },
         {
             path: "groups/:groupUUID",
-            element: <Group/>,
-            loader: async ({ params, request }) => {
-                const id = new URL(request.url).searchParams.get('id')
-                return await fetch(`${apiUrl}/api/place?groupID=${id}`, {
-                    headers: {
-                        "Authorization": "Bearer " + user.access_token
-                    }
-                })
-            }
+            element: <Group/>
         },
         {
             path: "/test",
