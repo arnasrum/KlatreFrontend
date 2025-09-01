@@ -7,7 +7,7 @@ import Group from "./pages/Group.tsx";
 import "./App.css"
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import type User from "./interfaces/User.ts";
-import {apiUrl} from "./constants/global.ts";
+import {GroupProvider} from "./contexts/GroupContext.tsx";
 
 
 function App() {
@@ -43,18 +43,20 @@ function App() {
         },
         {
             path: "groups/:groupUUID",
-            element: <Group/>
+            element: <Group/>,
         },
         {
             path: "/test",
             element: <Test/>
         }
-
     ])
 
     return (
         <TokenContext.Provider value={contextValue}>
-            <RouterProvider router={router}/>
+            <GroupProvider>
+                <RouterProvider router={router}>
+                </RouterProvider>
+            </GroupProvider>
         </TokenContext.Provider>
     )
 }
