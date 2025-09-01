@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import Image from "./Image.tsx";
+import { useNavigate, useLocation } from "react-router";
 import DeleteButton from "../components/DeleteButton.tsx";
 import type Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -7,8 +7,14 @@ import type {BoulderData} from "../interfaces/BoulderData.ts";
 import RouteSends from "./RouteSends.tsx";
 import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
-import FormButton from "../components/FormButton.tsx";
 import "./Boulders.css"
+import {
+    Grid, GridItem,
+    Heading, Image,
+    Separator, AspectRatio,
+} from "@chakra-ui/react";
+import MenuButton from "../components/MenuButton.tsx";
+import AbstractForm from "../components/AbstractForm.tsx";
 
 
 interface BoulderProps{
@@ -26,6 +32,7 @@ function Boulders(props: BoulderProps) {
     const [page, setPage] = useState<number>(0)
     const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
+    const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
 
     useEffect(() => {
         setPage(0)
@@ -52,6 +59,7 @@ function Boulders(props: BoulderProps) {
     }
 
     function handleAddSubmit(event: React.FormEvent) {
+        event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement)
         formData.set("placeID", placeID.toString())
         fetch(`${apiUrl}/boulders/place/add`, {
@@ -64,6 +72,7 @@ function Boulders(props: BoulderProps) {
         })
             .then(_ => {
                 setPageToLast(true)
+                setAddingBoulder(false)
                 refetchBoulders()
             })
             .catch(error => console.error(error))
@@ -129,39 +138,53 @@ function Boulders(props: BoulderProps) {
         },
     ]
 
+    const menuItems = [
+        { value: "add", label: "Add Boulder", "onClick": handleAddBoulderClick },
+        { value: "edit", label: "Edit Boulder", "onClick": handleEditSubmit },
+        { value: "delete", label: "Delete Boulder", "onClick": handleDeleteClick },
+    ]
+
+    function handleAddBoulderClick() {
+        setAddingBoulder(true)
+    }
+
 
     if (isLoading) {
         return <div>Loading boulders...</div>
     }
 
+    if(addingBoulder) {
+        return(
+            <AbstractForm fields={fields} handleSubmit={handleAddSubmit} />
+        )
+    }
+
     return(
         <>
             {boulders && boulderLength > 0 && page < boulderLength ? (
-                <div>
-                    <h3>{boulders[page].name}</h3>
-                    <div className="Boulder">
-                        <ul className="flex-items">
-                            <li>Grade: {boulders[page].grade}</li>
-                        </ul>
-                        <div>
-                            <Image className="flex-items" data={boulders[page].image}/>
-                        </div>
-                    </div>
-                    <p>Page {page + 1} of {boulderLength}</p>
-                    <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
-                    <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
-                </div>
+                <Grid templateColumns={"repeat(3, 1fr)"} templateRows="repeat(3, 1fr)">
+                    <GridItem rowSpan={1} colSpan={1} flexDir="row" display="flex" justifyContent="space-between" alignItems="center" className="grid-item">
+                        <Heading >{boulders[page].name}</Heading>
+                        <MenuButton options={menuItems}/>
+                    </GridItem>
+                    <GridItem colSpan={1} rowSpan={1}>
+                        <h3>Test</h3>
+                    </GridItem>
+                    <GridItem colSpan={1} rowSpan={1} >
+                        <p>Page {page + 1} of {boulderLength}</p>
+                        <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
+                        <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
+                    </GridItem>
+                    <GridItem gridArea="1 / 2 / 4 / 4" rowSpan={3} colSpan={2}>
+                        <AspectRatio ratio={16/9} height="100%">
+                            <Image className="flex-items" objectFit="cover" src={boulders[page].image}/>
+                        </AspectRatio>
+                    </GridItem>
+                </Grid>
             ) : (
                 <p>No boulders</p>
-
-            )}
-            { boulderData && boulderData[page] && (
-                <RouteSends routeSend={boulderData[page].routeSend} boulderID={boulderData[page].boulder.id}/>
             )}
 
-            <FormButton formSubmit={handleAddSubmit} fields={fields}> Add Boulder </FormButton>
-            <FormButton formSubmit={handleEditSubmit} fields={fields}> Edit Boulder </FormButton>
-            <DeleteButton onDelete={handleDeleteClick}>Delete Boulder</DeleteButton>
         </>
     );
 }
