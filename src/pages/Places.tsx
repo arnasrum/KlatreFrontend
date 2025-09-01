@@ -8,6 +8,7 @@ import AbstractForm from "../components/AbstractForm.tsx";
 import type InputField from "../interfaces/InputField.ts";
 import type {BoulderData} from "../interfaces/BoulderData.ts";
 import {apiUrl} from "../constants/global.ts";
+import {Listbox, useListCollection, Input, Stack, Text, useFilter} from "@chakra-ui/react"
 
 interface PlacesProps {
     places?: Array<Place>
@@ -22,6 +23,12 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
     const [boulders, setBoulders] = useState<Array<BoulderData>>([]);
     const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
     const { user } = useContext(TokenContext);
+    const { contains } = useFilter({ sensitivity: "base" })
+    const {collection, filter} = useListCollection({
+        "initialItems": places.map((place: Place) => {return {"value": place.id, "label": place.name}}),
+        filter: contains
+    })
+
 
     useEffect(() => {
         if(!selectedPlace) {
@@ -35,11 +42,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
             }
         })
             .then(response => response.json())
-            .then(data => {
-                setBoulders(data)
-                return data
-            })
-            .then(data => {console.log(data)})
+            .then(data => setBoulders(data))
             .catch(error => console.error(error))
 
     }, [selectedPlace, refetchBoulders]);
@@ -113,18 +116,36 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
 
     return (
         <>
-            <TabContainer
-                items={places}
-                onItemSelect={handlePlaceClick}
-                onAddClick={() => setShowPlaceModal(true)}
-                selectedId={selectedPlace}
-                title="Places"
-            />
+            <Listbox.Root
+                orientation="vertical"
+                collection={collection}
+                maxW="640px"
+            >
+                <Listbox.Label>Select a place</Listbox.Label>
+                <Listbox.Input
+                    as={Input}
+                    placeholder="Search places"
+                    onChange={event => filter(event.target.value)}
+                ></Listbox.Input>
+                <Listbox.Content maxH="200px">
+                    {collection.items.map((placeItem: {value: number, label: string}) =>
+                        <Listbox.Item item={placeItem} key={placeItem.value} onClick={() => setSelectedPlace(placeItem.value)}>
+                            <Listbox.ItemText>{placeItem.label}</Listbox.ItemText>
+                            <Listbox.ItemIndicator/>
+                        </Listbox.Item>
+                    )}
+                    <Listbox.Empty>No places in group</Listbox.Empty>
+                </Listbox.Content>
+            </Listbox.Root>
             {selectedPlace &&
                 <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler}/>
             }
         </>
     );
 }
+
+
+
+
 
 export default Places;
