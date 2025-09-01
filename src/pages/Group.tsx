@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useContext} from "react"
-import { useParams, useLocation, useLoaderData, useSearchParams } from "react-router-dom"
+import React, {useState, useEffect, useContext, useMemo, useRef } from "react"
+import { useParams, useLocation, Outlet } from "react-router-dom"
 import Boulders from "./Boulders.tsx";
 import { Grid, GridItem, Tabs, Spinner } from "@chakra-ui/react"
 import "./Group.css"
@@ -7,20 +7,26 @@ import Places from "./Places.tsx";
 //import type Group from "../interfaces/Group.ts"
 import {apiUrl} from "../constants/global.ts"
 import {TokenContext} from "../Context.tsx"
-
+import { GroupContext } from "../contexts/GroupContext.tsx"
 
 function Group() {
 
+    const { currentGroup, setCurrentGroup, isLoading, setIsLoading } = useContext(GroupContext)
+    const { groupUUID } = useParams()
+    const groupData = currentGroup
+    const groupID = groupData?.id
     const location = useLocation()
-    const groupData = location.state?.groupData
-    const groupID = groupData.id
+
+    //const groupData = location.state?.groupData
     const [refetchGroups, setRefetchGroups] = useState<boolean>(false)
     const [ placeData, setPlaceData ] = useState<Array<any>>([])
-    const { user } = useContext(TokenContext)
-    const { isLoading, setIsLoading } = useState<boolean>(true);
+    const { user, isLoading: userLoading } = useContext(TokenContext)
+    const [ placeIsLoading, setPlaceIsLoading ] = useState<boolean>(true);
+    const isOnAddRoute = location.pathname.endsWith("/add")
 
+    console.log(groupData)
     useEffect(() => {
-        if(!groupID) {
+        if( (groupData && (groupData?.uuid !== groupUUID))  || !user?.access_token) {
             return
         }
         fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
@@ -31,22 +37,30 @@ function Group() {
             }
         })
             .then(response => response.json())
+            .then(data => {console.log("fetched", data); return data})
             .then(data => setPlaceData(data))
+            .then(_ => setPlaceIsLoading(false))
             .catch(error => console.error(error))
+            .finally(() => setPlaceIsLoading(false))
 
-    }, [refetchGroups, groupID])
-
+    }, [refetchGroups, groupUUID, user?.access_token])
 
     function refetchGroupsHandler() {
+        setPlaceIsLoading(true)
         setRefetchGroups((prev: boolean) => !prev)
     }
 
-    if(isLoading) {
+    if(isLoading || placeIsLoading || userLoading) {
         return(
             <Spinner />
         )
     }
 
+    if(isOnAddRoute) {
+        return(
+            <Outlet />
+        )
+    }
 
     return (
         <div className="group">
@@ -67,7 +81,6 @@ function Group() {
                     </Tabs.Root>
                 </GridItem>
             </Grid>
-
         </div>
     );
 

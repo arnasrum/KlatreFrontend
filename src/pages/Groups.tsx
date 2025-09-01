@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { TokenContext, GroupContext } from "../Context.tsx";
+import { TokenContext } from "../Context.tsx";
 import AddGroupForm from "./AddGroupForm.tsx";
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -7,6 +7,7 @@ import { apiUrl } from "../constants/global.ts";
 import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
 import type Group from "../interfaces/Group.ts";
 import {useNavigate} from "react-router";
+import { GroupContext } from "../contexts/GroupContext.tsx"
 
 interface Groups {
     group: Group,
@@ -23,6 +24,7 @@ function Groups() {
     const [addRefetch, setAddRefetch] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const { setCurrentGroup } = useContext(GroupContext)
     
     // Modal states
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
@@ -49,7 +51,7 @@ function Groups() {
         }
         
         setIsLoading(true);
-        fetch(`${apiUrl}/groups`, {
+        fetch(`${apiUrl}/api/groups`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -77,7 +79,7 @@ function Groups() {
 
     
     function handleDeleteClick() {
-        fetch(`${apiUrl}/groups`, {
+        fetch(`${apiUrl}/api/groups`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + user.access_token
@@ -156,16 +158,12 @@ function Groups() {
     }
 
     function navigateToGroup(uuid: string, group: Group) {
-        console.log("navigate to group: ", group)
-        navigate(`/groups/${uuid}`, {
-            state: {
-                groupData: group
-            }
-        })
+        setCurrentGroup(group)
+        navigate(`/groups/${uuid}?id=${group.id}`)
     }
 
     return (
-        <GroupContext.Provider value={groupContext}>
+        <>
             <Grid templateColumns="repeat(3, 1fr)" gap={4} p={4}>
                 {groupItems.map((item: Group) => (
                     <GridItem key={crypto.randomUUID()} >
@@ -191,8 +189,7 @@ function Groups() {
                     </GridItem>
                 ))}
             </Grid>
-
-        </GroupContext.Provider>
+        </>
     );
 }
 
