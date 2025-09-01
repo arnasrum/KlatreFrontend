@@ -113,7 +113,7 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                                 onCropComplete={handleCropping}
                                 onZoomChange={setZoom}
                                 image={imgSource}
-                                aspect={4/3}
+                                aspect={16/9}
                                 objectFit="cover"
                                 cropShape="rect"
                                 restrictPosition
