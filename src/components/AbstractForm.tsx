@@ -2,6 +2,7 @@ import React from "react";
 import ReusableButton from "./ReusableButton.tsx";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
+import { Input } from "@chakra-ui/react";
 
 interface FormProps{
     fields: Array<InputField>,
@@ -26,7 +27,7 @@ function Form({fields, handleSubmit}: FormProps) {
                            return (
                                <label key={field.name || index}>
                                    {field.label}
-                                   <input 
+                                   <Input
                                        type={field.type} 
                                        name={field.name} 
                                        required={field.required}
