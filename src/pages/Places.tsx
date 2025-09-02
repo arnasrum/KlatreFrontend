@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
-import TabContainer from "../components/TabContainer.tsx";
 import Boulders from "./Boulders.tsx";
 import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
@@ -9,6 +8,7 @@ import type InputField from "../interfaces/InputField.ts";
 import type {BoulderData} from "../interfaces/BoulderData.ts";
 import {apiUrl} from "../constants/global.ts";
 import {Listbox, useListCollection, Input, Stack, Text, useFilter} from "@chakra-ui/react"
+import "./Places.css"
 
 interface PlacesProps {
     places?: Array<Place>
@@ -121,7 +121,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                 collection={collection}
                 maxW="640px"
             >
-                <Listbox.Label>Select a place</Listbox.Label>
+                <Listbox.Label hidden>Select a place</Listbox.Label>
                 <Listbox.Input
                     as={Input}
                     placeholder="Search places"

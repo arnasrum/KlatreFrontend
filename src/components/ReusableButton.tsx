@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@chakra-ui/react";
 import "./ReusableButton.css";
 
 interface ButtonProps {
@@ -13,7 +14,7 @@ interface ButtonProps {
 const ReusableButton = (props: ButtonProps) => {
 
     return (
-        <button
+        <Button
             onClick={props.onClick}
             className={`btn ${props.className || ''}`}
             style={props.style}
@@ -21,7 +22,7 @@ const ReusableButton = (props: ButtonProps) => {
             type={props.type}
         >
             {props.children}
-        </button>
+        </Button>
     )
 }
 export default ReusableButton;
