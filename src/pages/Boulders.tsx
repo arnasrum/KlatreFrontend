@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { useNavigate, useLocation } from "react-router";
 import DeleteButton from "../components/DeleteButton.tsx";
 import type Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -32,7 +31,7 @@ function Boulders(props: BoulderProps) {
     const [page, setPage] = useState<number>(0)
     const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
-    const [addingBoulder, setAddingBoulder] = useState<boolean>(false)
+    const [boulderAction, setBoulderAction] = useState<"add" | "edit" | null>(null)
 
     useEffect(() => {
         setPage(0)
@@ -72,7 +71,7 @@ function Boulders(props: BoulderProps) {
         })
             .then(_ => {
                 setPageToLast(true)
-                setAddingBoulder(false)
+                setBoulderAction(null)
                 refetchBoulders()
             })
             .catch(error => console.error(error))
@@ -89,7 +88,6 @@ function Boulders(props: BoulderProps) {
             method: "PUT",
             headers: {
                 "Authorization": "Bearer " + user.access_token,
-                // Remove Content-Type header to let browser set it for FormData
             },
             body: formData
         })
@@ -141,11 +139,11 @@ function Boulders(props: BoulderProps) {
     const menuItems = [
         { value: "add", label: "Add Boulder", "onClick": handleAddBoulderClick },
         { value: "edit", label: "Edit Boulder", "onClick": handleEditSubmit },
-        { value: "delete", label: "Delete Boulder", "onClick": handleDeleteClick },
+        { value: "delete", label: "Delete Boulder", "onClick": handleDeleteClick, color: "fg.error", "hover": {"bg": "bg.error", "color": "fg.error"} },
     ]
 
     function handleAddBoulderClick() {
-        setAddingBoulder(true)
+        setBoulderAction("add")
     }
 
 
@@ -153,11 +151,32 @@ function Boulders(props: BoulderProps) {
         return <div>Loading boulders...</div>
     }
 
-    if(addingBoulder) {
+    if(boulderAction === "add") {
         return(
-            <AbstractForm fields={fields} handleSubmit={handleAddSubmit} />
+            <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
+                footer={
+                <div>
+                    <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
+                    <ReusableButton type="submit">Add Boulder</ReusableButton>
+                </div>
+                }
+            />
         )
     }
+    if(boulderAction === "edit") {
+        return(
+            <AbstractForm fields={fields} handleSubmit={handleEditSubmit}
+                footer={
+                    <div>
+                        <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
+                        <ReusableButton type="submit">Add Boulder</ReusableButton>
+                    </div>
+                }
+            />
+        )
+    }
+
+
 
     return(
         <>
@@ -168,7 +187,7 @@ function Boulders(props: BoulderProps) {
                         <MenuButton options={menuItems}/>
                     </GridItem>
                     <GridItem colSpan={1} rowSpan={1}>
-                        <h3>Test</h3>
+                        <RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />
                     </GridItem>
                     <GridItem colSpan={1} rowSpan={1} >
                         <p>Page {page + 1} of {boulderLength}</p>

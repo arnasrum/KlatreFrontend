@@ -5,6 +5,8 @@ import React from "react";
 interface MenuButtonOption{
     value: string,
     label: string,
+    color?: string,
+    hover?: object,
     onClick: (event: React.FormEvent) => void
 }
 
@@ -28,8 +30,13 @@ function MenuButton(props: MenuButtonProps) {
             <Portal>
                 <Menu.Positioner>
                     <Menu.Content maxH="200px" minW="10rem">
-                        {options.map((item: {value: string, label: string, onClick: () => void})=> (
-                            <MenuItem value={item.value} key={item.value} onClick={item.onClick}>
+                        {options.map((item: MenuButtonOption)=> (
+                            <MenuItem value={item.value}
+                                      key={item.value}
+                                      onClick={item.onClick}
+                                      color={item.color}
+                                      _hover={item.hover}
+                            >
                                 {item.label}
                             </MenuItem>
                         ))}
