@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
+import Pagination from "../components/Pagination.tsx";
 
 
 interface BoulderProps{
@@ -46,16 +47,6 @@ function Boulders(props: BoulderProps) {
             }
         }
     }, [boulders])
-
-
-    const handleNextClick = () => {
-        if(page == boulderLength - 1) {return}
-        setPage((prevState: number) => prevState + 1)
-    }
-    const handlePreviousClick = () => {
-        if(page == 0) {return}
-        setPage((prevState: number) => prevState - 1)
-    }
 
     function handleAddSubmit(event: React.FormEvent) {
         event.preventDefault();
@@ -153,26 +144,33 @@ function Boulders(props: BoulderProps) {
 
     if(boulderAction === "add") {
         return(
-            <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
-                footer={
-                <div>
-                    <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
-                    <ReusableButton type="submit">Add Boulder</ReusableButton>
-                </div>
-                }
-            />
-        )
-    }
-    if(boulderAction === "edit") {
-        return(
-            <AbstractForm fields={fields} handleSubmit={handleEditSubmit}
-                footer={
+            <>
+                <Separator style={{margin: "10px"}} />
+                <Heading size="xl">Add Boulder</Heading>
+                <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
+                    footer={
                     <div>
                         <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
                         <ReusableButton type="submit">Add Boulder</ReusableButton>
                     </div>
-                }
-            />
+                    }
+                />
+            </>
+        )
+    }
+    if(boulderAction === "edit") {
+        return(
+            <>
+                <h2>Edit Boulder</h2>
+                <AbstractForm fields={fields} handleSubmit={handleEditSubmit}
+                    footer={
+                        <div>
+                            <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
+                            <ReusableButton type="submit">Add Boulder</ReusableButton>
+                        </div>
+                    }
+                />
+            </>
         )
     }
 
@@ -190,9 +188,7 @@ function Boulders(props: BoulderProps) {
                         <RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />
                     </GridItem>
                     <GridItem colSpan={1} rowSpan={1} >
-                        <p>Page {page + 1} of {boulderLength}</p>
-                        <ReusableButton onClick={handlePreviousClick} type="button">Previous Boulder</ReusableButton>
-                        <ReusableButton onClick={handleNextClick} type="button">Next Boulder</ReusableButton>
+                        <Pagination pageSize={1} count={boulderLength} onPageChange={setPage} page={page}/>
                     </GridItem>
                     <GridItem gridArea="1 / 2 / 4 / 4" rowSpan={3} colSpan={2}>
                         <AspectRatio ratio={16/9} height="100%">
