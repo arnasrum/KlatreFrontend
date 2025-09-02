@@ -8,14 +8,12 @@ import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
 import type Group from "../interfaces/Group.ts";
 import {useNavigate} from "react-router";
 import { GroupContext } from "../contexts/GroupContext.tsx"
+import "./Groups.css"
 
 interface Groups {
     group: Group,
     places: Array<Place>
 }
-
-
-
 
 function Groups() {
     const [groups, setGroups] = useState<Array<Groups>>([]);
@@ -112,25 +110,45 @@ function Groups() {
     };
 
     if (isLoading) {
-        return <div>Loading groups...</div>;
+        return (
+            <div className="groups-loading">
+                <div>Loading groups...</div>
+            </div>
+        );
     }
 
     if (!user?.access_token) {
-        return <div>Please log in to view groups.</div>;
+        return (
+            <div className="groups-empty">
+                <h2>Welcome!</h2>
+                <p>Please log in to view your groups.</p>
+            </div>
+        );
     }
 
     if (!groups || !Array.isArray(groups)) {
-        return <div>Error loading groups. Please try again.</div>;
+        return (
+            <div className="groups-empty">
+                <h2>Oops!</h2>
+                <p>Error loading groups. Please try again.</p>
+            </div>
+        );
     }
 
     if (groups.length === 0) {
         return (
-            <div>
-                <h2>Groups</h2>
-                <p>No groups available</p>
-                <button type="button" onClick={() => setShowGroupModal(true)}>
-                    Add First Group
-                </button>
+            <div className="groups-container">
+                <div className="groups-empty">
+                    <h2>No Groups Yet</h2>
+                    <p>Create your first climbing group to get started!</p>
+                    <button 
+                        type="button" 
+                        className="view-group-btn"
+                        onClick={() => setShowGroupModal(true)}
+                    >
+                        Create First Group
+                    </button>
+                </div>
             </div>
         );
     }
@@ -139,9 +157,15 @@ function Groups() {
         return (
             <GroupContext.Provider value={groupContext}>
                 <AddGroupForm/>
-                <ReusableButton type="button" onClick={() => setShowGroupModal(false)}>
-                    Close
-                </ReusableButton>
+                <div className="group-actions">
+                    <ReusableButton 
+                        type="button" 
+                        className="secondary"
+                        onClick={() => setShowGroupModal(false)}
+                    >
+                        Close
+                    </ReusableButton>
+                </div>
             </GroupContext.Provider>
         );
     }
@@ -151,6 +175,7 @@ function Groups() {
         name: group.group.name,
         description: group.group.description,
         uuid: group.group.uuid,
+        places: group.places,
     }));
 
     function refetchGroupsHandler() {
@@ -163,33 +188,57 @@ function Groups() {
     }
 
     return (
-        <>
-            <Grid templateColumns="repeat(3, 1fr)" gap={4} p={4}>
-                {groupItems.map((item: Group) => (
-                    <GridItem key={crypto.randomUUID()} >
-                       <Card.Root width="320px">
-                           <Card.Body gap={2}>
-                               <h2>
-                                   <strong>{item.name}</strong>
-                               </h2>
-                               <Blockquote.Root>
-                                   <Blockquote.Content>
-                                       This is an placeholder description for the group
-                                   </Blockquote.Content>
-                               </Blockquote.Root>
-                           </Card.Body>
-                           <Card.Footer justifyContent="flex-end">
-                               <ReusableButton
-                                   type="button"
-                                   className="solid button-auto-width"
-                                   onClick={() => navigateToGroup(item.uuid, item)}
-                               >View</ReusableButton>
-                           </Card.Footer>
-                       </Card.Root>
-                    </GridItem>
+        <div className="groups-container">
+            <div className="groups-header">
+                <h1>Your Climbing Groups</h1>
+                <p>Discover, explore, and conquer new bouldering challenges with your community</p>
+            </div>
+            
+            <div className="groups-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+                {groupItems.map((item: any) => (
+                    <div key={crypto.randomUUID()} className="group-card">
+                        <div className="group-card-body">
+                            <h3 className="group-card-title">{item.name}</h3>
+                            <p className="group-card-description">
+                                {item.description || "Explore amazing climbing spots and challenge yourself with this group."}
+                            </p>
+                            
+                            <div className="group-card-stats">
+                                <div className="group-stat">
+                                    <span className="group-stat-number">{item.places?.length || 0}</span>
+                                    <span className="group-stat-label">Places</span>
+                                </div>
+                                <div className="group-stat">
+                                    <span className="group-stat-number">0</span>
+                                    <span className="group-stat-label">Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="group-card-footer">
+                            <div className="group-stat">
+                                <span className="group-stat-label">Ready to climb?</span>
+                            </div>
+                            <button
+                                className="view-group-btn"
+                                onClick={() => navigateToGroup(item.uuid, item)}
+                            >
+                                Enter Group
+                            </button>
+                        </div>
+                    </div>
                 ))}
-            </Grid>
-        </>
+            </div>
+
+            {/* Floating Action Button */}
+            <button 
+                className="add-group-fab"
+                onClick={() => setShowGroupModal(true)}
+                title="Add New Group"
+            >
+                +
+            </button>
+        </div>
     );
 }
 

@@ -16,13 +16,11 @@ import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import Pagination from "../components/Pagination.tsx";
 
-
 interface BoulderProps{
     boulderData: Array<BoulderData> | undefined
     isLoading?: boolean // Add this
     placeID: number,
     refetchBoulders: () => void
-
 }
 
 function Boulders(props: BoulderProps) {
@@ -56,7 +54,7 @@ function Boulders(props: BoulderProps) {
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + user.access_token,
-                //"Content-Type": "application/json"
+                //("Content-Type": "application/json"
             },
             body: formData
         })
@@ -69,6 +67,7 @@ function Boulders(props: BoulderProps) {
     }
 
     function handleEditSubmit(event: React.FormEvent){
+        event.preventDefault();
         if (!boulders || boulders.length < 1) { return }
 
         const formData = new FormData(event.target as HTMLFormElement);
@@ -129,7 +128,7 @@ function Boulders(props: BoulderProps) {
 
     const menuItems = [
         { value: "add", label: "Add Boulder", "onClick": handleAddBoulderClick },
-        { value: "edit", label: "Edit Boulder", "onClick": handleEditSubmit },
+        { value: "edit", label: "Edit Boulder", "onClick": () => setBoulderAction("edit") },
         { value: "delete", label: "Delete Boulder", "onClick": handleDeleteClick, color: "fg.error", "hover": {"bg": "bg.error", "color": "fg.error"} },
     ]
 
@@ -137,70 +136,166 @@ function Boulders(props: BoulderProps) {
         setBoulderAction("add")
     }
 
-
     if (isLoading) {
-        return <div>Loading boulders...</div>
+        return (
+            <div className="boulders-loading" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                Loading boulders...
+            </div>
+        )
     }
 
     if(boulderAction === "add") {
         return(
-            <>
-                <Separator style={{margin: "10px"}} />
-                <Heading size="xl">Add Boulder</Heading>
-                <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
+            <div className="boulders-container">
+                <div className="boulder-header">
+                    <h2 className="boulder-title">Add New Boulder</h2>
+                </div>
+                <AbstractForm 
+                    fields={fields} 
+                    handleSubmit={handleAddSubmit}
                     footer={
-                    <div>
-                        <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
-                        <ReusableButton type="submit">Add Boulder</ReusableButton>
-                    </div>
-                    }
-                />
-            </>
-        )
-    }
-    if(boulderAction === "edit") {
-        return(
-            <>
-                <h2>Edit Boulder</h2>
-                <AbstractForm fields={fields} handleSubmit={handleEditSubmit}
-                    footer={
-                        <div>
-                            <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
-                            <ReusableButton type="submit">Add Boulder</ReusableButton>
+                        <div className="boulder-actions">
+                            <button 
+                                type="button"
+                                className="boulder-action-btn secondary"
+                                onClick={() => setBoulderAction(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                className="boulder-action-btn primary"
+                            >
+                                Add Boulder
+                            </button>
                         </div>
                     }
                 />
-            </>
+            </div>
+        )
+    }
+    
+    if(boulderAction === "edit") {
+        return(
+            <div className="boulders-container">
+                <div className="boulder-header">
+                    <h2 className="boulder-title">Edit Boulder</h2>
+                </div>
+                <AbstractForm 
+                    fields={fields} 
+                    handleSubmit={handleEditSubmit}
+                    footer={
+                        <div className="boulder-actions">
+                            <button 
+                                type="button"
+                                className="boulder-action-btn secondary"
+                                onClick={() => setBoulderAction(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit"
+                                className="boulder-action-btn primary"
+                            >
+                                Update Boulder
+                            </button>
+                        </div>
+                    }
+                />
+            </div>
         )
     }
 
-
+    if(!boulders || boulderLength === 0) {
+        return (
+            <div className="boulders-empty">
+                <h3>No Boulders Yet</h3>
+                <p>Add your first boulder to start tracking climbs at this location!</p>
+                <button 
+                    className="boulder-action-btn primary"
+                    onClick={() => setBoulderAction("add")}
+                >
+                    Add First Boulder
+                </button>
+            </div>
+        )
+    }
 
     return(
-        <>
-            {boulders && boulderLength > 0 && page < boulderLength ? (
-                <Grid templateColumns={"repeat(3, 1fr)"} templateRows="repeat(3, 1fr)">
-                    <GridItem rowSpan={1} colSpan={1} flexDir="row" display="flex" justifyContent="space-between" alignItems="center" className="grid-item">
-                        <Heading >{boulders[page].name}</Heading>
+        <div className="boulders-container">
+            {boulders && boulderLength > 0 && page < boulderLength && (
+                <>
+                    <div className="boulder-header">
+                        <div>
+                            <h2 className="boulder-title">{boulders[page].name}</h2>
+                            <div className="boulder-grade">{boulders[page].grade || 'Ungraded'}</div>
+                        </div>
                         <MenuButton options={menuItems}/>
-                    </GridItem>
-                    <GridItem colSpan={1} rowSpan={1}>
-                        <RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />
-                    </GridItem>
-                    <GridItem colSpan={1} rowSpan={1} >
-                        <Pagination pageSize={1} count={boulderLength} onPageChange={setPage} page={page}/>
-                    </GridItem>
-                    <GridItem gridArea="1 / 2 / 4 / 4" rowSpan={3} colSpan={2}>
-                        <AspectRatio ratio={16/9} height="100%">
-                            <Image className="flex-items" objectFit="cover" src={boulders[page].image}/>
-                        </AspectRatio>
-                    </GridItem>
-                </Grid>
-            ) : (
-                <p>No boulders</p>
-            )}
+                    </div>
 
-        </>
+                    <div className="boulder-grid">
+                        <div className="boulder-info">
+                            <div className="boulder-stats">
+                                <h3>Boulder Stats</h3>
+                                <div className="stats-grid">
+                                    <div className="stat-item">
+                                        <span className="stat-number">{boulderData?.[page].routeSend?.length || 0}</span>
+                                        <span className="stat-label">Sends</span>
+                                    </div>
+                                    <div className="stat-item">
+                                        <span className="stat-number">{boulders[page].grade || 'N/A'}</span>
+                                        <span className="stat-label">Grade</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="route-sends">
+                                <div className="route-sends-header">
+                                    <h3>Recent Sends</h3>
+                                </div>
+                                <div className="route-sends-content">
+                                    <RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />
+                                </div>
+                            </div>
+
+                            <div className="boulder-pagination">
+                                <span className="pagination-info">
+                                    Boulder {page + 1} of {boulderLength}
+                                </span>
+                                <Pagination pageSize={1} count={boulderLength} onPageChange={setPage} page={page}/>
+                            </div>
+                        </div>
+
+                        <div className="boulder-image-container">
+                            {boulders[page].image ? (
+                                <>
+                                    <img 
+                                        className="boulder-image" 
+                                        src={boulders[page].image}
+                                        alt={boulders[page].name}
+                                    />
+                                    <div className="image-overlay">
+                                        <h3>{boulders[page].name}</h3>
+                                        <p>Grade: {boulders[page].grade || 'Ungraded'}</p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    height: '100%',
+                                    color: '#9ca3af',
+                                    fontSize: '1.1rem'
+                                }}>
+                                    No image available
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
     );
 }
 

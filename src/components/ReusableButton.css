@@ -1,19 +1,70 @@
-
-.solid{
+.solid {
     color: white;
-    background-color: #000000;
-    border: 3px solid;
+    background-color: #2563eb; /* Modern blue instead of black */
+    border: none; /* Remove border for cleaner look */
+    border-radius: 8px; /* Rounded corners */
+    padding: 12px 24px; /* Better padding */
+    font-weight: 600; /* Semi-bold text */
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out; /* Smooth transitions */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
-.button-half-width{
+.solid:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+    transform: translateY(-1px); /* Subtle lift effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+}
+
+.solid:active {
+    transform: translateY(0); /* Reset transform on click */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Reset shadow on click */
+}
+
+.solid:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3); /* Focus ring */
+}
+
+.solid:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.button-half-width {
     width: 50%;
 }
 
-.button-full-width{
+.button-full-width {
     width: 100%;
 }
 
-.button-auto-width{
+.button-auto-width {
     width: auto;
-    flex:1
+    flex: 1;
 }
+
+/* Secondary button variant */
+.secondary {
+    color: #374151;
+    background-color: white;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.secondary:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.secondary

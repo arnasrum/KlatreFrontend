@@ -52,7 +52,10 @@ function Group() {
 
     if(isLoading || placeIsLoading || userLoading) {
         return(
-            <Spinner />
+            <div className="group-loading" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                <Spinner size="xl" color="blue.500" />
+                <span style={{ marginLeft: '1rem', fontSize: '1.2rem', color: '#6b7280' }}>Loading group...</span>
+            </div>
         )
     }
 
@@ -64,23 +67,56 @@ function Group() {
 
     return (
         <div className="group">
-            <Grid templateColumns="repeat(3, 1fr)" gap={6}>
-                <GridItem colSpan={3}>
-                    <h1>{groupData.name}</h1>
-                </GridItem>
-                <GridItem colSpan={3}>
-                    <Tabs.Root fitted>
-                        <Tabs.List>
-                            <Tabs.Trigger value="boulders">Boulders</Tabs.Trigger>
-                            <Tabs.Trigger value="stats">Statistics</Tabs.Trigger>
-                            <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
-                        </Tabs.List>
-                        <Tabs.Content value="boulders">
-                            <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
-                        </Tabs.Content>
-                    </Tabs.Root>
-                </GridItem>
-            </Grid>
+            <div className="group-header">
+                <h1>{groupData?.name || 'Group'}</h1>
+                <p className="group-description">
+                    {groupData?.description || 'Explore amazing climbing spots and challenge yourself with this group.'}
+                </p>
+                
+                <div className="group-stats-row">
+                    <div className="group-stat-card">
+                        <span className="group-stat-number">{placeData?.length || 0}</span>
+                        <span className="group-stat-label">Climbing Places</span>
+                    </div>
+                    <div className="group-stat-card">
+                        <span className="group-stat-number">0</span>
+                        <span className="group-stat-label">Active Members</span>
+                    </div>
+                    <div className="group-stat-card">
+                        <span className="group-stat-number">0</span>
+                        <span className="group-stat-label">Total Sends</span>
+                    </div>
+                    <div className="group-stat-card">
+                        <span className="group-stat-number">0</span>
+                        <span className="group-stat-label">Boulders</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="group-tabs">
+                <Tabs.Root defaultValue="boulders" fitted>
+                    <Tabs.List>
+                        <Tabs.Trigger value="boulders">🧗‍♂️ Climb</Tabs.Trigger>
+                        <Tabs.Trigger value="stats">📊 Statistics</Tabs.Trigger>
+                        <Tabs.Trigger value="settings">⚙️ Settings</Tabs.Trigger>
+                    </Tabs.List>
+                    <Tabs.Content value="boulders">
+                        <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
+                    </Tabs.Content>
+                    <Tabs.Content value="stats">
+                        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                            <h3>Statistics Coming Soon</h3>
+                            <p>Track your climbing progress and group achievements here.</p>
+                        </div>
+                    </Tabs.Content>
+                    <Tabs.Content value="settings">
+                        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                            <h3>Group Settings</h3>
+                            <p>Manage group members, permissions, and preferences.</p>
+                        </div>
+                    </Tabs.Content>
+                </Tabs.Root>
+            </div>
         </div>
     );
 
