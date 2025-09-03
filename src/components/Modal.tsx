@@ -6,6 +6,7 @@ import "./Modal.css"
 
 interface ModalProps {
   isOpen: boolean,
+  onClose?: () => void,
   title: string,
   children: React.ReactNode,
   footer?: React.ReactNode,
@@ -14,11 +15,11 @@ interface ModalProps {
 
 function Modal(props: ModalProps) {
 
-  const { isOpen, title, children, footer } = props
+  const { isOpen, onClose, title, children, footer } = props
 
   return (
     <div className="full-overlay-modal">
-      <Dialog.Root open={isOpen}>
+      <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose?.()}>
         <Dialog.Content>
           <Dialog.Header>
             <Dialog.Title>{title}</Dialog.Title>

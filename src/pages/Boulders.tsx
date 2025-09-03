@@ -7,11 +7,6 @@ import RouteSends from "./RouteSends.tsx";
 import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
 import "./Boulders.css"
-import {
-    Grid, GridItem,
-    Heading, Image,
-    Separator, AspectRatio,
-} from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import Pagination from "../components/Pagination.tsx";
@@ -31,6 +26,7 @@ function Boulders(props: BoulderProps) {
     const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | null>(null)
+    const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false)
 
     useEffect(() => {
         setPage(0)
@@ -111,6 +107,35 @@ function Boulders(props: BoulderProps) {
                 setPage(page - 1)
             })
     }
+
+    function handleImageClick() {
+        setIsImageModalOpen(true)
+    }
+
+    function handleCloseImageModal() {
+        setIsImageModalOpen(false)
+    }
+
+    // Handle ESC key to close modal
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && isImageModalOpen) {
+                setIsImageModalOpen(false)
+            }
+        }
+
+        if (isImageModalOpen) {
+            document.addEventListener('keydown', handleKeyDown)
+            document.body.style.overflow = 'hidden' // Prevent body scroll
+        } else {
+            document.body.style.overflow = 'unset'
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown)
+            document.body.style.overflow = 'unset'
+        }
+    }, [isImageModalOpen])
 
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
@@ -273,6 +298,8 @@ function Boulders(props: BoulderProps) {
                                         className="boulder-image" 
                                         src={boulders[page].image}
                                         alt={boulders[page].name}
+                                        onClick={handleImageClick}
+                                        style={{ cursor: 'pointer' }}
                                     />
                                     <div className="image-overlay">
                                         <h3>{boulders[page].name}</h3>
@@ -293,6 +320,40 @@ function Boulders(props: BoulderProps) {
                             )}
                         </div>
                     </div>
+
+                    {/* Fullscreen Image Modal */}
+                    {isImageModalOpen && (
+                        <div className="fullscreen-image-modal">
+                            <div className="fullscreen-image-backdrop" onClick={handleCloseImageModal} />
+                            <div className="fullscreen-image-container">
+                                <div className="fullscreen-image-header">
+                                    <div className="fullscreen-image-info">
+                                        <h2>{boulders[page].name}</h2>
+                                        <span className="fullscreen-image-grade">
+                                            Grade: {boulders[page].grade || 'Ungraded'}
+                                        </span>
+                                    </div>
+                                    <button 
+                                        className="fullscreen-image-close"
+                                        onClick={handleCloseImageModal}
+                                        aria-label="Close fullscreen image"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <div className="fullscreen-image-content">
+                                    <img 
+                                        src={boulders[page].image}
+                                        alt={boulders[page].name}
+                                        className="fullscreen-image"
+                                    />
+                                </div>
+                                <div className="fullscreen-image-footer">
+                                    <p>Press ESC or click outside to close</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
         </div>

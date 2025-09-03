@@ -24,6 +24,10 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     const [showCropModal, setShowCropModal] = useState(false);
     const [crop, setCrop] = useState({x: 0, y: 0})
     const [zoom, setZoom] = useState(1);
+    const [imageNaturalSize, setImageNaturalSize] = useState<{width: number, height: number} | null>(null);
+    const [dynamicAspect, setDynamicAspect] = useState<number>(16/9);
+    const [minZoom, setMinZoom] = useState<number>(1);
+    const [maxZoom, setMaxZoom] = useState<number>(3);
 
     // Expose input-like methods to parent via ref
     useImperativeHandle(ref, () => ({
@@ -39,7 +43,49 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
             setZoom(1);
             const reader = new FileReader();
             reader.addEventListener("load", () => {
-                setImageSource(reader.result?.toString() || "");
+                const imageUrl = reader.result?.toString() || "";
+                setImageSource(imageUrl);
+                
+                // Load image to get natural dimensions
+                const img = new Image();
+                img.onload = () => {
+                    const naturalWidth = img.naturalWidth;
+                    const naturalHeight = img.naturalHeight;
+                    const naturalAspect = naturalWidth / naturalHeight;
+                    
+                    setImageNaturalSize({ width: naturalWidth, height: naturalHeight });
+                    
+                    // Set dynamic aspect ratio based on image
+                    // For very wide images, use their aspect ratio
+                    // For very tall images, limit to a reasonable aspect
+                    if (naturalAspect > 3) {
+                        setDynamicAspect(3); // Max 3:1 aspect ratio
+                    } else if (naturalAspect < 0.5) {
+                        setDynamicAspect(0.5); // Min 1:2 aspect ratio
+                    } else {
+                        setDynamicAspect(naturalAspect);
+                    }
+                    
+                    // Calculate better zoom range based on image size
+                    const containerAspect = 16/9; // Our container aspect ratio
+                    let calculatedMinZoom = 1;
+                    let calculatedMaxZoom = 5;
+                    
+                    if (naturalAspect > containerAspect) {
+                        // Wide image - might need more zoom to fill height
+                        calculatedMinZoom = Math.max(0.5, containerAspect / naturalAspect);
+                        calculatedMaxZoom = Math.min(8, naturalAspect / containerAspect * 3);
+                    } else {
+                        // Tall image - might need more zoom to fill width
+                        calculatedMinZoom = Math.max(0.5, naturalAspect / containerAspect);
+                        calculatedMaxZoom = Math.min(8, containerAspect / naturalAspect * 3);
+                    }
+                    
+                    setMinZoom(calculatedMinZoom);
+                    setMaxZoom(calculatedMaxZoom);
+                    setZoom(calculatedMinZoom);
+                };
+                img.src = imageUrl;
                 setShowCropModal(true);
             });
             reader.readAsDataURL(e.target.files[0]);
@@ -72,6 +118,10 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         setCroppedAreaPixels(undefined);
         setCrop({x: 0, y: 0})
         setZoom(1)
+        setImageNaturalSize(null);
+        setDynamicAspect(16/9);
+        setMinZoom(1);
+        setMaxZoom(3);
     };
 
     function handleDeleteClick() {
@@ -80,8 +130,18 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         setCroppedAreaPixels(undefined)
         setCrop({x: 0, y: 0})
         setZoom(1)
+        setImageNaturalSize(null);
+        setDynamicAspect(16/9);
+        setMinZoom(1);
+        setMaxZoom(3);
         onChange?.({ target: { name, value: "" } });
     }
+
+    // Reset crop position when aspect ratio changes
+    const handleAspectChange = (newAspect: number) => {
+        setDynamicAspect(newAspect);
+        setCrop({x: 0, y: 0}); // Reset crop position
+    };
 
     return (
         <div>
@@ -105,6 +165,34 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                 <div className="crop-modal-overlay">
                     <div className="crop-modal-content">
                         <h3 className="crop-modal-title">Crop Your Image</h3>
+                        
+                        {/* Image info and aspect ratio controls */}
+                        {imageNaturalSize && (
+                            <div className="image-info-container">
+                                <div className="image-info">
+                                    <span>Original: {imageNaturalSize.width}×{imageNaturalSize.height}</span>
+                                    <span>Aspect: {(imageNaturalSize.width / imageNaturalSize.height).toFixed(2)}:1</span>
+                                </div>
+                                <div className="aspect-ratio-controls">
+                                    <label>Crop Aspect:</label>
+                                    <select 
+                                        value={dynamicAspect} 
+                                        onChange={(e) => handleAspectChange(parseFloat(e.target.value))}
+                                        className="aspect-select"
+                                    >
+                                        <option value={16/9}>16:9 (Landscape)</option>
+                                        <option value={4/3}>4:3 (Standard)</option>
+                                        <option value={1}>1:1 (Square)</option>
+                                        <option value={3/4}>3:4 (Portrait)</option>
+                                        <option value={9/16}>9:16 (Tall)</option>
+                                        <option value={imageNaturalSize.width / imageNaturalSize.height}>
+                                            Original ({(imageNaturalSize.width / imageNaturalSize.height).toFixed(2)}:1)
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="crop-container">
                             <Cropper
                                 crop={crop}
@@ -113,24 +201,33 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                                 onCropComplete={handleCropping}
                                 onZoomChange={setZoom}
                                 image={imgSource}
-                                aspect={16/9}
+                                aspect={dynamicAspect}
                                 objectFit="cover"
                                 cropShape="rect"
                                 restrictPosition
-                                style={{ containerStyle: { "width": "100%", "height": "100%" }}}
+                                minZoom={minZoom}
+                                maxZoom={maxZoom}
+                                style={{ 
+                                    containerStyle: { 
+                                        width: "100%", 
+                                        height: "100%",
+                                        backgroundColor: "#f5f5f5"
+                                    }
+                                }}
                             />
                         </div>
                         <div className="zoom-control-container">
                             <span>Zoom:</span>
                             <input
                                 type="range"
-                                min={1}
-                                max={3}
-                                step={0.1}
+                                min={minZoom}
+                                max={maxZoom}
+                                step={0.05}
                                 value={zoom}
                                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                                 className="zoom-slider"
                             />
+                            <span className="zoom-value">{zoom.toFixed(2)}x</span>
                         </div>
                         <div className="crop-button-container">
                             <ReusableButton type="button" onClick={handleCropCancel}>
