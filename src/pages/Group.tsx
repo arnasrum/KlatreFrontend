@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useContext, useMemo, useRef } from "react"
 import { useParams, useLocation, Outlet } from "react-router-dom"
 import Boulders from "./Boulders.tsx";
-import { Grid, GridItem, Tabs, Spinner } from "@chakra-ui/react"
+import {Box, Grid, GridItem, Tabs, Spinner, Container, Heading, Center, Text} from "@chakra-ui/react"
 import "./Group.css"
 import Places from "./Places.tsx";
 //import type Group from "../interfaces/Group.ts"
@@ -63,25 +63,30 @@ function Group() {
     }
 
     return (
-        <div className="group">
+        <Container bg="Background" >
             <Grid templateColumns="repeat(3, 1fr)" gap={6}>
                 <GridItem colSpan={3}>
-                    <h1>{groupData.name}</h1>
+                    <Container maxW="container.xl" p={4} bg="Background" borderRadius="lg" boxShadow="lg" overflow="hidden">
+                        <Heading size="4xl">{groupData.name}</Heading>
+                        <Text color="fg.muted" fontSize="md" mt={1}>{groupData.description || "Placeholder Group Description"}</Text>
+                    </Container>
                 </GridItem>
                 <GridItem colSpan={3}>
-                    <Tabs.Root fitted>
-                        <Tabs.List>
-                            <Tabs.Trigger value="boulders">Boulders</Tabs.Trigger>
-                            <Tabs.Trigger value="stats">Statistics</Tabs.Trigger>
-                            <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
-                        </Tabs.List>
-                        <Tabs.Content value="boulders">
-                            <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
-                        </Tabs.Content>
-                    </Tabs.Root>
+                    <Container maxW="container.xl" p={4} bg="Background" borderRadius="lg" boxShadow="lg" overflow="hidden">
+                        <Tabs.Root fitted>
+                            <Tabs.List>
+                                <Tabs.Trigger value="boulders">Boulders</Tabs.Trigger>
+                                <Tabs.Trigger value="stats">Statistics</Tabs.Trigger>
+                                <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
+                            </Tabs.List>
+                            <Tabs.Content value="boulders">
+                                <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
+                            </Tabs.Content>
+                        </Tabs.Root>
+                    </Container>
                 </GridItem>
             </Grid>
-        </div>
+        </Container>
     );
 
 }
