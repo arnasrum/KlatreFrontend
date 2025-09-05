@@ -11,3 +11,10 @@ img {
     width: 20em;
     height: 20em;
 }
+
+.form-footer {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 1em;
+    padding: 1em;
+}

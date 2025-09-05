@@ -5,13 +5,56 @@
     width: 100vw;
     height: 100vh;
     z-index: 5000;
-    background-color: rgba(0, 0, 0, 0.8)
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .full-overlay-modal .chakra-dialog__content {
-    position: fixed;
-    top: 50% ;
-    left: 50% ;
-    transform: translate(-50%, -50%) ;
+    position: relative;
+    max-width: min(95vw, 1400px); /* Increased from 90vw and 1200px */
+    max-height: min(95vh, 900px); /* Increased from 90vh and 800px */
+    width: 90vw; /* Set a default width */
+    height: 85vh; /* Set a default height */
+    margin: 0;
+    transform: none;
     z-index: 1000;
+    overflow: auto;
+}
+
+/* Responsive adjustments for full overlay modal */
+@media (max-width: 1200px) {
+    .full-overlay-modal .chakra-dialog__content {
+        width: 92vw;
+        height: 88vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .full-overlay-modal {
+        padding: 15px;
+    }
+    
+    .full-overlay-modal .chakra-dialog__content {
+        max-width: 97vw;
+        max-height: 92vh;
+        width: 95vw;
+        height: 90vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .full-overlay-modal {
+        padding: 10px;
+    }
+    
+    .full-overlay-modal .chakra-dialog__content {
+        max-width: 98vw;
+        max-height: 95vh;
+        width: 96vw;
+        height: 92vh;
+    }
 }

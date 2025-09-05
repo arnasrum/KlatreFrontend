@@ -6,6 +6,7 @@ interface InputField {
     name: string,
     required?: boolean,
     accept?: string,
+    placeholder?: string,
 }
 
 export default InputField;

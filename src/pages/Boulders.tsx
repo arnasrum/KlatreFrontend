@@ -8,13 +8,15 @@ import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
 import "./Boulders.css"
 import {
-    Grid, GridItem,
+    Grid, GridItem, Box,
     Heading, Image,
     Separator, AspectRatio,
 } from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import Pagination from "../components/Pagination.tsx";
+import {handleFormDataImage} from "../Helpers.ts";
+import InputField from "../interfaces/InputField.ts";
 
 
 interface BoulderProps{
@@ -32,10 +34,10 @@ function Boulders(props: BoulderProps) {
     const [page, setPage] = useState<number>(0)
     const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
-    const [boulderAction, setBoulderAction] = useState<"add" | "edit" | null>(null)
+    const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
 
     useEffect(() => {
-        setPage(0)
+        //setPage(0)
     }, [placeID, boulderData]);
 
     useEffect(() => {
@@ -52,11 +54,12 @@ function Boulders(props: BoulderProps) {
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement)
         formData.set("placeID", placeID.toString())
+        handleFormDataImage(formData)
+
         fetch(`${apiUrl}/boulders/place/add`, {
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + user.access_token,
-                //"Content-Type": "application/json"
             },
             body: formData
         })
@@ -66,14 +69,22 @@ function Boulders(props: BoulderProps) {
                 refetchBoulders()
             })
             .catch(error => console.error(error))
+            .finally(() => {setBoulderAction(null)})
     }
 
     function handleEditSubmit(event: React.FormEvent){
+        event.preventDefault();
         if (!boulders || boulders.length < 1) { return }
 
         const formData = new FormData(event.target as HTMLFormElement);
+        handleFormDataImage(formData)
         formData.set("placeID", boulders[page].place.toString());
         formData.set("boulderID", boulders[page].id.toString());
+        formData.entries().forEach(entry => {
+            if(!entry[1]) {
+                formData.delete(entry[0])
+            }
+        });
 
         fetch(`${apiUrl}/boulders/place/update`, {
             method: "PUT",
@@ -84,6 +95,7 @@ function Boulders(props: BoulderProps) {
         })
             .then(_ => refetchBoulders())
             .catch(error => console.error(error))
+            .finally(() => {setBoulderAction(null)})
     }
 
     function handleDeleteClick() {
@@ -116,25 +128,17 @@ function Boulders(props: BoulderProps) {
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
         {"label": "Grade", "type": "string", "name": "grade", "required": true},
-        {"label": "Image", 
-            "type": "image", 
-            "name": "image", 
-            "required": false, 
-            "accept": "image/*",
-            enableCropping: true,
-            targetWidth: 800,
-            targetHeight: 600
-        },
+        {"label": "Image", "type": "image", "name": "image", "required": false, "accept": "image/*"},
     ]
 
     const menuItems = [
-        { value: "add", label: "Add Boulder", "onClick": handleAddBoulderClick },
-        { value: "edit", label: "Edit Boulder", "onClick": handleEditSubmit },
+        { value: "add", label: "Add Boulder", "onClick": () => handleBoulderActionClick("add") },
+        { value: "edit", label: "Edit Boulder", "onClick": () => handleBoulderActionClick("edit") },
         { value: "delete", label: "Delete Boulder", "onClick": handleDeleteClick, color: "fg.error", "hover": {"bg": "bg.error", "color": "fg.error"} },
     ]
 
-    function handleAddBoulderClick() {
-        setBoulderAction("add")
+    function handleBoulderActionClick(action: "add" | "edit" | "delete" | null ) {
+        setBoulderAction(action)
     }
 
 
@@ -149,7 +153,7 @@ function Boulders(props: BoulderProps) {
                 <Heading size="xl">Add Boulder</Heading>
                 <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
                     footer={
-                    <div>
+                    <div className="form-footer">
                         <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
                         <ReusableButton type="submit">Add Boulder</ReusableButton>
                     </div>
@@ -159,14 +163,15 @@ function Boulders(props: BoulderProps) {
         )
     }
     if(boulderAction === "edit") {
+        const editFields = fields.map((field: InputField) => {return {...field, required: false, placeholder: boulders[page][field.name] || ""}})
         return(
             <>
                 <h2>Edit Boulder</h2>
-                <AbstractForm fields={fields} handleSubmit={handleEditSubmit}
+                <AbstractForm fields={editFields} handleSubmit={handleEditSubmit}
                     footer={
-                        <div>
+                        <div className="form-footer">
                             <ReusableButton onClick={() => setBoulderAction(null)}>Cancel</ReusableButton>
-                            <ReusableButton type="submit">Add Boulder</ReusableButton>
+                            <ReusableButton type="submit">Submit</ReusableButton>
                         </div>
                     }
                 />
@@ -179,23 +184,28 @@ function Boulders(props: BoulderProps) {
     return(
         <>
             {boulders && boulderLength > 0 && page < boulderLength ? (
-                <Grid templateColumns={"repeat(3, 1fr)"} templateRows="repeat(3, 1fr)">
-                    <GridItem rowSpan={1} colSpan={1} flexDir="row" display="flex" justifyContent="space-between" alignItems="center" className="grid-item">
-                        <Heading >{boulders[page].name}</Heading>
-                        <MenuButton options={menuItems}/>
-                    </GridItem>
-                    <GridItem colSpan={1} rowSpan={1}>
-                        <RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />
-                    </GridItem>
-                    <GridItem colSpan={1} rowSpan={1} >
-                        <Pagination pageSize={1} count={boulderLength} onPageChange={setPage} page={page}/>
-                    </GridItem>
-                    <GridItem gridArea="1 / 2 / 4 / 4" rowSpan={3} colSpan={2}>
-                        <AspectRatio ratio={16/9} height="100%">
-                            <Image className="flex-items" objectFit="cover" src={boulders[page].image}/>
-                        </AspectRatio>
-                    </GridItem>
-                </Grid>
+                <Box>
+                    <Separator m="xl"/>
+                    <Grid templateColumns={"repeat(3, 1fr)"} templateRows="repeat(3, 1fr)">
+                        <GridItem rowSpan={1} colSpan={1} flexDir="row" display="flex" justifyContent="space-between" alignItems="center" className="grid-item">
+                            <Heading >{boulders[page].name}</Heading>
+                            <span>{boulders[page].grade}</span>
+                            <MenuButton options={menuItems}/>
+                        </GridItem>
+                        <GridItem colSpan={1} rowSpan={1}>
+                            {/*<RouteSends boulderID={boulders[page].id} routeSend={boulderData?.[page].routeSend} />*/}
+                                <span>Placeholder Your Attempt</span>
+                        </GridItem>
+                        <GridItem colSpan={1} rowSpan={1} alignSelf="self-end" justifySelf="self-start">
+                            <Pagination pageSize={1} count={boulderLength} onPageChange={setPage} page={page}/>
+                        </GridItem>
+                        <GridItem gridArea="1 / 2 / 4 / 4" rowSpan={3} colSpan={2}>
+                            <AspectRatio ratio={16/9} height="100%">
+                                <Image className="flex-items" objectFit="cover" src={boulders[page].image}/>
+                            </AspectRatio>
+                        </GridItem>
+                    </Grid>
+                </Box>
             ) : (
                 <p>No boulders</p>
             )}
