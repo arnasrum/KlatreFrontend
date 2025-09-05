@@ -2,7 +2,7 @@ import React from "react";
 import ReusableButton from "./ReusableButton.tsx";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
-import { Input } from "@chakra-ui/react";
+import {Input, NativeSelect} from "@chakra-ui/react";
 
 interface FormProps{
     fields: Array<InputField>,
@@ -11,6 +11,11 @@ interface FormProps{
 }
 
 function Form({fields, handleSubmit, footer}: FormProps) {
+
+    const aspectRatios = [{"value": 16/9, "label": "16/9"},
+        {"value": 4/3, "label": "4/3"},]
+    const imageIncluded = fields.filter(field => field.type == "image").length > 0
+
    return(
        <form onSubmit={handleSubmit} id="form">
            {
@@ -31,6 +36,7 @@ function Form({fields, handleSubmit, footer}: FormProps) {
                                    name={field.name}
                                    required={field.required}
                                    accept={field.accept}
+                                   placeholder={field.placeholder}
                                />
                            </label>
                        )

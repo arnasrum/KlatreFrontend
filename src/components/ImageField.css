@@ -10,51 +10,107 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .crop-modal-content {
   background-color: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  width: 90vw;
-  max-width: 1200px;
-  height: 80vh;
-  max-height: 800px;
+  max-width: 95vw;
+  max-height: 95vh;
+  width: auto; /* Let it size based on content */
+  height: auto; /* Let it size based on content */
   display: flex;
   flex-direction: column;
-}
-
-.crop-modal-title {
-  margin: 0 0 20px 0;
-  font-size: 24px;
-  text-align: center;
-}
-
-.crop-container {
-  position: relative;
-  flex: 1;
-  min-height: 400px;
-  background: #f5f5f5;
-  border-radius: 8px;
   overflow: hidden;
 }
 
+.crop-modal-title {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.image-upload-container {
+    margin-bottom: 1rem;
+}
+
+.image-info {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.image-info p {
+    margin: 0.25rem 0;
+}
+
+.image-info-modal {
+    margin-bottom: 10px;
+    padding: 0.4rem;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    text-align: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.aspect-ratio-selector {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.aspect-ratio-selector label {
+    font-weight: bold;
+    min-width: 100px;
+}
+
+.aspect-ratio-selector select {
+    flex: 1;
+    padding: 0.4rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.crop-container {
+    position: relative;
+    margin: 10px auto; /* Center the container */
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Width and height will be set dynamically via inline styles */
+}
+
 .zoom-control-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin: 20px 0;
-  padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+    padding: 0 10px;
+    flex-shrink: 0;
+    justify-content: center;
 }
 
 .zoom-control-container span {
   font-weight: 500;
   min-width: 50px;
+  text-align: center;
 }
 
 .zoom-slider {
   flex: 1;
+  max-width: 300px; /* Limit slider width */
   height: 6px;
   background: #ddd;
   border-radius: 3px;
@@ -89,7 +145,8 @@
   display: flex;
   justify-content: space-between;
   gap: 15px;
-  margin-top: 10px;
+  margin-top: 15px;
+  flex-shrink: 0;
 }
 
 .crop-button-container button {
@@ -99,6 +156,7 @@
 
 .image-controls {
   display: flex;
+  justify-content: center;
   gap: 10px;
   margin: 10px 0;
 }
@@ -114,20 +172,32 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive design */
+/* Responsive design for very small screens */
 @media (max-width: 768px) {
+  .crop-modal-overlay {
+    padding: 5px;
+  }
+  
   .crop-modal-content {
-    width: 95vw;
-    height: 90vh;
-    padding: 20px;
+    padding: 15px;
+    max-width: 98vw;
+    max-height: 98vh;
+  }
+
+  .crop-modal-title {
+    font-size: 20px;
+    margin-bottom: 8px;
   }
 
   .crop-container {
-    min-height: 300px;
+    max-width: 90vw;
+    max-height: 60vh;
   }
 
   .zoom-control-container {
-    padding: 0 10px;
+    padding: 0 5px;
+    gap: 10px;
+    margin: 10px 0;
   }
 
   .crop-button-container {
@@ -137,16 +207,32 @@
   .crop-button-container button {
     max-width: none;
   }
+
+  .aspect-ratio-selector {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .aspect-ratio-selector label {
+    min-width: auto;
+  }
 }
 
 @media (max-width: 480px) {
+  .crop-modal-overlay {
+    padding: 2px;
+  }
+  
   .crop-modal-content {
-    width: 98vw;
-    height: 95vh;
-    padding: 15px;
+    padding: 10px;
   }
 
   .crop-modal-title {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .crop-container {
+    max-width: 95vw;
+    max-height: 50vh;
   }
 }
