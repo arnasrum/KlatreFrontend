@@ -1,8 +1,7 @@
 import React from "react";
-import ReusableButton from "./ReusableButton.tsx";
+import { Input, Field, VStack, Box } from "@chakra-ui/react";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
-import {Input, NativeSelect} from "@chakra-ui/react";
 
 interface FormProps{
     fields: Array<InputField>,
@@ -11,43 +10,71 @@ interface FormProps{
 }
 
 function Form({fields, handleSubmit, footer}: FormProps) {
-
-    const aspectRatios = [{"value": 16/9, "label": "16/9"},
-        {"value": 4/3, "label": "4/3"},]
-    const imageIncluded = fields.filter(field => field.type == "image").length > 0
-
    return(
-       <form onSubmit={handleSubmit} id="form">
-           {
-               fields.map((field: InputField, index: number) => {
+       <Box 
+         as="form" 
+         onSubmit={handleSubmit} 
+         p={6}
+         bg="white"
+         borderRadius="lg"
+         shadow="md"
+         border="1px"
+         borderColor="gray.200"
+       >
+           <VStack spacing={4} align="stretch">
+               {fields.map((field: InputField, index: number) => {
                    if(field.type == "image") {
                         return(
-                            <ImageField
-                                key={field.name || index}
-                                name="image"
-                            />
+                            <Box key={field.name || index}>
+                                <ImageField name="image" />
+                            </Box>
                         );
                    } else {
                        return (
-                           <label key={field.name || index}>
-                               {field.label}
+                           <Field.Root key={field.name || index} required={field.required}>
+                               <Field.Label 
+                                 fontWeight="semibold"
+                                 color="gray.700"
+                                 mb={2}
+                               >
+                                   {field.label}
+                                   {field.required && <Field.RequiredIndicator color="red.500"/>}
+                               </Field.Label>
                                <Input
                                    type={field.type}
                                    name={field.name}
                                    required={field.required}
                                    accept={field.accept}
                                    placeholder={field.placeholder}
+                                   size="md"
+                                   bg="gray.50"
+                                   border="1px"
+                                   borderColor="gray.300"
+                                   _hover={{
+                                     borderColor: "gray.400"
+                                   }}
+                                   _focus={{
+                                     borderColor: "blue.500",
+                                     boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                                     bg: "white"
+                                   }}
                                />
-                           </label>
+                               <Field.HelperText color="gray.600" fontSize="sm" />
+                               <Field.ErrorText color="red.500" fontSize="sm">
+                                 This field is required
+                               </Field.ErrorText>
+                           </Field.Root>
                        )
-                   }})
-           }
-           { footer && (
-               <div>
-                   {footer}
-               </div>
-           )}
-       </form>
+                   }
+               })}
+               
+               {footer && (
+                   <Box pt={4} borderTop="1px" borderColor="gray.200">
+                       {footer}
+                   </Box>
+               )}
+           </VStack>
+       </Box>
    );
 }
 

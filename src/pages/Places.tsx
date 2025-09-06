@@ -69,10 +69,6 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         setRefetchBoulders((prev: boolean) => !prev)
     }
 
-    function handlePlaceClick(placeID: number) {
-        setSelectedPlace(placeID)
-    }
-
     if(!groupID) {
         return(
             <p>No group selected</p>
@@ -136,7 +132,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                         onChange={event => filter(event.target.value)}
                     ></Listbox.Input>
                     <Listbox.Content maxH="md">
-                        {collection.items.map((placeItem: {value: number, label: string}) =>
+                        {collection.items.map((placeItem: {value: number, label: string, description: string | null}) =>
                             <Box flex={1}>
                                 <Listbox.Item item={placeItem} key={placeItem.value} onClick={() => setSelectedPlace(placeItem.value)}>
                                     <Listbox.ItemText>{placeItem.label}</Listbox.ItemText>

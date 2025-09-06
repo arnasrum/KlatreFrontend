@@ -1,7 +1,7 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
-import "./ImageField.css";
+import { Box, VStack, HStack, Text, Input, Card, Badge, NativeSelect } from "@chakra-ui/react";
 import ReusableButton from "./ReusableButton.tsx";
-import  {default as Cropper} from 'react-easy-crop';
+import { default as Cropper } from 'react-easy-crop';
 import cropImageAsBase64 from "../scripts/CropImage.ts"
 import Modal from "./Modal.tsx";
 
@@ -34,7 +34,6 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null);
     const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | null>(null);
 
-    // Common aspect ratios
     const aspectRatios = [
         { label: "Original", value: null },
         { label: "Square (1:1)", value: 1 },
@@ -47,7 +46,6 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         { label: "9:16 (Portrait)", value: 9/16 },
     ];
 
-    // Expose input-like methods to parent via ref
     useImperativeHandle(ref, () => ({
         value: croppedImage,
         name: name || '',
@@ -70,46 +68,45 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         });
     }
 
-    // Calculate optimal crop container dimensions based on image aspect ratio
     const getCropContainerStyle = () => {
-        if (!imageDimensions) return { height: '450px' };
+        if (!imageDimensions) return { height: '500px', width: '700px' };
         
-        const maxWidth = window.innerWidth * 0.8; // 80% of viewport width
-        const maxHeight = window.innerHeight * 0.6; // 60% of viewport height
+        const maxWidth = Math.min(window.innerWidth * 0.7, 900);
+        const maxHeight = Math.min(window.innerHeight * 0.5, 600);
         
         let containerWidth, containerHeight;
         
-        if (imageDimensions.aspectRatio > 1) {
-            // Landscape image
-            containerWidth = Math.min(maxWidth, 800);
-            containerHeight = containerWidth / imageDimensions.aspectRatio;
-            if (containerHeight > maxHeight) {
-                containerHeight = maxHeight;
-                containerWidth = containerHeight * imageDimensions.aspectRatio;
-            }
+        if (imageDimensions.aspectRatio > maxWidth / maxHeight) {
+            containerWidth = maxWidth;
+            containerHeight = maxWidth / imageDimensions.aspectRatio;
         } else {
-            // Portrait image
-            containerHeight = Math.min(maxHeight, 600);
-            containerWidth = containerHeight * imageDimensions.aspectRatio;
-            if (containerWidth > maxWidth) {
-                containerWidth = maxWidth;
-                containerHeight = containerWidth / imageDimensions.aspectRatio;
-            }
+            containerHeight = maxHeight;
+            containerWidth = maxHeight * imageDimensions.aspectRatio;
         }
         
+        containerWidth = Math.max(containerWidth, 400);
+        containerHeight = Math.max(containerHeight, 300);
+        
         return {
-            width: `${containerWidth}px`,
-            height: `${containerHeight}px`,
+            width: `${Math.round(containerWidth)}px`,
+            height: `${Math.round(containerHeight)}px`,
         };
     };
 
-    // Calculate minimum zoom to show entire image
     const getZoomLimits = () => {
-        if (!imageDimensions) return { min: 0.1, max: 3 };
+        if (!imageDimensions) return { min: 0.1, max: 5 };
         
-        // Allow zooming out to see the entire image plus some padding
-        const minZoom = 0.1;
-        const maxZoom = Math.max(3, Math.min(imageDimensions.width / 400, imageDimensions.height / 400));
+        const containerStyle = getCropContainerStyle();
+        const containerWidth = parseInt(containerStyle.width);
+        const containerHeight = parseInt(containerStyle.height);
+        
+        const scaleX = containerWidth / imageDimensions.width;
+        const scaleY = containerHeight / imageDimensions.height;
+        const minZoomToFit = Math.min(scaleX, scaleY);
+        
+        // Allow much more generous zoom range
+        const minZoom = Math.max(0.1, minZoomToFit * 0.5); // Allow zooming out more
+        const maxZoom = 10; // Allow more zoom in
         
         return { min: minZoom, max: maxZoom };
     };
@@ -126,7 +123,14 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                 try {
                     const dimensions = await getImageDimensions(imageSrc);
                     setImageDimensions(dimensions);
-                    setSelectedAspectRatio(dimensions.aspectRatio); // Default to original aspect ratio
+                    setSelectedAspectRatio(dimensions.aspectRatio);
+                    
+                    setTimeout(() => {
+                        const limits = getZoomLimits();
+                        const initialZoom = Math.max(limits.min, 0.5); // Start with reasonable zoom
+                        setZoom(initialZoom);
+                    }, 100);
+                    
                     setShowCropModal(true);
                 } catch (error) {
                     console.error("Error getting image dimensions:", error);
@@ -180,133 +184,245 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
 
     const handleAspectRatioChange = (aspectRatio: number | null) => {
         setSelectedAspectRatio(aspectRatio);
-        // Reset crop when aspect ratio changes
         setCrop({x: 0, y: 0});
-        setZoom(1);
+        
+        const limits = getZoomLimits();
+        if (zoom < limits.min) {
+            setZoom(limits.min);
+        }
+    };
+
+    // Reset zoom to fit image
+    const handleResetZoom = () => {
+        const limits = getZoomLimits();
+        setZoom(limits.min);
+        setCrop({x: 0, y: 0});
     };
 
     const zoomLimits = getZoomLimits();
     const cropContainerStyle = getCropContainerStyle();
 
     return (
-        <div>
-            {/* Hidden input to store the cropped image data for form submission */}
+        <VStack gap={4} align="stretch">
             <input type="hidden" name={name} value={croppedImage} />
 
             {!imgSource ? (
-                <div className="image-upload-container">
-                    <input type="file" accept="image/*" onChange={onSelectFile} />
-                </div>
+                <Card.Root p={4} borderStyle="dashed" borderWidth="2px" borderColor="gray.300">
+                    <Card.Body textAlign="center">
+                        <Text mb={3} color="gray.600">Upload an image</Text>
+                        <Input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={onSelectFile}
+                            border="none"
+                            p={0}
+                            _file={{
+                                border: "1px solid",
+                                borderColor: "gray.300",
+                                borderRadius: "md",
+                                p: 2
+                            }}
+                        />
+                    </Card.Body>
+                </Card.Root>
             ) : (
-                <div className="image-controls">
+                <VStack gap={3} align="stretch">
                     {imageDimensions && (
-                        <div className="image-info">
-                            <p>Original: {imageDimensions.width} × {imageDimensions.height} pixels</p>
-                            <p>Aspect Ratio: {imageDimensions.aspectRatio.toFixed(2)}:1</p>
-                        </div>
+                        <Card.Root size="sm">
+                            <Card.Body>
+                                <HStack justify="space-between" wrap="wrap" gap={2}>
+                                    <Badge colorPalette="blue">
+                                        {imageDimensions.width} × {imageDimensions.height}px
+                                    </Badge>
+                                    <Badge colorPalette="green">
+                                        Ratio: {imageDimensions.aspectRatio.toFixed(2)}:1
+                                    </Badge>
+                                </HStack>
+                            </Card.Body>
+                        </Card.Root>
                     )}
-                    <ReusableButton type="button" onClick={() => setShowCropModal(true)}>
-                        Edit Crop
-                    </ReusableButton>
-                    <ReusableButton type="button" onClick={handleDeleteClick}>
-                        Delete Image
-                    </ReusableButton>
-                </div>
+                    <HStack gap={3}>
+                        <ReusableButton onClick={() => setShowCropModal(true)}>
+                            Edit Crop
+                        </ReusableButton>
+                        <ReusableButton 
+                            onClick={handleDeleteClick}
+                            colorPalette="error"
+                            variant="outline"
+                        >
+                            Delete Image
+                        </ReusableButton>
+                    </HStack>
+                </VStack>
             )}
 
             {showCropModal && (
                 <Modal isOpen={showCropModal} title={"Crop Your Image"}>
                     <Modal.Body>
-                        {imageDimensions && (
-                            <div className="image-info-modal">
-                                <p>Image: {imageDimensions.width} × {imageDimensions.height} pixels (Ratio: {imageDimensions.aspectRatio.toFixed(2)}:1)</p>
-                            </div>
-                        )}
-                        
-                        <div className="aspect-ratio-selector">
-                            <label>Aspect Ratio:</label>
-                            <select 
-                                value={selectedAspectRatio || 'original'} 
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === 'original') {
-                                        handleAspectRatioChange(imageDimensions?.aspectRatio || null);
-                                    } else {
-                                        handleAspectRatioChange(parseFloat(value));
-                                    }
-                                }}
-                            >
-                                {aspectRatios.map((ratio, index) => (
-                                    <option 
-                                        key={index} 
-                                        value={ratio.value || 'original'}
+                        <VStack gap={4} align="stretch">
+                            {imageDimensions && (
+                                <Card.Root size="sm" bg="blue.50">
+                                    <Card.Body>
+                                        <Text fontSize="sm" textAlign="center">
+                                            Image: {imageDimensions.width} × {imageDimensions.height} pixels 
+                                            (Ratio: {imageDimensions.aspectRatio.toFixed(2)}:1)
+                                        </Text>
+                                    </Card.Body>
+                                </Card.Root>
+                            )}
+                            
+                            <HStack align="center" gap={3}>
+                                <Text fontWeight="semibold" minW="100px">Aspect Ratio:</Text>
+                                <NativeSelect.Root size="sm">
+                                    <NativeSelect.Field
+                                        value={selectedAspectRatio || 'original'} 
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === 'original') {
+                                                handleAspectRatioChange(imageDimensions?.aspectRatio || null);
+                                            } else {
+                                                handleAspectRatioChange(parseFloat(value));
+                                            }
+                                        }}
                                     >
-                                        {ratio.label}
-                                        {ratio.value === null && imageDimensions 
-                                            ? ` (${imageDimensions.aspectRatio.toFixed(2)}:1)`
-                                            : ''
-                                        }
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                        {aspectRatios.map((ratio, index) => (
+                                            <option 
+                                                key={index} 
+                                                value={ratio.value || 'original'}
+                                            >
+                                                {ratio.label}
+                                                {ratio.value === null && imageDimensions 
+                                                    ? ` (${imageDimensions.aspectRatio.toFixed(2)}:1)`
+                                                    : ''
+                                                }
+                                            </option>
+                                        ))}
+                                    </NativeSelect.Field>
+                                </NativeSelect.Root>
+                            </HStack>
 
-                        <div className="crop-container" style={cropContainerStyle}>
-                            <Cropper
-                                crop={crop}
-                                zoom={zoom}
-                                onCropChange={setCrop}
-                                onCropComplete={handleCropping}
-                                onZoomChange={setZoom}
-                                image={imgSource}
-                                aspect={selectedAspectRatio || undefined}
-                                objectFit="cover"
-                                cropShape="rect"
-                                restrictPosition={false}
-                                style={{ 
-                                    containerStyle: { 
-                                        width: "100%", 
-                                        height: "100%",
-                                        backgroundColor: "#f5f5f5"
-                                    }
-                                }}
-                                minZoom={zoomLimits.min}
-                                maxZoom={zoomLimits.max}
-                            />
-                        </div>
-                        
-                        <div className="zoom-control-container">
-                            <span>Zoom:</span>
-                            <input
-                                type="range"
-                                min={zoomLimits.min}
-                                max={zoomLimits.max}
-                                step={0.05}
-                                value={zoom}
-                                onChange={(e) => setZoom(parseFloat(e.target.value))}
-                                className="zoom-slider"
-                            />
-                            <span>{zoom.toFixed(2)}x</span>
-                        </div>
+                            <Box 
+                                style={cropContainerStyle}
+                                mx="auto"
+                                border="2px solid"
+                                borderColor="gray.300"
+                                borderRadius="lg"
+                                overflow="hidden"
+                                shadow="lg"
+                                bg="gray.900"
+                                position="relative"
+                            >
+                                <Cropper
+                                    crop={crop}
+                                    zoom={zoom}
+                                    onCropChange={setCrop}
+                                    onCropComplete={handleCropping}
+                                    onZoomChange={setZoom}
+                                    image={imgSource}
+                                    aspect={selectedAspectRatio || undefined}
+                                    objectFit="contain"
+                                    cropShape="rect"
+                                    restrictPosition={false}
+                                    style={{ 
+                                        containerStyle: { 
+                                            width: "100%", 
+                                            height: "100%",
+                                            backgroundColor: "#1a1a1a"
+                                        },
+                                        cropAreaStyle: {
+                                            border: "2px solid #ffffff",
+                                            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.5)"
+                                        },
+                                        mediaStyle: {
+                                            transform: `translate(${crop.x}px, ${crop.y}px) scale(${zoom})`,
+                                        }
+                                    }}
+                                    minZoom={zoomLimits.min}
+                                    maxZoom={zoomLimits.max}
+                                />
+                            </Box>
+                            
+                            <VStack gap={3}>
+                                <HStack gap={3} justify="center" w="full">
+                                    <Text fontWeight="medium" minW="60px">Zoom:</Text>
+                                    <Input
+                                        type="range"
+                                        min={zoomLimits.min}
+                                        max={zoomLimits.max}
+                                        step={0.05}
+                                        value={zoom}
+                                        onChange={(e) => setZoom(parseFloat(e.target.value))}
+                                        flex="1"
+                                        maxW="300px"
+                                    />
+                                    <Badge minW="60px" textAlign="center">
+                                        {zoom.toFixed(2)}x
+                                    </Badge>
+                                </HStack>
+                                
+                                <HStack justify="center" gap={2}>
+                                    <ReusableButton 
+                                        onClick={handleResetZoom}
+                                        size="sm"
+                                        variant="outline"
+                                    >
+                                        Reset Zoom
+                                    </ReusableButton>
+                                    <ReusableButton 
+                                        onClick={() => setZoom(1)}
+                                        size="sm"
+                                        variant="outline"
+                                    >
+                                        100%
+                                    </ReusableButton>
+                                </HStack>
+                            </VStack>
+                            
+                            <Text 
+                                fontSize="sm" 
+                                color="gray.600" 
+                                textAlign="center"
+                                bg="gray.50"
+                                p={3}
+                                borderRadius="md"
+                            >
+                                <strong>Instructions:</strong> Drag to move • Scroll or use slider to zoom • 
+                                White border shows crop area • Dark overlay will be removed
+                            </Text>
+                        </VStack>
                     </Modal.Body>
                     <Modal.Footer>
-                        <div className="crop-button-container">
-                            <ReusableButton type="button" onClick={handleCropCancel}>
+                        <HStack justify="center" w="full">
+                            <ReusableButton 
+                                onClick={handleCropCancel}
+                                variant="outline"
+                            >
                                 Cancel
                             </ReusableButton>
-                            <ReusableButton type="button" onClick={handleCropDone}>
+                            <ReusableButton onClick={handleCropDone}>
                                 Apply Crop
                             </ReusableButton>
-                        </div>
+                        </HStack>
                     </Modal.Footer>
                 </Modal>
             )}
+            
             {croppedImage && (
-                <div className="cropped-image-container">
-                    <img src={croppedImage} alt="Cropped" />
-                </div>
+                <Card.Root>
+                    <Card.Body>
+                        <img 
+                            src={croppedImage} 
+                            alt="Cropped" 
+                            style={{
+                                width: "100%",
+                                height: "auto",
+                                borderRadius: "8px"
+                            }}
+                        />
+                    </Card.Body>
+                </Card.Root>
             )}
-        </div>
+        </VStack>
     );
 });
 

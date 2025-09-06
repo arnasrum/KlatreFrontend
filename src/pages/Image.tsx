@@ -6,7 +6,6 @@ interface ImageProps {
 }
 
 
-
 export default function Image(props: ImageProps) {
     if (!props.data) {
         return(
@@ -43,7 +42,7 @@ export default function Image(props: ImageProps) {
     return(
         <img
             src={image}
-            alt="Boulder image"
+            alt="Route image"
             onError={handleImageError}
             onLoad={handleImageLoad}
             style={{ maxWidth: '300px', height: 'auto' }}
