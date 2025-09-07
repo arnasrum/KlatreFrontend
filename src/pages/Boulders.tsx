@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react'
-import DeleteButton from "../components/DeleteButton.tsx";
 import type Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import type {BoulderData} from "../interfaces/BoulderData.ts";
@@ -8,9 +7,9 @@ import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
 import {
     Container, Box, Flex, VStack, HStack,
-    Heading, Image, Text, Badge,
+    Heading, Image as ImageTag, Text, Badge,
     AspectRatio, Card, Separator,
-    SimpleGrid, Skeleton, Alert
+    SimpleGrid, Skeleton, Alert, Dialog, Portal
 } from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
@@ -33,6 +32,8 @@ function Boulders(props: BoulderProps) {
     const [pageToLast, setPageToLast] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
+    const [imageFullscreen, setImageFullscreen] = useState<boolean>(false)
+    const [imageInfo, setImageInfo] = useState<{ width: number; height: number; } | null>(null)
 
     useEffect(() => {
         // Reset page logic
@@ -139,6 +140,27 @@ function Boulders(props: BoulderProps) {
         setBoulderAction(action)
     }
 
+    function getImageInfo(imageUrl: string): Promise<{ width: number; height: number; }> {
+        return new Promise((resolve, reject) => {
+            const img = new Image()
+
+            img.onload = () => {
+                resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            };
+
+            img.onerror = (error) => {
+                reject(new Error(`Failed to load image from URL: ${imageUrl}. Error: ${error}`));
+            };
+
+            img.src = imageUrl;
+        });
+    }
+
+
+    if(boulders && boulderLength > page && boulders[page].image) {
+        const imageInfo = getImageInfo(boulders[page].image).then(info => setImageInfo(info))
+    }
+
     if (isLoading) {
         return (
             <Container maxW="6xl" py={8}>
@@ -171,10 +193,9 @@ function Boulders(props: BoulderProps) {
                         <AbstractForm fields={fields} handleSubmit={handleAddSubmit}
                             footer={
                                 <HStack justify="space-between" pt={4}>
-                                    <ReusableButton 
+                                    <ReusableButton
                                         onClick={() => setBoulderAction(null)}
                                         variant="outline"
-                                        colorPalette="gray"
                                     >
                                         Cancel
                                     </ReusableButton>
@@ -207,7 +228,7 @@ function Boulders(props: BoulderProps) {
                         <AbstractForm fields={editFields} handleSubmit={handleEditSubmit}
                             footer={
                                 <HStack justify="space-between" pt={4}>
-                                    <ReusableButton 
+                                    <ReusableButton
                                         onClick={() => setBoulderAction(null)}
                                         variant="outline"
                                     >
@@ -238,8 +259,8 @@ function Boulders(props: BoulderProps) {
                                         {boulders[page].name}
                                     </Heading>
                                     <HStack>
-                                        <Badge 
-                                            colorPalette="accent" 
+                                        <Badge
+                                            colorPalette="accent"
                                             size="lg"
                                             px={3}
                                             py={1}
@@ -247,8 +268,8 @@ function Boulders(props: BoulderProps) {
                                         >
                                             Grade: {boulders[page].grade}
                                         </Badge>
-                                        <Badge 
-                                            colorPalette="blue" 
+                                        <Badge
+                                            colorPalette="blue"
                                             variant="outline"
                                             size="sm"
                                         >
@@ -266,9 +287,9 @@ function Boulders(props: BoulderProps) {
                         {/* Left Column - Stats and Controls */}
                         <VStack align="stretch">
                             {/* Route Sends Component */}
-                            <RouteSends 
-                                boulderID={boulders[page].id} 
-                                routeSend={boulderData?.[page].routeSend} 
+                            <RouteSends
+                                boulderID={boulders[page].id}
+                                routeSend={boulderData?.[page].routeSend}
                             />
 
                             {/* Pagination Card */}
@@ -279,17 +300,17 @@ function Boulders(props: BoulderProps) {
                                     </Heading>
                                 </Card.Header>
                                 <Card.Body>
-                                    <Box 
-                                        display="flex" 
+                                    <Box
+                                        display="flex"
                                         justifyContent="center"
                                         p={4}
                                         bg="bg.subtle"
                                         borderRadius="md"
                                     >
-                                        <Pagination 
-                                            pageSize={1} 
-                                            count={boulderLength} 
-                                            onPageChange={setPage} 
+                                        <Pagination
+                                            pageSize={1}
+                                            count={boulderLength}
+                                            onPageChange={setPage}
                                             page={page}
                                         />
                                     </Box>
@@ -302,28 +323,30 @@ function Boulders(props: BoulderProps) {
                             <Card.Root overflow="hidden">
                                 <Card.Header>
                                     <Heading size="md" color="neutral.700">
-                                        Boulder Image
+                                        Route Image
                                     </Heading>
                                 </Card.Header>
                                 <Card.Body p={0}>
                                     {boulders[page].image ? (
                                         <AspectRatio ratio={4/3}>
-                                            <Image 
+                                            <ImageTag
                                                 src={boulders[page].image}
                                                 alt={`${boulders[page].name} boulder image`}
                                                 objectFit="cover"
                                                 width="full"
                                                 height="full"
                                                 transition="transform 0.3s"
+                                                cursor="pointer"
                                                 _hover={{
                                                     transform: "scale(1.02)"
                                                 }}
+                                                onClick={() => setImageFullscreen(true)}
                                             />
                                         </AspectRatio>
                                     ) : (
                                         <AspectRatio ratio={4/3}>
-                                            <Flex 
-                                                align="center" 
+                                            <Flex
+                                                align="center"
                                                 justify="center"
                                                 bg="bg.muted"
                                                 color="fg.muted"
@@ -332,7 +355,7 @@ function Boulders(props: BoulderProps) {
                                             >
                                                 <Box fontSize="4xl" opacity={0.5}>📸</Box>
                                                 <Text fontSize="sm">No image available</Text>
-                                                <ReusableButton 
+                                                <ReusableButton
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => handleBoulderActionClick("edit")}
@@ -344,13 +367,13 @@ function Boulders(props: BoulderProps) {
                                     )}
                                 </Card.Body>
                             </Card.Root>
-                            
+
                             {/* Image Info */}
                             {boulders[page].image && (
                                 <Card.Root size="sm">
                                     <Card.Body>
                                         <Text fontSize="sm" color="fg.muted" textAlign="center">
-                                            Click and hold to view full size image
+                                           Placeholder boulder description
                                         </Text>
                                     </Card.Body>
                                 </Card.Root>
@@ -366,10 +389,10 @@ function Boulders(props: BoulderProps) {
                             No Boulders Found
                         </Alert.Title>
                         <Alert.Description mb={4}>
-                            This climbing area doesn't have any boulders yet. 
+                            This climbing area doesn't have any boulders yet.
                             Would you like to add the first one?
                         </Alert.Description>
-                        <ReusableButton 
+                        <ReusableButton
                             colorPalette="brand"
                             onClick={() => handleBoulderActionClick("add")}
                         >
@@ -377,6 +400,59 @@ function Boulders(props: BoulderProps) {
                         </ReusableButton>
                     </Alert.Root>
                 </Container>
+            )}
+
+            {/* Fullscreen Image Modal */}
+            {imageFullscreen && boulders && boulders[page].image && (
+                <Dialog.Root open={imageFullscreen} onOpenChange={() => setImageFullscreen(false)}>
+                    <Dialog.Backdrop
+                        bg="blackAlpha.800"
+                        backdropFilter="blur(4px)"
+                        zIndex={9999}
+                    />
+                    <Dialog.Content
+                        p={4}
+                        bg="blackAlpha.900"
+                        border="none"
+                        zIndex={10000}
+                        position="fixed"
+                        top="50%"
+                        left="50%"
+                        transform="translate(-50%, -50%)"
+                        width="auto"
+                        maxW="95vw"
+                        maxH="95vh"
+                        overflow="auto"
+                    >
+                        <Dialog.Header pb={2}>
+                            <Dialog.Title color="white" fontSize="lg">
+                                {boulders[page].name}
+                            </Dialog.Title>
+                            <Dialog.CloseTrigger
+                                color="white"
+                                _hover={{ bg: "whiteAlpha.200" }}
+                                borderRadius="md"
+                                p={1}
+                            />
+                        </Dialog.Header>
+                            <Dialog.Body p={0}>
+                                <Box justifyContent={"center"} display={"flex"} alignItems={"center"} flex={1} overflow={"hidden"}>
+                                    <ImageTag
+                                        src={boulders[page].image}
+                                        alt={`${boulders[page].name} boulder image - fullscreen`}
+                                        objectFit="contain"
+                                        borderRadius="md"
+                                        onClick={() => setImageFullscreen(false)}
+                                        cursor="pointer"
+                                        width={imageInfo ? Math.min(imageInfo.width, window.innerWidth * 0.9) : "90vw"}
+                                        height={imageInfo ? Math.min(imageInfo.height, window.innerHeight * 0.85) : "85vh"}
+                                        maxW="75vw"
+                                        maxH="80vh"
+                                    />
+                                </Box>
+                        </Dialog.Body>
+                    </Dialog.Content>
+                </Dialog.Root>
             )}
         </>
     );
