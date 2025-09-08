@@ -33,7 +33,7 @@ function Boulders(props: BoulderProps) {
     const { user } = useContext(TokenContext)
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
     const [imageFullscreen, setImageFullscreen] = useState<boolean>(false)
-    const [imageInfo, setImageInfo] = useState<{ width: number; height: number; } | null>(null)
+    const [imageInfo, setImageInfo] = useState<{ width: number; height: number; aspectRatio: number } | null>(null)
 
     useEffect(() => {
         // Reset page logic
@@ -140,12 +140,12 @@ function Boulders(props: BoulderProps) {
         setBoulderAction(action)
     }
 
-    function getImageInfo(imageUrl: string): Promise<{ width: number; height: number; }> {
+    function getImageInfo(imageUrl: string): Promise<{ width: number; height: number; aspectRatio: number}> {
         return new Promise((resolve, reject) => {
             const img = new Image()
 
             img.onload = () => {
-                resolve({ width: img.naturalWidth, height: img.naturalHeight });
+                resolve({ width: img.naturalWidth, height: img.naturalHeight, aspectRatio: img.naturalWidth / img.naturalHeight });
             };
 
             img.onerror = (error) => {
@@ -158,7 +158,7 @@ function Boulders(props: BoulderProps) {
 
 
     if(boulders && boulderLength > page && boulders[page].image) {
-        const imageInfo = getImageInfo(boulders[page].image).then(info => setImageInfo(info))
+        getImageInfo(boulders[page].image).then(info => setImageInfo(info))
     }
 
     if (isLoading) {
@@ -426,7 +426,7 @@ function Boulders(props: BoulderProps) {
                     >
                         <Dialog.Header pb={2}>
                             <Dialog.Title color="white" fontSize="lg">
-                                {boulders[page].name}
+                                {/*boulders[page].name*/}
                             </Dialog.Title>
                             <Dialog.CloseTrigger
                                 color="white"
@@ -436,7 +436,7 @@ function Boulders(props: BoulderProps) {
                             />
                         </Dialog.Header>
                             <Dialog.Body p={0}>
-                                <Box justifyContent={"center"} display={"flex"} alignItems={"center"} flex={1} overflow={"hidden"}>
+                                <Box justifyContent={"center"} display={"flex"} alignItems={"center"} flex={1}>
                                     <ImageTag
                                         src={boulders[page].image}
                                         alt={`${boulders[page].name} boulder image - fullscreen`}
@@ -446,8 +446,9 @@ function Boulders(props: BoulderProps) {
                                         cursor="pointer"
                                         width={imageInfo ? Math.min(imageInfo.width, window.innerWidth * 0.9) : "90vw"}
                                         height={imageInfo ? Math.min(imageInfo.height, window.innerHeight * 0.85) : "85vh"}
-                                        maxW="75vw"
-                                        maxH="80vh"
+                                        maxW="75vw" maxH="80vh"
+                                        minW="50vw" minH="50vh"
+                                        aspectRatio={imageInfo.aspectRatio}
                                     />
                                 </Box>
                         </Dialog.Body>
