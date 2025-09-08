@@ -8,6 +8,7 @@ import Places from "./Places.tsx";
 import {apiUrl} from "../constants/global.ts"
 import {TokenContext} from "../Context.tsx"
 import { GroupContext } from "../contexts/GroupContext.tsx"
+import Settings from "./Settings.tsx";
 
 function Group() {
 
@@ -15,16 +16,13 @@ function Group() {
     const { groupUUID } = useParams()
     const groupData = currentGroup
     const groupID = groupData?.id
-    const location = useLocation()
 
     //const groupData = location.state?.groupData
     const [refetchGroups, setRefetchGroups] = useState<boolean>(false)
     const [ placeData, setPlaceData ] = useState<Array<any>>([])
     const { user, isLoading: userLoading } = useContext(TokenContext)
     const [ placeIsLoading, setPlaceIsLoading ] = useState<boolean>(true);
-    const isOnAddRoute = location.pathname.endsWith("/add")
 
-    console.log(groupData)
     useEffect(() => {
         if( (groupData && (groupData?.uuid !== groupUUID))  || !user?.access_token) {
             return
@@ -50,15 +48,9 @@ function Group() {
         setRefetchGroups((prev: boolean) => !prev)
     }
 
-    if(isLoading || placeIsLoading || userLoading) {
+    if(placeIsLoading) {
         return(
             <Spinner />
-        )
-    }
-
-    if(isOnAddRoute) {
-        return(
-            <Outlet />
         )
     }
 
@@ -81,6 +73,9 @@ function Group() {
                             </Tabs.List>
                             <Tabs.Content value="boulders">
                                 <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
+                            </Tabs.Content>
+                            <Tabs.Content value="settings">
+                                <Settings groupID={groupID} />
                             </Tabs.Content>
                         </Tabs.Root>
                     </Container>
