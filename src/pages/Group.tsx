@@ -75,7 +75,7 @@ function Group() {
                                 <Places refetchGroups={refetchGroupsHandler} groupID={groupID} places={placeData} />
                             </Tabs.Content>
                             <Tabs.Content value="settings">
-                                <Settings groupID={groupID} />
+                                <Settings groupID={groupID} places={placeData} />
                             </Tabs.Content>
                         </Tabs.Root>
                     </Container>

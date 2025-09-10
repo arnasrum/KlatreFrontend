@@ -1,12 +1,14 @@
 import React from 'react';
-import { Stack, Select, Portal, createListCollection } from "@chakra-ui/react"
+import { Stack, Select, Portal, createListCollection} from "@chakra-ui/react"
 
 interface SelectFieldProps {
     fields: Array<{label: string, value: string}>,
     value: string[],
     setValue: (val: string[]) => void,
     label?: string,
-    placeholder?: string
+    placeholder?: string,
+    disabled?: boolean
+    zIndex?: number,
 }
 
 function SelectField(props: SelectFieldProps) {
@@ -15,10 +17,13 @@ function SelectField(props: SelectFieldProps) {
         items: props.fields
     })
 
+
+
     return (
         <Stack gap="5" width="320px">
             <Select.Root key="outline"
                          variant="outline"
+                         disabled={props.disabled}
                          collection={fields}
                          value={props.value}
                          onValueChange={(e) => props.setValue(e.value)}
@@ -35,10 +40,10 @@ function SelectField(props: SelectFieldProps) {
                 </Select.Control>
                 <Portal>
                     <Select.Positioner>
-                        <Select.Content>
+                        <Select.Content zIndex={props.zIndex}>
                             {fields.items.map((item) => (
                                 <Select.Item item={item} key={item.value}>
-                                    {item.label}
+                                    {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
                                     <Select.ItemIndicator />
                                 </Select.Item>
                             ))}
