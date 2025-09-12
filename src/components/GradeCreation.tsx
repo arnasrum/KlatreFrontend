@@ -49,83 +49,70 @@ function GradeCreation({
         const minValue = customGrade.maxValue + 1
         const maxValue =  customGrade.maxValue + 2
         const grade: CustomGrade = {"id": customGradeID.current++, "gradeString": "", "minValue": minValue, "maxValue": maxValue}
+        if(grade.maxValue >= selectedGradeSystem.grades.length) {return}
         setCustomGrades([...customGrades, grade])
     }
 
-
-    function checkIfMoveIsValid(index: number, minMoved: boolean, maxMoved: boolean) {
-        if(index === 0 && customGrades.length === 1) {
-            return true
-        }
-        if(minMoved) {
-            const prevGrade = customGrades[index - 1]
-            return prevGrade.minValue != prevGrade.maxValue - 1
-        } else if(maxMoved) {
-            const nextGrade = customGrades[index + 1]
-            return nextGrade.minValue != nextGrade.maxValue - 1
-        }
-        return false
-    }
-
-
     function updateSlider(index: number, valueChangeDetails: ValueChangeDetails) {
-        const test = customGrades.map((grade, gradeIndex) => {
-            if(index == gradeIndex) {
-                let minMoved = false
-                let maxMoved = false
-                if(valueChangeDetails.value.length == 2) {
-                    minMoved = valueChangeDetails.value[0] != customGrades[index].minValue
-                }
-                if(index == 0 && valueChangeDetails.value[0] != grade.maxValue) {
-                    maxMoved = true
-                }
+        const { value } = valueChangeDetails;
+        // Use a temporary array to build the new state
+        const tempGrades = [...customGrades];
 
-                if(valueChangeDetails.value.length > 1 || valueChangeDetails.value.length == 0) {
-                    maxMoved = valueChangeDetails.value[1] != customGrades[index].maxValue
-                }
-                if(minMoved) {
-                    if(valueChangeDetails.value[0] > 1) {return grade}
-                    if(index == 0) {return grade}
-                    if(!checkIfMoveIsValid(index, minMoved, maxMoved) && valueChangeDetails) {return grade}
+        const [minValue, maxValue] = value;
+        if(minValue < 0 || maxValue < 0) {return}
+        const gradeToUpdate = tempGrades[index];
 
-                    grade.minValue = valueChangeDetails.value[0]
-                    const prevGrade = customGrades[index - 1]
-                    prevGrade.maxValue = grade.minValue - 1
-                    return grade
-                }
-                if(maxMoved) {
-                    if(index == 0) {
-                        if(valueChangeDetails.value[0] < customGrades[index].maxValue) {
-                            grade.maxValue = valueChangeDetails.value[0]
-                            if(customGrades.length > 1) {
-                                customGrades[index + 1].minValue = grade.maxValue + 1
-                            }
-                            return grade
-                        }
-                        if(!checkIfMoveIsValid(index, minMoved, maxMoved) && customGrades.length > 1) {return grade}
-                        grade.maxValue = valueChangeDetails.value[0]
-                        if(customGrades.length > 1) {
-                            customGrades[index + 1].minValue = grade.maxValue + 1
-                        }
-                    } else if(valueChangeDetails.value[1] < customGrades[index].maxValue) {
-                        grade.maxValue = valueChangeDetails.value[1]
-                        if(index < customGrades.length - 1) {
-                            customGrades[index + 1].minValue = grade.maxValue + 1
-                        }
-                    } else if(index == customGrades.length - 1) {
-                        grade.maxValue = valueChangeDetails.value[1]
-                    } else {
-                        if(!checkIfMoveIsValid(index, minMoved, maxMoved)) {return grade}
-                        grade.maxValue = valueChangeDetails.value[1]
-                        const nextGrade = customGrades[index + 1]
-                        nextGrade.minValue = grade.maxValue + 1
-                    }
+        // Check if the min value has changed and update the current grade
+        if (minValue !== undefined && minValue !== gradeToUpdate.minValue) {
+            if(minValue - 1 < 0) {return}
 
-                }
+            gradeToUpdate.minValue = minValue;
+
+            // Update the previous grade's max value immutably
+            if (index > 0) {
+                tempGrades[index - 1] = {
+                    ...tempGrades[index - 1],
+                    maxValue: minValue - 1
+                };
             }
-            return grade
-        })
-        setCustomGrades(test)
+        }
+
+        // Check if the max value has changed and update the current grade
+        const updatedMaxValue = value.length === 1 ? minValue : maxValue;
+
+        if (updatedMaxValue !== undefined && updatedMaxValue !== gradeToUpdate.maxValue) {
+            gradeToUpdate.maxValue = updatedMaxValue;
+
+            // Update the next grade's min value immutably
+            if (index < tempGrades.length - 1) {
+                tempGrades[index + 1] = {
+                    ...tempGrades[index + 1],
+                    minValue: updatedMaxValue + 1
+                };
+            }
+        }
+
+        // Final check to prevent overlap and ensure constraints
+        // This logic is crucial for handling large jumps
+        if (index > 0) {
+            const prevGrade = tempGrades[index - 1];
+            if (gradeToUpdate.minValue <= prevGrade.maxValue) {
+                // Clamp the min value of the current grade
+                if(prevGrade.maxValue + 1 > selectedGradeSystem.grades.length - 1) {return}
+                gradeToUpdate.minValue = prevGrade.maxValue + 1;
+            }
+        }
+
+        if (index < tempGrades.length - 1) {
+            const nextGrade = tempGrades[index + 1];
+            if (gradeToUpdate.maxValue >= nextGrade.minValue) {
+                // Clamp the max value of the current grade
+                if(nextGrade.minValue - 1 <= 0) {return}
+                gradeToUpdate.maxValue = nextGrade.minValue - 1;
+            }
+        }
+
+        setCustomGrades(tempGrades);
     }
 
 
@@ -154,6 +141,7 @@ function GradeCreation({
 
         return(
             <Box display={"flex"} key={customGrade.id} flexDir="row" p={4} width="auto">
+                <Input  placeholder={"Grade"} width="1/12" value={customGrade.gradeString} onChange={(e) => {updateGradeString(index, e.target.value)}} />
                 <Slider.Root
                     minStepsBetweenThumbs={1}
                     minW={"md"}
@@ -187,6 +175,10 @@ function GradeCreation({
         setCustomGrades(prev => prev.filter(grade => grade.id !== id))
     }
 
+    function updateGradeString(index: number, gradeString: string) {
+        customGrades[index].gradeString = gradeString
+        setCustomGrades([...customGrades])
+    }
 
     return (
         <Box>
