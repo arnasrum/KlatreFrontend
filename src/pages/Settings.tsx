@@ -103,8 +103,7 @@ export default function Settings(props: SettingsProps) {
             { modalIsOpen && (
                 <Modal isOpen={modalIsOpen} title={"Add New Grading System"}>
                     <Modal.Body>
-                        <GradeCreation gradeSystems={gradingSystems}/>
-
+                        <GradeCreation gradeSystems={gradingSystems.filter( item => item.isGlobal == true)} groupID={groupID}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <ReusableButton onClick={() => setModalIsOpen(false)}>Close</ReusableButton>
