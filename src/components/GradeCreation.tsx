@@ -1,11 +1,11 @@
 import React, {useRef, useState, useEffect, useContext} from "react"
 import {TokenContext} from "../Context.tsx"
 import {apiUrl} from "../constants/global.ts"
-import {Box, VStack, Button, HStack, Text, Field, Slider, Input, EmptyState} from "@chakra-ui/react"
+import {Separator, Box, VStack, Button, Field, Slider, Input, EmptyState} from "@chakra-ui/react"
 import SelectField from "./SelectField.tsx";
 import GradeSystem from "../interfaces/GradeSystem.ts";
-import {Grade} from "../interfaces/Grade.ts";
 import ReusableButton from "./ReusableButton.tsx";
+// @ts-ignore
 import { ValueChangeDetails } from "@chakra-ui/react"
 import { VscEmptyWindow } from "react-icons/vsc";
 import { toaster, Toaster } from "./ui/toaster.tsx";
@@ -52,7 +52,6 @@ function GradeCreation({
                 description: "Please select a grade system",
                 type: "error",
                 duration: 5000,
-                isClosable: true,
             })
             return
         }
@@ -85,27 +84,29 @@ function GradeCreation({
         setCustomGrades(tempGrades);
     }
 
-    function gradeSlider(index: number, customGrade: CustomGrade, referenceGradeSystem: GradeSystem): React.ReactNode {
-        if(!referenceGradeSystem) {return(<></>)}
-        const marks = referenceGradeSystem.grades.map((grade, index) => {
-            return {"label": grade.gradeString, "value": index}
-        })
-        const numGrades = marks.length;
-        const defaultValues = [0, 1]
-        const values = [customGrade.minValue, customGrade.maxValue]
+function gradeSlider(index: number, customGrade: CustomGrade, referenceGradeSystem: GradeSystem): React.ReactNode {
+    if(!referenceGradeSystem) {return(<></>)}
+    const marks = referenceGradeSystem.grades.map((grade, index) => {
+        return {"label": grade.gradeString, "value": index}
+    })
+    const numGrades = marks.length;
+    const defaultValues = [0, 1]
+    const values = [customGrade.minValue, customGrade.maxValue]
 
-        return(
-            <Box display={"flex"} key={customGrade.id} flexDir="row" p={4} width="auto">
-                <Field.Root width="1/12" required>
-                    <Field.RequiredIndicator/>
-                    <Input
-                        placeholder={"Grade"}
-                        //width="1/12"
-                        value={customGrade.gradeString}
-                        onChange={(e) => {updateGradeString(index, e.target.value)}}
-                    />
-                    <Field.ErrorText>Please give the grade a name</Field.ErrorText>
-                </Field.Root>
+    return(
+        <Box key={customGrade.id} p={4} width="auto">
+            <Field.Root width="full" required mb={4}>
+                <Input
+
+                    placeholder={"Grade"}
+                    value={customGrade.gradeString}
+                    onChange={(e) => {updateGradeString(index, e.target.value)}}
+                />
+                <Field.ErrorText>Please give the grade a name</Field.ErrorText>
+            </Field.Root>
+            
+            {/* Slider and remove button on the same line */}
+            <Box display="flex" flexDir="row" alignItems="center" gap={2}>
                 <Slider.Root
                     minStepsBetweenThumbs={0}
                     minW={"md"}
@@ -117,7 +118,7 @@ function GradeCreation({
                     defaultValue={defaultValues}
                     value={values}
                     onValueChange={(details) => {updateSlider(index, details)}}
-                    m={2}
+                    flex="1"
                 >
                     <Slider.Control>
                         <Slider.Track>
@@ -131,10 +132,12 @@ function GradeCreation({
                         bgColor="fg.error"
                         color="fg"
                         onClick={() => {removeGrade(customGrade.id)}}
+                        flexShrink={0}
                 >X</Button>
             </Box>
-        )
-    }
+        </Box>
+    )
+}
 
     function removeGrade(id: number) {
         setCustomGrades(prev => prev.filter(grade => grade.id !== id))
@@ -147,18 +150,21 @@ function GradeCreation({
 
     function submit() {
         if(customGrades && customGrades.filter(grade => grade.gradeString == "").length > 0) {
-            console.error("Grade string cannot be empty")
             toaster.create({
                 title: "Failed to add the custom grading system",
                 description: "Custom Grades have to contain a name",
                 type: "error",
                 duration: 5000,
-                isClosable: true,
             })
             return
         }
         if(!customGradeSystemName) {
-            console.error("Grade system name cannot be empty")
+            toaster.create({
+                title: "Failed to add the custom grading system",
+                description: "Please give the custom grading system a name",
+                type: "error",
+                duration: 5000,
+            })
             return
         }
 
@@ -167,7 +173,7 @@ function GradeCreation({
         const newGrades = customGrades.map((grade) => {
             return { name: grade.gradeString, from: grade.minValue.toString(), to: grade.maxValue.toString()}
         })
-        formData.set("groupId", groupID)
+        formData.set("groupId", groupID.toString())
         formData.set("referenceGradeSystemID", referenceGradeSystem[0])
         formData.set("newGradeSystemName", customGradeSystemName)
         formData.set("grades", JSON.stringify(newGrades))
@@ -184,7 +190,7 @@ function GradeCreation({
 
     return (
         <Box>
-            <VStack gap={6} align="stretch">
+            <VStack align="stretch">
                 <Box display={"flex"} flexDir="row" p={4} width="auto" >
                     <SelectField
                         fields={gradeSystemFields}
@@ -203,6 +209,7 @@ function GradeCreation({
                         ></Input>
                     </label>
                 </Box>
+                <Separator m={2} />
                 <ReusableButton onClick={() => addCustomGrade()}>Add Custom Grade</ReusableButton>
                 {customGrades.map((grade, index) => {
                     return(gradeSlider(index, grade, selectedGradeSystem as GradeSystem))

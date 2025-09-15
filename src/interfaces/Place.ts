@@ -1,6 +1,6 @@
 
 interface Place {
-S    gradingSystem: number;
+    gradingSystem: number,
     id: number,
     name: string,
 }
