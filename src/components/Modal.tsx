@@ -1,41 +1,43 @@
 import React, { useState } from "react"
-import { 
-  Dialog,
+import {
+    Dialog, Box, Portal
 } from "@chakra-ui/react"
 import "./Modal.css"
 
 interface ModalProps {
-  isOpen: boolean,
-  title: string,
-  children: React.ReactNode,
-  footer?: React.ReactNode,
+    isOpen: boolean,
+    title: string,
+    children: React.ReactNode,
+    footer?: React.ReactNode,
 }
 
 
 function Modal(props: ModalProps) {
 
-  const { isOpen, title, children, footer } = props
+    const { isOpen, title, children, footer } = props
 
-  return (
-    <div className="full-overlay-modal">
-      <Dialog.Root open={isOpen}>
-        <Dialog.Content>
-          <Dialog.Header>
-            <Dialog.Title>{title}</Dialog.Title>
-            <Dialog.CloseTrigger />
-          </Dialog.Header>
-          <Dialog.Body>
-            {children}
-          </Dialog.Body>
-          { footer && (
-          <Dialog.Footer>
-            {footer}
-          </Dialog.Footer>
-          )}
-        </Dialog.Content>
-      </Dialog.Root>
-    </div>
-  )
+    return (
+        <Dialog.Root open={isOpen} size="xl">
+            <Dialog.Trigger/>
+            <Dialog.Backdrop/>
+            <Dialog.Positioner>
+                <Dialog.Content>
+                    <Dialog.Header>
+                        <Dialog.Title>{title}</Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body overflow="auto">
+                        {children}
+                    </Dialog.Body>
+                    { footer && (
+                        <Dialog.Footer>
+                            <Dialog.CloseTrigger />
+                            {footer}
+                        </Dialog.Footer>
+                    )}
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Dialog.Root>
+    )
 }
 
 const ModalBody = ({ children }: { children: React.ReactNode }) => children;

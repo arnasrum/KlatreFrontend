@@ -115,8 +115,8 @@ function Boulders(props: BoulderProps) {
                 })
             }
         )
-            .then(_ => refetchBoulders())
-            .then(_ => {
+            .then(() => refetchBoulders())
+            .then(() => {
                 if(page == 0) {
                     return
                 }
@@ -164,10 +164,10 @@ function Boulders(props: BoulderProps) {
     if (isLoading) {
         return (
             <Container maxW="6xl" py={8}>
-                <VStack spacing={6}>
+                <VStack gap={6}>
                     <Skeleton height="60px" width="full" />
-                    <SimpleGrid columns={{base: 1, lg: 2}} spacing={8} width="full">
-                        <VStack spacing={4}>
+                    <SimpleGrid columns={{base: 1, lg: 2}} gap={8} width="full">
+                        <VStack gap={4}>
                             <Skeleton height="200px" width="full" />
                             <Skeleton height="150px" width="full" />
                             <Skeleton height="50px" width="full" />

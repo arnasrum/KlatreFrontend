@@ -35,6 +35,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         "initialItems": places.map((place: Place) => {return {"value": place.id, "label": place.name}}),
         filter: contains
     })
+    console.log("places", places)
 
 
     useEffect(() => {
@@ -87,7 +88,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         {"label": "Description", "type": "string", "name": "description"},
     ]
 
-    function handleAddPlaceSubmit(event: React.FormEvent<any>) {
+    function handleAddPlaceSubmit(event: React.FormEvent<never>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         fetch(`http://localhost:8080/groups/place?groupID=${groupID}`, {
@@ -102,8 +103,8 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
             })
         })
             //.then(response => response.json())
-            .then(_ => refetchGroups())
-            .then(_ => setShowPlaceModal(false))
+            .then(() => refetchGroups())
+            .then(() => setShowPlaceModal(false))
             .catch(error => console.error(error))
 
     }

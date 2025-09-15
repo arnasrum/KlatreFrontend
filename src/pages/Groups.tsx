@@ -159,7 +159,7 @@ function Groups() {
 
     function navigateToGroup(uuid: string, group: Group) {
         setCurrentGroup(group)
-        navigate(`/groups/${uuid}?id=${group.id}`)
+        navigate(`/groups/${uuid}`)
     }
 
     return (
