@@ -11,20 +11,24 @@ import { VscEmptyWindow } from "react-icons/vsc";
 import { toaster, Toaster } from "./ui/toaster.tsx";
 
 interface CustomGrade {
-    id: number;
-    gradeString: string;
-    minValue: number;
-    maxValue: number;
+    id: number,
+    gradeString: string,
+    minValue: number,
+    maxValue: number,
 }
 
 interface GradeCreationProps {
     gradeSystems: GradeSystem[],
     groupID: number,
+    modalSetter: (arg: boolean) => void,
+    refetch: (arg: (prev: boolean) => boolean) => void
 }
 
 function GradeCreation({
     gradeSystems,
-    groupID
+    groupID,
+    modalSetter,
+    refetch
 }: GradeCreationProps) {
     const [referenceGradeSystem, setReferenceGradeSystem] = useState<string[]>([])
     const [customGrades, setCustomGrades] = useState<Array<CustomGrade>>([])
@@ -105,7 +109,6 @@ function gradeSlider(index: number, customGrade: CustomGrade, referenceGradeSyst
                 <Field.ErrorText>Please give the grade a name</Field.ErrorText>
             </Field.Root>
             
-            {/* Slider and remove button on the same line */}
             <Box display="flex" flexDir="row" alignItems="center" gap={2}>
                 <Slider.Root
                     minStepsBetweenThumbs={0}
@@ -185,6 +188,8 @@ function gradeSlider(index: number, customGrade: CustomGrade, referenceGradeSyst
             }
         })
             .then(data => {console.log("data", data)})
+            .then(() => refetch((prev: boolean) => !prev))
+            .then(() => modalSetter(false))
             .catch(error => console.error(error))
     }
 

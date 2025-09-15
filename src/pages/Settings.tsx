@@ -25,6 +25,7 @@ export default function Settings(props: SettingsProps) {
     const [ selectedGradingSystem, setSelectedGradingSystem ] = useState<string[]>([])
     const [ modalIsOpen, setModalIsOpen ] = useState<boolean>(false)
     const [ modalMangeUsersModalIsOpen, setMangeUsersModalIsOpen ] = useState<boolean>(false)
+    const [ refetchGradingSystems, setRefetchGradingSystems ] = useState<boolean>(false)
     const { user, isLoading: userLoading } = useContext(TokenContext)
     const disable = !(selectedPlace && selectedPlace.length > 0)
 
@@ -54,7 +55,7 @@ export default function Settings(props: SettingsProps) {
         })
             .then(response => response.json())
             .then(data => setGradingSystems(data))
-    }, [groupID]);
+    }, [groupID, refetchGradingSystems]);
 
     // Transform grading systems to the format expected by SelectField
     const gradingSystemFields = gradingSystems.map(system => ({
@@ -68,7 +69,6 @@ export default function Settings(props: SettingsProps) {
         }
     })
 
-    console.log("place", places)
     function handleSubmit() {
         if(!selectedPlace || selectedPlace.length < 1) {
             toaster.create({
@@ -105,6 +105,45 @@ export default function Settings(props: SettingsProps) {
         }
     }
 
+    const addPlaceFields = [
+        {"label": "Place Name", "type": "string", "name": "name"},
+        {"label": "Description", "type": "string", "name": "description"},
+        {"label": "Grading System", "type": "select", "name": "gradingSystem", "options": gradingSystemFields,
+            "placeholder": "Select a grading system", "value": selectedGradingSystem, "setter": setSelectedGradingSystem,
+            "disabled": disable
+        },
+    ]
+
+
+    function formFooter(): React.ReactNode {
+        return(
+            <Box display="flex" justifyContent="space-between" alignItems="stretch" flexDirection="column" m={4} p={4}>
+                <Button
+                    size="sm"
+                    flexGrow={{base: 1, sm: 0}}
+                    alignSelf="center"
+                    variant="solid"
+                    colorPalette="blue"
+                    onClick={() => setModalIsOpen(true)}
+                    disabled={disable}
+                    marginBottom={4}
+
+                > Add Grading System</Button>
+
+                <Button
+                    onClick={() => setSelectedPlace([])}
+                    colorPalette="blue"
+                    marginBottom={2}
+                >Save</Button>
+                <Button
+                    onClick={() => setSelectedPlace([])}
+                    colorPalette="blue"
+                >Close</Button>
+
+            </Box>
+        )
+    }
+
 
     return(
         <>
@@ -133,28 +172,7 @@ export default function Settings(props: SettingsProps) {
                 <Box flexBasis="100%">
                     {selectedPlace && selectedPlace.length > 0 && (
                         <Box justifyContent="flex-start" display="flex" flexWrap="wrap">
-                            <Box marginLeft={4}>
-                                <SelectField
-                                    fields={gradingSystemFields}
-                                    setValue={setSelectedGradingSystem}
-                                    value={selectedGradingSystem}
-                                    label="Grading System"
-                                    placeholder="Select a grading system"
-                                    disabled={disable}
-                                />
-                            </Box>
-                            <Button
-                                size="sm"
-                                justifySelf={{base: "flex-start", sm: "center", md: "center"}}
-                                flexGrow={{base: 1, sm: 0}}
-                                alignSelf="flex-end"
-                                variant="solid"
-                                colorPalette="blue"
-                                onClick={() => setModalIsOpen(true)}
-                                disabled={disable}
-                                marginLeft={4}
-                                marginTop={4}
-                            > Add Grading System</Button>
+                            <AbstractForm fields={addPlaceFields} handleSubmit={handleSubmit} footer={formFooter()} />
                         </Box>
                     )}
                 </Box>
@@ -164,7 +182,12 @@ export default function Settings(props: SettingsProps) {
             { modalIsOpen && (
                 <Modal isOpen={modalIsOpen} title={"Add New Grading System"}>
                     <Modal.Body>
-                        <GradeCreation gradeSystems={gradingSystems.filter( item => item.isGlobal == true)} groupID={groupID}/>
+                        <GradeCreation
+                            gradeSystems={gradingSystems.filter( item => item.isGlobal == true)}
+                            groupID={groupID}
+                            modalSetter={setModalIsOpen}
+                            refetch={setRefetchGradingSystems}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <ReusableButton onClick={() => setModalIsOpen(false)}>Close</ReusableButton>

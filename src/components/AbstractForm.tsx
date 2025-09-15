@@ -2,11 +2,23 @@ import React from "react";
 import { Input, Field, VStack, Box } from "@chakra-ui/react";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
+import SelectField from "./SelectField.tsx";
 
 interface FormProps{
     fields: Array<InputField>,
     handleSubmit: (event: React.FormEvent) => void,
     footer?: React.ReactNode,
+}
+
+interface SelectFieldType {
+    fields: { label: string, value: string}[],
+    setValue: (value: string) => void,
+    name: string,
+    value: string,
+    label: string,
+    placeholder: string,
+    disabled: boolean,
+    type: "select"
 }
 
 function Form({fields, handleSubmit, footer}: FormProps) {
@@ -21,14 +33,35 @@ function Form({fields, handleSubmit, footer}: FormProps) {
          border="1px"
          borderColor="gray.200"
        >
-           <VStack spacing={4} align="stretch">
-               {fields.map((field: InputField, index: number) => {
+           <VStack gap={4} align="stretch">
+               {fields.map((field: (InputField), index: number) => {
                    if(field.type == "image") {
                         return(
                             <Box key={field.name || index}>
                                 <ImageField name="image" />
                             </Box>
                         );
+                   } else if(field.type == "select") {
+                        return(
+                            <Field.Root key={field.name || index}>
+                                <Field.Label
+                                    fontWeight="semibold"
+                                    color="gray.700"
+                                    mb={2}
+                                >
+                                    {field.label}
+                                    {field.required && <Field.RequiredIndicator color="red.500"/>}
+                                </Field.Label>
+                                <SelectField
+                                    fields={field.options}
+                                    setValue={field.setter}
+                                    value={field.value}
+                                    placeholder={field.placeholder}
+                                    disabled={field.disabled}
+                                />
+                            </Field.Root>
+
+                        )
                    } else {
                        return (
                            <Field.Root key={field.name || index} required={field.required}>

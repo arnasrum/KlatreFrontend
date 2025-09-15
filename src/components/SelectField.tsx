@@ -17,7 +17,9 @@ function SelectField(props: SelectFieldProps) {
         items: props.fields
     })
 
-
+    function capitalizeFirstLetter(text: string) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
 
     return (
         <Stack gap="5" width="320px">
@@ -32,7 +34,7 @@ function SelectField(props: SelectFieldProps) {
                 {props.label && <Select.Label>{props.label}</Select.Label>}
                 <Select.Control>
                     <Select.Trigger>
-                        <Select.ValueText placeholder={props.placeholder || "Select an option"} />
+                        {capitalizeFirstLetter(fields.items.find((item) => item.value === props.value[0])?.label || props.placeholder || "Select an option")}
                     </Select.Trigger>
                     <Select.IndicatorGroup>
                         <Select.Indicator />
@@ -43,7 +45,7 @@ function SelectField(props: SelectFieldProps) {
                         <Select.Content zIndex={props.zIndex}>
                             {fields.items.map((item) => (
                                 <Select.Item item={item} key={item.value}>
-                                    {item.label.charAt(0).toUpperCase() + item.label.slice(1)}
+                                    {capitalizeFirstLetter(item.label)}
                                     <Select.ItemIndicator />
                                 </Select.Item>
                             ))}
