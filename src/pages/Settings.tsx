@@ -8,9 +8,9 @@ import Place from "../interfaces/Place.ts"
 import ReusableButton from "../components/ReusableButton.tsx";
 import Modal from "../components/Modal.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import GradeCreation from "../components/GradeCreation.tsx";
 import { toaster, Toaster} from "../components/ui/toaster.tsx";
 import MangeUsers from "../components/ManageUsers.tsx";
+import ManageGradingSystems from "../components/ManageGradingSystems.tsx";
 
 interface SettingsProps {
     groupID: number
@@ -182,12 +182,8 @@ export default function Settings(props: SettingsProps) {
             { modalIsOpen && (
                 <Modal isOpen={modalIsOpen} title={"Add New Grading System"}>
                     <Modal.Body>
-                        <GradeCreation
-                            gradeSystems={gradingSystems.filter( item => item.isGlobal == true)}
-                            groupID={groupID}
-                            modalSetter={setModalIsOpen}
-                            refetch={setRefetchGradingSystems}
-                        />
+                        <ManageGradingSystems gradingSystems={gradingSystems} groupID={groupID} modalSetter={setModalIsOpen} refetch={setRefetchGradingSystems} />
+
                     </Modal.Body>
                     <Modal.Footer>
                         <ReusableButton onClick={() => setModalIsOpen(false)}>Close</ReusableButton>
