@@ -22,7 +22,7 @@ interface BoulderProps{
     boulderData: Array<BoulderData> | undefined
     isLoading?: boolean
     placeID: number,
-    grades: Grade[] | undefined,
+    grades: Grade[],
     refetchBoulders: () => void
 }
 
@@ -133,7 +133,6 @@ function Boulders(props: BoulderProps) {
             })
     }
 
-
     const gradeOptions = props.grades.map((grade: Grade) => {return {label: grade.gradeString, value: grade.id.toString()}})
 
     const fields = [
@@ -226,47 +225,53 @@ function Boulders(props: BoulderProps) {
         )
     }
 
+    let gradeString = ""
+    if(boulders && boulderLength > 0 && page < boulderLength) {
+        gradeString = props.grades.find(item => item.id == boulders[page].grade)?.gradeString || ""
+    }
     if(boulderAction === "edit") {
         const editFields = fields.map((field: InputField) => {
 
-            if(field.name === "grade") {
+            if(field.name === "grade" && props.grades.length > 0) {
                 return {...field, required: false, placeholder: props.grades.find(item => item.id == boulders[page].grade).gradeString}
             }
             return {...field, required: false, placeholder: boulders[page][field.name] || ""}
         })
-        return(
-            <Container maxW="2xl" py={8}>
-                <Card.Root>
-                    <Card.Header textAlign="center">
-                        <Heading size="lg" color="brand.600">Edit Boulder</Heading>
-                        <Text color="fg.muted" mt={2}>
-                            Update boulder information
-                        </Text>
-                    </Card.Header>
-                    <Card.Body>
-                        <AbstractForm fields={editFields} handleSubmit={handleEditSubmit}
-                            footer={
-                                <HStack justify="space-between" pt={4}>
-                                    <ReusableButton
-                                        onClick={() => {
-                                            setBoulderAction(null)
-                                            setSelectedGrade([])
-                                        }}
-                                        variant="outline"
-                                    >
-                                        Cancel
-                                    </ReusableButton>
-                                    <ReusableButton type="submit" colorPalette="brand">
-                                        Save Changes
-                                    </ReusableButton>
-                                </HStack>
-                            }
-                        />
-                    </Card.Body>
-                </Card.Root>
-            </Container>
-        )
-    }
+            return (
+                <Container maxW="2xl" py={8}>
+                    <Card.Root>
+                        <Card.Header textAlign="center">
+                            <Heading size="lg" color="brand.600">Edit Boulder</Heading>
+                            <Text color="fg.muted" mt={2}>
+                                Update boulder information
+                            </Text>
+                        </Card.Header>
+                        <Card.Body>
+                            <AbstractForm
+                                fields={editFields}
+                                handleSubmit={handleEditSubmit}
+                                footer={
+                                    <HStack justify="space-between" pt={4}>
+                                        <ReusableButton
+                                            onClick={() => {
+                                                setBoulderAction(null)
+                                                setSelectedGrade([])
+                                            }}
+                                            variant="outline"
+                                        >
+                                            Cancel
+                                        </ReusableButton>
+                                        <ReusableButton type="submit" colorPalette="brand">
+                                            Save Changes
+                                        </ReusableButton>
+                                    </HStack>
+                                }
+                            />
+                        </Card.Body>
+                    </Card.Root>
+                </Container>
+            )
+        }
 
     return(
         <>
@@ -288,8 +293,7 @@ function Boulders(props: BoulderProps) {
                                             py={1}
                                             borderRadius="full"
                                         >
-                                            {}
-                                            {props.grades.find(item => item.id == boulders[page].grade).gradeString}
+                                            {gradeString}
                                         </Badge>
                                         <Badge
                                             colorPalette="blue"

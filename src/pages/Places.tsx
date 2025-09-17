@@ -149,7 +149,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                 </Listbox.Root>
                 <ReusableButton>+Add Place</ReusableButton>
             </Box>
-            {selectedPlace &&
+            {selectedPlace && grades &&
                 <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler} grades={grades}/>
             }
         </Container>
