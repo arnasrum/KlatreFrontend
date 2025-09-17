@@ -21,7 +21,7 @@ interface GradeCreationProps {
     gradeSystems: GradeSystem[],
     groupID: number,
     modalSetter: (arg: boolean) => void,
-    refetch: (arg: (prev: boolean) => boolean) => void,
+    refetch: () => void,
 }
 
 function GradeCreation({
@@ -112,7 +112,6 @@ function GradeCreation({
             <Box key={customGrade.id} p={4} width="auto">
                 <Field.Root width="full" required mb={4}>
                     <Input
-
                         placeholder={"Grade"}
                         value={customGrade.gradeString}
                         onChange={(e) => {
@@ -197,7 +196,7 @@ function GradeCreation({
         formData.set("referenceGradeSystemID", referenceGradeSystem[0])
         formData.set("newGradeSystemName", customGradeSystemName)
         formData.set("grades", JSON.stringify(newGrades))
-        fetch(`${apiUrl}/api/gradesystems/grades`, {
+        fetch(`${apiUrl}/api/gradingSystems/grades`, {
             method: "POST",
             body: formData,
             headers: {
@@ -207,8 +206,13 @@ function GradeCreation({
             .then(data => {
                 console.log("data", data)
             })
-            .then(() => refetch((prev: boolean) => !prev))
+            .then(() => refetch())
             .then(() => modalSetter(false))
+            .then(() => toaster.create({
+                title: "Custom Grade System Created",
+                description: "The custom grade system has been created",
+                type: "success",
+            }))
             .catch(error => console.error(error))
     }
 

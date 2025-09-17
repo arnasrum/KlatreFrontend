@@ -1,18 +1,18 @@
 import {Box, Heading, Tabs} from "@chakra-ui/react";
-import React, {useState} from "react";
+import React, {Dispatch, SetStateAction, useState} from "react";
 import GradeCreation from "./GradeCreation.tsx";
 import GradeSystem from "../interfaces/GradeSystem.ts";
+import EditGradingSystem from "./EditGradingSystem.tsx";
 
 interface ManageGradingSystemsProps {
     gradingSystems: GradeSystem[],
-    groupID: string,
-    modalSetter: (value: boolean) => void,
-    refetch: () => void,
+    groupID: number,
+    refetch: () => void
 }
 
 
 function ManageGradingSystems(
-    {gradingSystems, groupID, modalSetter, refetch}: ManageGradingSystemsProps
+    {gradingSystems, groupID, refetch}: ManageGradingSystemsProps
 ) {
 
     const [currentTab, setCurrentTab] = useState<"add" | "edit">("add");
@@ -28,7 +28,11 @@ function ManageGradingSystems(
                     <GradeCreation gradeSystems={gradingSystems.filter(item => item.isGlobal == true)} groupID={groupID} modalSetter={() => {}} refetch={refetch}/>
                 </Tabs.Content>
                 <Tabs.Content value="edit">
-                    <Heading>Edit</Heading>
+                    <EditGradingSystem
+                        groupID={groupID}
+                        gradeSystems={gradingSystems.filter(item => item.isGlobal == false)}
+                        refetch={refetch}
+                    />
                 </Tabs.Content>
             </Tabs.Root>
         </Box>

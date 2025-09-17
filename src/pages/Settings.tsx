@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {Box, Select, Button, Heading, Separator} from "@chakra-ui/react";
+import {Box, Button, Heading, Separator} from "@chakra-ui/react";
 import SelectField from "../components/SelectField";
 import {apiUrl} from "../constants/global.ts";
 import {TokenContext} from "../Context.tsx";
@@ -26,7 +26,7 @@ export default function Settings(props: SettingsProps) {
     const [ modalIsOpen, setModalIsOpen ] = useState<boolean>(false)
     const [ modalMangeUsersModalIsOpen, setMangeUsersModalIsOpen ] = useState<boolean>(false)
     const [ refetchGradingSystems, setRefetchGradingSystems ] = useState<boolean>(false)
-    const { user, isLoading: userLoading } = useContext(TokenContext)
+    const { user } = useContext(TokenContext)
     const disable = !(selectedPlace && selectedPlace.length > 0)
 
 
@@ -41,6 +41,9 @@ export default function Settings(props: SettingsProps) {
         setSelectedGradingSystem([selectPlaceObject.gradingSystem.toString() || ""])
     }, [selectedPlace])
 
+    function refetchGradingSystemsHandler() {
+        setRefetchGradingSystems((prev: boolean) => !prev)
+    }
 
     useEffect(() => {
         if(!groupID) {
@@ -182,8 +185,7 @@ export default function Settings(props: SettingsProps) {
             { modalIsOpen && (
                 <Modal isOpen={modalIsOpen} title={"Add New Grading System"}>
                     <Modal.Body>
-                        <ManageGradingSystems gradingSystems={gradingSystems} groupID={groupID} modalSetter={setModalIsOpen} refetch={setRefetchGradingSystems} />
-
+                        <ManageGradingSystems gradingSystems={gradingSystems} groupID={groupID} refetch={refetchGradingSystemsHandler} />
                     </Modal.Body>
                     <Modal.Footer>
                         <ReusableButton onClick={() => setModalIsOpen(false)}>Close</ReusableButton>
