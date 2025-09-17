@@ -8,20 +8,21 @@ interface FormProps{
     fields: Array<InputField>,
     handleSubmit: (event: React.FormEvent) => void,
     footer?: React.ReactNode,
+    width?: string
 }
 
 interface SelectFieldType {
-    fields: { label: string, value: string}[],
+    options: { label: string, value: string}[],
+    value: string,
     setValue: (value: string) => void,
     name: string,
-    value: string,
     label: string,
     placeholder: string,
     disabled: boolean,
     type: "select"
 }
 
-function Form({fields, handleSubmit, footer}: FormProps) {
+function Form({fields, handleSubmit, footer, width}: FormProps) {
    return(
        <Box 
          as="form" 
@@ -32,6 +33,7 @@ function Form({fields, handleSubmit, footer}: FormProps) {
          shadow="md"
          border="1px"
          borderColor="gray.200"
+         w={width}
        >
            <VStack gap={4} align="stretch">
                {fields.map((field: (InputField), index: number) => {
@@ -43,7 +45,7 @@ function Form({fields, handleSubmit, footer}: FormProps) {
                         );
                    } else if(field.type == "select") {
                         return(
-                            <Field.Root key={field.name || index}>
+                            <Field.Root key={field.name || index} width="full" required={field.required} w="full">
                                 <Field.Label
                                     fontWeight="semibold"
                                     color="gray.700"
@@ -58,6 +60,7 @@ function Form({fields, handleSubmit, footer}: FormProps) {
                                     value={field.value}
                                     placeholder={field.placeholder}
                                     disabled={field.disabled}
+                                    width="full"
                                 />
                             </Field.Root>
 

@@ -2,7 +2,7 @@ import React, {useState, useEffect, useContext} from 'react';
 import {Box, Button, Heading, Separator} from "@chakra-ui/react";
 import SelectField from "../components/SelectField";
 import {apiUrl} from "../constants/global.ts";
-import {TokenContext} from "../Context.tsx";
+import {PlaceContext, TokenContext} from "../Context.tsx";
 import GradeSystem from "../interfaces/GradeSystem.ts";
 import Place from "../interfaces/Place.ts"
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -28,6 +28,7 @@ export default function Settings(props: SettingsProps) {
     const [ refetchGradingSystems, setRefetchGradingSystems ] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
     const disable = !(selectedPlace && selectedPlace.length > 0)
+    const { refetchPlaces } = useContext(PlaceContext)
 
 
     useEffect(() => {
@@ -84,14 +85,14 @@ export default function Settings(props: SettingsProps) {
         let toSend = false
         const selectPlaceObject = places.filter(place => place.id === parseInt(selectedPlace[0]))[0]
         const formData = new FormData()
-        formData.append("groupId", groupID.toString())
+        //formData.append("groupId", groupID.toString())
         formData.append("placeId", selectedPlace[0])
         if(selectPlaceObject.gradingSystem != parseInt(selectedGradingSystem[0])) {
             formData.append("gradingSystemId", selectedGradingSystem[0])
             toSend = true
         }
         if(toSend) {
-            fetch(`${apiUrl}/api/groups/place`, {
+            fetch(`${apiUrl}/api/places/gradingSystem`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${user.access_token}`
@@ -104,6 +105,8 @@ export default function Settings(props: SettingsProps) {
                     }
                     return response.json()
                 })
+                .then(() => refetchPlaces())
+                .then(() => toaster.create({title: "Success", description: "Grading system updated", type: "success"}))
                 .catch(error => { toaster.create({title: "Error occurred", description: error.message, type: "error"})})
         }
     }
@@ -134,7 +137,10 @@ export default function Settings(props: SettingsProps) {
                 > Add Grading System</Button>
 
                 <Button
-                    onClick={() => setSelectedPlace([])}
+                    onClick={() => {
+                        setSelectedPlace([])
+                        handleSubmit()
+                }}
                     colorPalette="blue"
                     marginBottom={2}
                 >Save</Button>
@@ -147,41 +153,39 @@ export default function Settings(props: SettingsProps) {
         )
     }
 
-
     return(
-        <>
-            <Heading>Group Settings</Heading>
-            <Separator m={4} />
-            <Box display="flex" flexWrap="wrap">
-                <Button
-                    colorPalette="blue"
-                    m={4}
-                    size="sm"
-                    onClick={() => setMangeUsersModalIsOpen(true)}
-                >Manage Members </Button>
+        <Box display="flex" flexWrap="wrap">
+            <Box flexBasis="100%">
+                <Heading>Group Settings</Heading>
+                <Separator m={4} />
+                <Box display="flex" flexWrap="wrap">
+                    <Button
+                        colorPalette="blue"
+                        m={4}
+                        size="sm"
+                        onClick={() => setMangeUsersModalIsOpen(true)}
+                    >Manage Members </Button>
+                </Box>
             </Box>
-            <div>Place Settings</div>
-            <Separator m={4} />
-            <Box display="flex" flexWrap="wrap">
-                <label>
-                    Select a place to edit
-                    <SelectField
-                        fields={placeFields}
-                        setValue={setSelectedPlace}
-                        value={selectedPlace}
-                        placeholder="Select a place to edit"
-                    />
-                </label>
-                <Box flexBasis="100%">
-                    {selectedPlace && selectedPlace.length > 0 && (
-                        <Box justifyContent="flex-start" display="flex" flexWrap="wrap">
-                            <AbstractForm fields={addPlaceFields} handleSubmit={handleSubmit} footer={formFooter()} />
-                        </Box>
-                    )}
+            <Box flexBasis="100%" w="1" justifyContent="center">
+                <div>Place Settings</div>
+                <Separator m={4} />
+                <Box display="flex" flexDirection="column" alignItems="center" >
+                    <Box w="1/2">
+                        <SelectField
+                            fields={placeFields}
+                            setValue={setSelectedPlace}
+                            value={selectedPlace}
+                            placeholder="Select a place to edit"
+                            width={"full"}
+                        />
+                        {selectedPlace && selectedPlace.length > 0 && (
+                            <AbstractForm fields={addPlaceFields} handleSubmit={handleSubmit} footer={formFooter()} width={"full"}/>
+                        )}
+                    </Box>
                 </Box>
             </Box>
 
-            <Button onClick={handleSubmit} size="md" m={4} colorPalette="blue">Save</Button>
             { modalIsOpen && (
                 <Modal isOpen={modalIsOpen} title={"Add New Grading System"}>
                     <Modal.Body>
@@ -203,6 +207,6 @@ export default function Settings(props: SettingsProps) {
                 </Modal>
             ) }
             <Toaster/>
-        </>
+        </Box>
     )
 }

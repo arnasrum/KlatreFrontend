@@ -9,6 +9,7 @@ interface SelectFieldProps {
     placeholder?: string,
     disabled?: boolean
     zIndex?: number,
+    width?: string,
 }
 
 function SelectField(props: SelectFieldProps) {
@@ -18,23 +19,36 @@ function SelectField(props: SelectFieldProps) {
     })
 
     function capitalizeFirstLetter(text: string) {
+        if (typeof text !== 'string' || text.length === 0) {
+            return text;
+        }
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
+    // Get the display text with proper fallbacks
+    const getDisplayText = () => {
+        const foundItem = fields.items.find((item) => item.value === props.value[0]);
+        if (foundItem?.label) {
+            return foundItem.label;
+        }
+        return props.placeholder || "Select an option";
+    };
+
     return (
-        <Stack gap="5" width="320px">
+        <Stack width={props.width}>
             <Select.Root key="outline"
                          variant="outline"
                          disabled={props.disabled}
                          collection={fields}
                          value={props.value}
                          onValueChange={(e) => props.setValue(e.value)}
+                         width="auto"
             >
                 <Select.HiddenSelect />
                 {props.label && <Select.Label>{props.label}</Select.Label>}
                 <Select.Control>
                     <Select.Trigger>
-                        {capitalizeFirstLetter(fields.items.find((item) => item.value === props.value[0])?.label || props.placeholder || "Select an option")}
+                        {capitalizeFirstLetter(getDisplayText())}
                     </Select.Trigger>
                     <Select.IndicatorGroup>
                         <Select.Indicator />

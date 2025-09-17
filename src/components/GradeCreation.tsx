@@ -220,22 +220,26 @@ function GradeCreation({
         <Box>
             <VStack align="stretch">
                 <Box display={"flex"} flexDir="row" p={4} width="auto">
-                    <SelectField
-                        fields={gradeSystemFields}
-                        value={referenceGradeSystem}
-                        setValue={setReferenceGradeSystem}
-                        label="Reference Grade System"
-                        zIndex={9000}
-                    />
-                    <label style={{justifySelf: "center", backgroundColor: ""}}>
-                        New Grade System Name:
-                        <Input
-                            placeholder={"New grading system name"}
-                            onChange={(event) => setCustomGradeSystemName(event.target.value)}
-                            m={5}
-                            required
-                        ></Input>
-                    </label>
+                    <Box w="1/2">
+                        <SelectField
+                            fields={gradeSystemFields}
+                            value={referenceGradeSystem}
+                            setValue={setReferenceGradeSystem}
+                            label="Reference Grade System"
+                            zIndex={9000}
+                        />
+                    </Box>
+                    <Box w="1/2">
+                        <label style={{justifySelf: "center", backgroundColor: ""}}>
+                            New Grade System Name:
+                            <Input
+                                placeholder={"New grading system name"}
+                                onChange={(event) => setCustomGradeSystemName(event.target.value)}
+                                m={5}
+                                required
+                            ></Input>
+                        </label>
+                    </Box>
                 </Box>
                 <Separator m={2}/>
                 <ReusableButton onClick={() => addCustomGrade()}>Add Custom Grade</ReusableButton>

@@ -59,7 +59,7 @@ function EditGradingSystem(
     }
 
     return (
-        <Box>
+        <Box m={4}>
             <SelectField
                 fields={gradeSystemFields}
                 value={selectedGradeSystem}

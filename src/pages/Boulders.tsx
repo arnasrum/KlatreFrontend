@@ -16,11 +16,13 @@ import AbstractForm from "../components/AbstractForm.tsx";
 import Pagination from "../components/Pagination.tsx";
 import {handleFormDataImage} from "../Helpers.ts";
 import InputField from "../interfaces/InputField.ts";
+import {Grade} from "../interfaces/Grade.ts";
 
 interface BoulderProps{
     boulderData: Array<BoulderData> | undefined
     isLoading?: boolean
     placeID: number,
+    grades: Grade[] | undefined,
     refetchBoulders: () => void
 }
 
@@ -34,6 +36,7 @@ function Boulders(props: BoulderProps) {
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
     const [imageFullscreen, setImageFullscreen] = useState<boolean>(false)
     const [imageInfo, setImageInfo] = useState<{ width: number; height: number; aspectRatio: number } | null>(null)
+    const [selectedGrade, setSelectedGrade] = useState<string[]>([])
 
     useEffect(() => {
         // Reset page logic
@@ -53,6 +56,7 @@ function Boulders(props: BoulderProps) {
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement)
         formData.set("placeID", placeID.toString())
+        formData.set("grade", selectedGrade.toString())
         handleFormDataImage(formData)
 
         fetch(`${apiUrl}/boulders/place/add`, {
@@ -65,6 +69,7 @@ function Boulders(props: BoulderProps) {
             .then(_ => {
                 setPageToLast(true)
                 setBoulderAction(null)
+                setSelectedGrade([])
                 refetchBoulders()
             })
             .catch(error => console.error(error))
@@ -79,6 +84,7 @@ function Boulders(props: BoulderProps) {
         handleFormDataImage(formData)
         formData.set("placeID", boulders[page].place.toString());
         formData.set("boulderID", boulders[page].id.toString());
+        formData.set("grade", selectedGrade.toString());
         formData.entries().forEach(entry => {
             if(!entry[1]) {
                 formData.delete(entry[0])
@@ -92,7 +98,10 @@ function Boulders(props: BoulderProps) {
             },
             body: formData
         })
-            .then(_ => refetchBoulders())
+            .then(_ => {
+                refetchBoulders()
+                setSelectedGrade([])
+            })
             .catch(error => console.error(error))
             .finally(() => {setBoulderAction(null)})
     }
@@ -124,9 +133,12 @@ function Boulders(props: BoulderProps) {
             })
     }
 
+
+    const gradeOptions = props.grades.map((grade: Grade) => {return {label: grade.gradeString, value: grade.id.toString()}})
+
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
-        {"label": "Grade", "type": "string", "name": "grade", "required": true},
+        {"label": "Grade", "type": "select", "name": "grade", "required": true, "options": gradeOptions, value: selectedGrade, setter: setSelectedGrade},
         {"label": "Image", "type": "image", "name": "image", "required": false, "accept": "image/*"},
     ]
 
@@ -194,7 +206,10 @@ function Boulders(props: BoulderProps) {
                             footer={
                                 <HStack justify="space-between" pt={4}>
                                     <ReusableButton
-                                        onClick={() => setBoulderAction(null)}
+                                        onClick={() => {
+                                            setBoulderAction(null)
+                                            setSelectedGrade([])}
+                                    }
                                         variant="outline"
                                     >
                                         Cancel
@@ -213,6 +228,10 @@ function Boulders(props: BoulderProps) {
 
     if(boulderAction === "edit") {
         const editFields = fields.map((field: InputField) => {
+
+            if(field.name === "grade") {
+                return {...field, required: false, placeholder: props.grades.find(item => item.id == boulders[page].grade).gradeString}
+            }
             return {...field, required: false, placeholder: boulders[page][field.name] || ""}
         })
         return(
@@ -229,7 +248,10 @@ function Boulders(props: BoulderProps) {
                             footer={
                                 <HStack justify="space-between" pt={4}>
                                     <ReusableButton
-                                        onClick={() => setBoulderAction(null)}
+                                        onClick={() => {
+                                            setBoulderAction(null)
+                                            setSelectedGrade([])
+                                        }}
                                         variant="outline"
                                     >
                                         Cancel
@@ -266,7 +288,8 @@ function Boulders(props: BoulderProps) {
                                             py={1}
                                             borderRadius="full"
                                         >
-                                            Grade: {boulders[page].grade}
+                                            {}
+                                            {props.grades.find(item => item.id == boulders[page].grade).gradeString}
                                         </Badge>
                                         <Badge
                                             colorPalette="blue"

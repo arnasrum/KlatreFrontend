@@ -35,8 +35,6 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         "initialItems": places.map((place: Place) => {return {"value": place.id, "label": place.name}}),
         filter: contains
     })
-    console.log("places", places)
-
 
     useEffect(() => {
         if(!selectedPlace) {
@@ -81,7 +79,11 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
             <p>No places</p>
         )
     }
-
+    console.log("places", places)
+    let grades = null
+    if(selectedPlace) {
+        grades = places.find(place => place.id == selectedPlace).gradingSystem.grades
+    }
 
     const addPlaceFields: Array<InputField> = [
         {"label": "Place Name", "type": "string", "name": "name"},
@@ -137,7 +139,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                             <Box flex={1}>
                                 <Listbox.Item item={placeItem} key={placeItem.value} onClick={() => setSelectedPlace(placeItem.value)}>
                                     <Listbox.ItemText>{placeItem.label}</Listbox.ItemText>
-                                    <Text color="fg.muted" fontSize="xs" mt={1}>{placeItem.description || "Placeholder description"}</Text>
+                                    <Text color="fg.muted" fontSize="xs" mt={1}>{placeItem.description || "No description"}</Text>
                                     <Listbox.ItemIndicator/>
                                 </Listbox.Item>
                             </Box>
@@ -148,14 +150,10 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                 <ReusableButton>+Add Place</ReusableButton>
             </Box>
             {selectedPlace &&
-                <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler}/>
+                <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler} grades={grades}/>
             }
         </Container>
     );
 }
-
-
-
-
 
 export default Places;
