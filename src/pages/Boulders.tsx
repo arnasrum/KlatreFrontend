@@ -137,6 +137,7 @@ function Boulders(props: BoulderProps) {
 
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
+        {"label": "Description", "type": "string", "name": "description", "required": false},
         {"label": "Grade", "type": "select", "name": "grade", "required": true, "options": gradeOptions, value: selectedGrade, setter: setSelectedGrade},
         {"label": "Image", "type": "image", "name": "image", "required": false, "accept": "image/*"},
     ]
@@ -400,7 +401,7 @@ function Boulders(props: BoulderProps) {
                                 <Card.Root size="sm">
                                     <Card.Body>
                                         <Text fontSize="sm" color="fg.muted" textAlign="center">
-                                           Placeholder boulder description
+                                            {boulders[page].description || "No description available"}
                                         </Text>
                                     </Card.Body>
                                 </Card.Root>

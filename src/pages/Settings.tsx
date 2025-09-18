@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {Box, Button, Heading, Separator} from "@chakra-ui/react";
-import SelectField from "../components/SelectField";
+
 import {apiUrl} from "../constants/global.ts";
 import {PlaceContext, TokenContext} from "../Context.tsx";
 import GradeSystem from "../interfaces/GradeSystem.ts";
@@ -8,9 +7,12 @@ import Place from "../interfaces/Place.ts"
 import ReusableButton from "../components/ReusableButton.tsx";
 import Modal from "../components/Modal.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import { toaster, Toaster} from "../components/ui/toaster.tsx";
 import MangeUsers from "../components/ManageUsers.tsx";
 import ManageGradingSystems from "../components/ManageGradingSystems.tsx";
+import {Box, Button, Heading, Separator} from "@chakra-ui/react";
+import SelectField from "../components/SelectField";
+import { toaster, Toaster} from "../components/ui/toaster.tsx";
+
 
 interface SettingsProps {
     groupID: number
@@ -73,7 +75,8 @@ export default function Settings(props: SettingsProps) {
         }
     })
 
-    function handleSubmit() {
+    function handleSubmit(event) {
+        event.preventDefault()
         if(!selectedPlace || selectedPlace.length < 1) {
             toaster.create({
                 title: "No place selected",
@@ -82,42 +85,68 @@ export default function Settings(props: SettingsProps) {
             })
             return
         }
-        let toSend = false
         const selectPlaceObject = places.filter(place => place.id === parseInt(selectedPlace[0]))[0]
         const formData = new FormData()
-        //formData.append("groupId", groupID.toString())
         formData.append("placeId", selectedPlace[0])
-        if(selectPlaceObject.gradingSystem != parseInt(selectedGradingSystem[0])) {
-            formData.append("gradingSystemId", selectedGradingSystem[0])
-            toSend = true
+        const selectedId = selectedGradingSystem[0]
+        const parsedId = parseInt(selectedId)
+        if (
+            selectedId &&
+            !isNaN(parsedId) &&
+            selectPlaceObject.gradingSystem.id !== parsedId
+        ) {
+            console.log("grading system changed")
+            console.log(selectedGradingSystem)
+            console.log("original", selectPlaceObject.gradingSystem.id)
+            console.log("new", parsedId)
+            formData.append("gradingSystemId", selectedId)
         }
-        if(toSend) {
-            fetch(`${apiUrl}/api/places/gradingSystem`, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `Bearer ${user.access_token}`
-                },
-                body: formData
+
+
+        if(event.target.description.value) {
+            formData.append("description", event.target.description.value)
+        }
+        if(event.target.name.value) {
+            formData.append("name", event.target.name.value)
+        }
+        let hasExtraFields = false
+        for (const [key] of formData.entries()) {
+            if (key !== "placeId") {
+                hasExtraFields = true
+                break
+            }
+        }
+        if (!hasExtraFields) {
+            toaster.create({
+                title: "No changes detected",
+                description: "Please modify at least one field before submitting.",
+                type: "error"
             })
-                .then(response => {
-                    if(!response.ok) {
-                        return response.json().then(json => {throw new Error(json.errorMessage)})
-                    }
-                    return response.json()
-                })
-                .then(() => refetchPlaces())
-                .then(() => toaster.create({title: "Success", description: "Grading system updated", type: "success"}))
-                .catch(error => { toaster.create({title: "Error occurred", description: error.message, type: "error"})})
+            return
         }
+        fetch(`${apiUrl}/api/places`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${user.access_token}`
+            },
+            body: formData
+        })
+            .then(response => {
+                if(!response.ok) {
+                    return response.json().then(json => {throw new Error(json.errorMessage)})
+                }
+                return response.json()
+            })
+            .then(() => toaster.create({title: "Success", description: "Route updated", type: "success"}))
+            .then(() => refetchPlaces())
+            .then(() => {setSelectedPlace([])})
+            .catch(error => { toaster.create({title: "Error occurred", description: error.message, type: "error"})})
     }
 
     const addPlaceFields = [
         {"label": "Place Name", "type": "string", "name": "name"},
         {"label": "Description", "type": "string", "name": "description"},
-        {"label": "Grading System", "type": "select", "name": "gradingSystem", "options": gradingSystemFields,
-            "placeholder": "Select a grading system", "value": selectedGradingSystem, "setter": setSelectedGradingSystem,
-            "disabled": disable
-        },
+        {"label": "Grading System", "type": "select", "name": "gradingSystem", "options": gradingSystemFields, "placeholder": "Select a grading system", "value": selectedGradingSystem, "setter": setSelectedGradingSystem, "disabled": disable},
     ]
 
 
@@ -137,18 +166,14 @@ export default function Settings(props: SettingsProps) {
                 > Add Grading System</Button>
 
                 <Button
-                    onClick={() => {
-                        setSelectedPlace([])
-                        handleSubmit()
-                }}
                     colorPalette="blue"
                     marginBottom={2}
+                    type="submit"
                 >Save</Button>
                 <Button
                     onClick={() => setSelectedPlace([])}
                     colorPalette="blue"
                 >Close</Button>
-
             </Box>
         )
     }
@@ -160,9 +185,7 @@ export default function Settings(props: SettingsProps) {
                 <Separator m={4} />
                 <Box display="flex" flexWrap="wrap">
                     <Button
-                        colorPalette="blue"
-                        m={4}
-                        size="sm"
+                        colorPalette="blue" m={4} size="sm"
                         onClick={() => setMangeUsersModalIsOpen(true)}
                     >Manage Members </Button>
                 </Box>

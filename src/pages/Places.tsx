@@ -14,8 +14,9 @@ import {
     useListCollection,
     Input,
     Text,
-    useFilter,
+    useFilter, VStack,
 } from "@chakra-ui/react"
+import Modal from "../components/Modal.tsx";
 
 interface PlacesProps {
     places?: Array<Place>
@@ -31,8 +32,10 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
     const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
     const { user } = useContext(TokenContext);
     const { contains } = useFilter({ sensitivity: "base" })
-    const {collection, filter} = useListCollection({
-        "initialItems": places.map((place: Place) => {return {"value": place.id, "label": place.name}}),
+    const { collection, filter } = useListCollection({
+        initialItems: places
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((place: Place) => ({ value: place.id, label: place.name })),
         filter: contains
     })
 
@@ -115,8 +118,16 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
         return(
             <>
                 <p>Add a place</p>
-                <AbstractForm fields={addPlaceFields} handleSubmit={handleAddPlaceSubmit} />
-                <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Close</ReusableButton>
+                <Modal isOpen={showPlaceModal} title="Add Place">
+                    <Modal.Body>
+                        <AbstractForm fields={addPlaceFields} handleSubmit={handleAddPlaceSubmit} footer={
+                            <VStack>
+                                <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Save</ReusableButton>
+                                <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Close</ReusableButton>
+                            </VStack>
+                        }/>
+                    </Modal.Body>
+                </Modal>
             </>
         )
     }
@@ -147,7 +158,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                         <Listbox.Empty>No places in group</Listbox.Empty>
                     </Listbox.Content>
                 </Listbox.Root>
-                <ReusableButton>+Add Place</ReusableButton>
+                <ReusableButton onClick={() => setShowPlaceModal(true)}>+Add Place</ReusableButton>
             </Box>
             {selectedPlace && grades &&
                 <Boulders placeID={selectedPlace} boulderData={boulders} refetchBoulders={refetchBouldersHandler} grades={grades}/>
