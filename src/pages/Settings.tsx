@@ -95,10 +95,6 @@ export default function Settings(props: SettingsProps) {
             !isNaN(parsedId) &&
             selectPlaceObject.gradingSystem.id !== parsedId
         ) {
-            console.log("grading system changed")
-            console.log(selectedGradingSystem)
-            console.log("original", selectPlaceObject.gradingSystem.id)
-            console.log("new", parsedId)
             formData.append("gradingSystemId", selectedId)
         }
 

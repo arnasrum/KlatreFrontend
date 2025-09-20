@@ -73,6 +73,7 @@ function Group() {
                                 <Tabs.List>
                                     <Tabs.Trigger value="boulders">Boulders</Tabs.Trigger>
                                     <Tabs.Trigger value="stats">Statistics</Tabs.Trigger>
+                                    <Tabs.Trigger value="sessions">Sessions</Tabs.Trigger>
                                     <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
                                 </Tabs.List>
                                 <Tabs.Content value="boulders">

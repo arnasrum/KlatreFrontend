@@ -31,7 +31,7 @@ function Boulders(props: BoulderProps) {
     const boulders: Array<Boulder> | undefined = boulderData?.map((boulder: BoulderData) => boulder.boulder)
     const boulderLength = boulders?.length || 0
     const [page, setPage] = useState<number>(0)
-    const [pageToLast, setPageToLast] = useState<boolean>(false)
+    const [boulderAdded, setBoulderAdded] = useState<boolean>(false)
     const { user } = useContext(TokenContext)
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
     const [imageFullscreen, setImageFullscreen] = useState<boolean>(false)
@@ -43,11 +43,10 @@ function Boulders(props: BoulderProps) {
     }, [placeID, boulderData]);
 
     useEffect(() => {
-        if(boulders && boulderLength > 0 && pageToLast) {
-            const lastPage = boulderLength - 1
-            if(page !== lastPage) {
-                setPage(lastPage)
-                setPageToLast(false)
+        if(boulders && boulderLength > 0 && boulderAdded) {
+            if(boulderAdded) {
+                setPage(0)
+                setBoulderAdded(false)
             }
         }
     }, [boulders])
@@ -67,7 +66,7 @@ function Boulders(props: BoulderProps) {
             body: formData
         })
             .then(_ => {
-                setPageToLast(true)
+                setBoulderAdded(true)
                 setBoulderAction(null)
                 setSelectedGrade([])
                 refetchBoulders()
