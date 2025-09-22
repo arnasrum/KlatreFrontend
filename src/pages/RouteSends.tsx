@@ -7,7 +7,6 @@ import {
     Stat,
     Card,
     SimpleGrid,
-    Button,
     Spinner,
     Editable,
     IconButton,
@@ -28,8 +27,31 @@ function RouteSends(props: RouteSendProps) {
     const { boulderID } = props
     const { user } = useContext(TokenContext)
     const [routeSend, setRouteSend] = useState<RouteSend | null>(null)
-    const [editing, setEditing] = useState<boolean>(false)
     const [attempts, setAttempts] = useState<number>(0)
+    const [refetch, setRefetch] = useState<boolean>(false)
+    const [sendEdited, setSendEdited] = useState<boolean>(false)
+
+
+    useEffect(() => {
+        if(!sendEdited) {return}
+            fetch(`${apiUrl}/api/routeSends/update`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${user.access_token}`
+                },
+                body: JSON.stringify(routeSend)
+            })
+                .then(response => {
+                    if(!response.ok) {
+                        return response.json().then(json => {throw new Error(json.message)})
+                    }
+                })
+                .then(() => refetchRouteSendHandler())
+                .catch(error => console.error(error))
+                .finally(() => setSendEdited(false))
+
+    }, [routeSend]);
 
     useEffect(() => {
         fetch(`${apiUrl}/api/routeSends?routeId=${boulderID}`, {
@@ -50,11 +72,19 @@ function RouteSends(props: RouteSendProps) {
                 setAttempts(data[0]?.attempts ?? 0)
             })
             .catch(error => console.error(error))
-    }, [boulderID])
+    }, [boulderID, refetch])
 
-    function handleAttemptSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        // Handle the submission logic here
-        console.log("Submitting attempts:", attempts)
+    function refetchRouteSendHandler() {
+        setRefetch((prev: boolean) => !prev)
+    }
+
+    function handleAttemptSubmit() {
+        setSendEdited(true)
+        setRouteSend({...routeSend, attempts: attempts})
+    }
+    function handleCompletedChange() {
+        setSendEdited(true)
+        setRouteSend({...routeSend, completed: !routeSend.completed})
     }
 
     const handleValueChange = (value: string) => {
@@ -83,9 +113,7 @@ function RouteSends(props: RouteSendProps) {
         const color = completed ? "green" : "red"
         return(
             <Card.Root bg={color.concat(".50")} border="1px" borderColor="green.200">
-                <Card.Body
-                    onClick={() => {setRouteSend({...routeSend, completed: !routeSend.completed})}}
-                >
+                <Card.Body onClick={handleCompletedChange}>
                     <Stat.Root textAlign="center" flex="flex" justifyContent="center">
                         <Stat.ValueText
                             fontSize="2xl"
@@ -114,8 +142,6 @@ function RouteSends(props: RouteSendProps) {
                         <Card.Body>
                             <Editable.Root
                                 value={attempts.toString()}
-                                onValueChange={handleValueChange}
-                                onValueCancel={handleCancel}
                                 onInteractOutside={handleClickOutside}
                             >
                                 <Editable.Preview
@@ -131,6 +157,8 @@ function RouteSends(props: RouteSendProps) {
                                         const target = event.target as HTMLInputElement
                                         target.value = target.value.replace(/[^0-9]/g, '')
                                     }}
+                                    value={attempts.toString()}
+                                    onChange={event => {handleValueChange(event.target.value)}}
                                 />
                                 <Editable.Control>
                                     <Editable.EditTrigger asChild>
@@ -147,7 +175,10 @@ function RouteSends(props: RouteSendProps) {
                                         </IconButton>
                                     </Editable.SubmitTrigger>
                                     <Editable.CancelTrigger asChild>
-                                        <IconButton colorPalette="red">
+                                        <IconButton
+                                            colorPalette="red"
+                                            onClick={handleCancel}
+                                        >
                                             <LuX/>
                                         </IconButton>
                                     </Editable.CancelTrigger>
@@ -158,15 +189,6 @@ function RouteSends(props: RouteSendProps) {
                     </Card.Root>
                     {completedCard(routeSend.completed ?? false)}
                 </SimpleGrid>
-                <VStack p={2} mt={4}>
-                    <ReusableButton 
-                        size="sm"
-                        width="full"
-                        onClick={() => {}}
-                    >
-                        {routeSend?.completed ? "Mark Incomplete" : "Complete Route"}
-                    </ReusableButton>
-                </VStack>
             </Card.Body>
         </Card.Root>
     )

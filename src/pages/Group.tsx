@@ -38,7 +38,7 @@ function Group() {
         })
             .then(response => response.json())
             .then(data => {console.log("fetched", data); return data})
-            .then(data => setPlaceData(data))
+            .then(data => {setPlaceData(data); setRefetchPlaces(false)})
             .catch(error => console.error(error))
             .finally(() => setPlaceIsLoading(false))
 
