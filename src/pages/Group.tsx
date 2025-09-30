@@ -26,9 +26,18 @@ function Group() {
     const [ placeIsLoading, setPlaceIsLoading ] = useState<boolean>(true);
 
     useEffect(() => {
-        if( (groupData && (groupData?.uuid !== groupUUID))  || !user?.access_token) {
+        // Wait for both groupData and user to be loaded
+        if(!groupData || !user?.access_token) {
             return
         }
+        
+        // Check if the groupData matches the current UUID
+        if(groupData.uuid !== groupUUID) {
+            return
+        }
+        
+        setPlaceIsLoading(true)
+        
         fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
             method: "GET",
             headers: {
@@ -42,7 +51,7 @@ function Group() {
             .catch(error => console.error(error))
             .finally(() => setPlaceIsLoading(false))
 
-    }, [refetchPlaces, groupUUID, user?.access_token])
+    }, [refetchPlaces, groupUUID, user?.access_token, groupData])
 
     function refetchPlacesHandler() {
         setPlaceIsLoading(true)
