@@ -9,7 +9,7 @@ import {
     Container, Box, Flex, VStack, HStack,
     Heading, Image as ImageTag, Text, Badge,
     AspectRatio, Card, Separator,
-    SimpleGrid, Skeleton, Alert, Dialog, Portal
+    SimpleGrid, Skeleton, Alert, Dialog, GridItem
 } from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
@@ -318,13 +318,9 @@ function Boulders(props: BoulderProps) {
                                 boulderID={boulders[page].id}
                                 routeSend={boulderData?.[page].routeSend}
                             />
-
-                            {/* Pagination Card */}
-                            <Card.Root>
+                            <Card.Root display="flex" h="full" w="full" mb={2}>
                                 <Card.Header>
-                                    <Heading size="md" color="neutral.700">
-                                        Navigation
-                                    </Heading>
+                                    <Heading size="md" color="gray.700" justtify-self="flex-start">Description</Heading>
                                 </Card.Header>
                                 <Card.Body>
                                     <Box
@@ -333,13 +329,12 @@ function Boulders(props: BoulderProps) {
                                         p={4}
                                         bg="bg.subtle"
                                         borderRadius="md"
+                                        h="full"
                                     >
-                                        <Pagination
-                                            pageSize={1}
-                                            count={boulderLength}
-                                            onPageChange={setPage}
-                                            page={page}
-                                        />
+                                        <Text fontSize="xs">
+                                            {boulders[page].description || "No description provided"}
+                                        </Text>
+
                                     </Box>
                                 </Card.Body>
                             </Card.Root>
@@ -394,18 +389,17 @@ function Boulders(props: BoulderProps) {
                                     )}
                                 </Card.Body>
                             </Card.Root>
-
-                            {/* Image Info */}
-                            {boulders[page].image && (
-                                <Card.Root size="sm">
-                                    <Card.Body>
-                                        <Text fontSize="sm" color="fg.muted" textAlign="center">
-                                            {boulders[page].description || "No description available"}
-                                        </Text>
-                                    </Card.Body>
-                                </Card.Root>
-                            )}
                         </VStack>
+
+                        {/* Pagination Card */}
+                        <GridItem colSpan={2} mt={4} h="full">
+                            <Pagination
+                                pageSize={1}
+                                count={boulderLength}
+                                onPageChange={setPage}
+                                page={page}
+                            />
+                        </GridItem>
                     </SimpleGrid>
                 </Container>
             ) : (
