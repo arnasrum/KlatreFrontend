@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import Boulders from "./Boulders.tsx";
@@ -12,32 +12,74 @@ import {
     Container,
     Listbox,
     useListCollection,
+    Spinner,
     Input,
     Text,
     useFilter, VStack,
 } from "@chakra-ui/react"
 import Modal from "../components/Modal.tsx";
+import MyListbox from "../components/MyListbox.tsx";
 
 interface PlacesProps {
-    places?: Array<Place>
     groupID?: number | null
     refetchGroups: () => void
+    setPlaces2: (places: any) => void
 }
 
-function Places({places, refetchGroups, groupID = null}: PlacesProps) {
+function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
 
     const [selectedPlace, setSelectedPlace] = useState<number | null>(null);
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
     const [boulders, setBoulders] = useState<Array<BoulderData>>([]);
     const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
     const { user } = useContext(TokenContext);
-    const { contains } = useFilter({ sensitivity: "base" })
-    const { collection, filter } = useListCollection({
-        initialItems: places
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((place: Place) => ({ value: place.id, label: place.name })),
-        filter: contains
-    })
+    const [places, setPlaces] = useState<Array<Place>>([])
+    const [placesItems, setPlacesItems] = useState<Array<any>>([])
+    const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false)
+
+    useEffect(() => {
+        if(!groupID) {
+            return
+        }
+        fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${user.access_token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log("fetched places:", data)
+                setPlaces(Array.isArray(data) ? data : [])
+                setPlaces2(Array.isArray(data) ? data : [])
+                return data
+            })
+            .then((data) => {
+                const itemsWithDescription = data && data.length > 0
+                    ? data
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((place: Place) => ({
+                            value: place.id,
+                            label: place.name,
+                            // Add the description property
+                            description: place.description // Assuming 'Place' interface has a 'description'
+                        })) : []
+                console.log("itemsWithDescription", itemsWithDescription)
+                setPlacesItems(itemsWithDescription)
+                return itemsWithDescription
+            })
+            .catch(error => {
+                console.error('Failed to fetch places:', error)
+                setPlaces([])
+            })
+    }, [user.access_token, groupID, refetchPlaces])
+
 
     useEffect(() => {
         if(!selectedPlace) {
@@ -51,7 +93,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
             }
         })
             .then(response => response.json())
-            .then((data) => {console.log("test", data); return data;})
+            .then((data) => {return data;})
             .then(data => setBoulders(data))
             .catch(error => console.error(error))
 
@@ -59,30 +101,13 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
 
     useEffect(() => {
         setShowPlaceModal(false)
-    }, [selectedPlace])
-
-    useEffect(() => {
-        setShowPlaceModal(false)
         setSelectedPlace(null)
     }, [groupID])
-
 
     function refetchBouldersHandler() {
         setRefetchBoulders((prev: boolean) => !prev)
     }
 
-    if(!groupID) {
-        return(
-            <p>No group selected</p>
-        )
-    }
-
-    if(!places)  {
-        return(
-            <p>No places</p>
-        )
-    }
-    console.log("places", places)
     let grades = null
     if(selectedPlace) {
         grades = places.find(place => place.id == selectedPlace).gradingSystem.grades
@@ -96,22 +121,31 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
     function handleAddPlaceSubmit(event: React.FormEvent<never>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        fetch(`http://localhost:8080/groups/place?groupID=${groupID}`, {
+        formData.set("groupID", groupID.toString())
+        fetch(`http://localhost:8080/api/groups/place`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
                 "Authorization": "Bearer " + user.access_token,
             },
-            body: JSON.stringify({
-                "name": formData.get("name") as string,
-                "description": formData.get("description") as string
-            })
+            body: formData
         })
             //.then(response => response.json())
+            .then(() => setRefetchPlaces(prev => !prev))
             .then(() => refetchGroups())
             .then(() => setShowPlaceModal(false))
             .catch(error => console.error(error))
 
+    }
+
+    if(!placesItems || placesItems.length < 1) {
+        return(
+            <Container m={4} p={4}>
+                <Box display="flex" justifyContent="space-between" alignItems="stretch" flexDirection="column" m={4} p={4}>
+                    <ReusableButton onClick={() => setShowPlaceModal(true)}>+Add Place</ReusableButton>
+                </Box>
+                <Spinner />
+            </Container>
+        )
     }
 
     if(showPlaceModal) {
@@ -122,7 +156,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
                     <Modal.Body>
                         <AbstractForm fields={addPlaceFields} handleSubmit={handleAddPlaceSubmit} footer={
                             <VStack>
-                                <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Save</ReusableButton>
+                                <ReusableButton type="submit">Save</ReusableButton>
                                 <ReusableButton onClick={() => {setShowPlaceModal(false)}}>Close</ReusableButton>
                             </VStack>
                         }/>
@@ -135,29 +169,7 @@ function Places({places, refetchGroups, groupID = null}: PlacesProps) {
     return (
         <Container m={4} p={4}>
             <Box display="flex" justifyContent="space-between" alignItems="stretch" flexDirection="column" m={4} p={4}>
-                <Listbox.Root
-                    orientation="vertical"
-                    collection={collection}
-                >
-                    <Listbox.Label hidden>Select a place</Listbox.Label>
-                    <Listbox.Input
-                        as={Input}
-                        placeholder="Search places"
-                        onChange={event => filter(event.target.value)}
-                    ></Listbox.Input>
-                    <Listbox.Content maxH="md">
-                        {collection.items.map((placeItem: {value: number, label: string, description: string | null}) =>
-                            <Box flex={1}>
-                                <Listbox.Item item={placeItem} key={placeItem.value} onClick={() => setSelectedPlace(placeItem.value)}>
-                                    <Listbox.ItemText>{placeItem.label}</Listbox.ItemText>
-                                    <Text color="fg.muted" fontSize="xs" mt={1}>{placeItem.description || "No description"}</Text>
-                                    <Listbox.ItemIndicator/>
-                                </Listbox.Item>
-                            </Box>
-                        )}
-                        <Listbox.Empty>No places in group</Listbox.Empty>
-                    </Listbox.Content>
-                </Listbox.Root>
+                <MyListbox initialItems={placesItems} setSelectedPlace={setSelectedPlace}/>
                 <ReusableButton onClick={() => setShowPlaceModal(true)}>+Add Place</ReusableButton>
             </Box>
             {selectedPlace && grades &&

@@ -4,7 +4,7 @@ import { TokenContext } from "../Context.tsx"
 import {apiUrl} from "../constants/global.ts";
 import {Button} from "@chakra-ui/react";
 
-function Login(): React.Element {
+function Login(): React.ReactNode {
 
     const { user, setUser, logout } = useContext(TokenContext)
     const googleLogin = useGoogleLogin({

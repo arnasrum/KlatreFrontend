@@ -13,58 +13,53 @@ import {PlaceContext} from "../Context.tsx";
 
 function Group() {
 
-    const { currentGroup, setCurrentGroup, isLoading, setIsLoading } = useContext(GroupContext)
-    const { groupUUID } = useParams()
-    const groupData = currentGroup
-    const groupID = groupData?.id
+    const { user } = useContext(TokenContext)
 
-    //const groupData = location.state?.groupData
+    const location = useLocation()
+    const groupUUID = location.pathname.split("/").pop()
+
+    const [groupData, setGroupData] = useState<any>(null)
     const [tab, setTab] = useState<string>("boulders")
     const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false)
     const [ placeData, setPlaceData ] = useState<Array<any>>([])
-    const { user, isLoading: userLoading } = useContext(TokenContext)
-    const [ placeIsLoading, setPlaceIsLoading ] = useState<boolean>(true);
+    const groupID = groupData?.id
+
+    function setPlaces(places: Array<any>) {
+        setPlaceData(places)
+    }
 
     useEffect(() => {
-        // Wait for both groupData and user to be loaded
-        if(!groupData || !user?.access_token) {
-            return
-        }
-        
-        // Check if the groupData matches the current UUID
-        if(groupData.uuid !== groupUUID) {
-            return
-        }
-        
-        setPlaceIsLoading(true)
-        
-        fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
+        fetch(`${apiUrl}/api/groups/test/${groupUUID}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${user.access_token}`
             }
         })
-            .then(response => response.json())
-            .then(data => {console.log("fetched", data); return data})
-            .then(data => {setPlaceData(data); setRefetchPlaces(false)})
-            .catch(error => console.error(error))
-            .finally(() => setPlaceIsLoading(false))
-
-    }, [refetchPlaces, groupUUID, user?.access_token, groupData])
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+                return response.json()
+            })
+            .then(responseBody => setGroupData(responseBody.data))
+            .catch(error => console.error('Failed to fetch group:', error))
+    }, [groupUUID, user.access_token]);
 
     function refetchPlacesHandler() {
-        setPlaceIsLoading(true)
         setRefetchPlaces((prev: boolean) => !prev)
     }
 
-    if(placeIsLoading) {
-        return(
-            <Spinner />
+    const placeContext = {refetchPlaces: refetchPlacesHandler}
+
+    if (!groupData) {
+        return (
+            <Box>
+                <Heading>Group</Heading>
+                <Spinner/>
+            </Box>
         )
     }
-
-    const placeContext = {refetchPlaces: refetchPlacesHandler}
 
     return (
         <PlaceContext.Provider value={placeContext} >
@@ -86,10 +81,10 @@ function Group() {
                                     <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
                                 </Tabs.List>
                                 <Tabs.Content value="boulders">
-                                    <Places refetchGroups={refetchPlacesHandler} groupID={groupID} places={placeData} />
+                                    <Places refetchGroups={refetchPlacesHandler} groupID={groupData.id} setPlaces2={setPlaces} />
                                 </Tabs.Content>
                                 <Tabs.Content value="settings">
-                                    <Settings groupID={groupID} places={placeData} />
+                                    <Settings groupID={groupData.id} places={placeData} />
                                 </Tabs.Content>
                             </Tabs.Root>
                         </Container>
