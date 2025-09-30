@@ -2,8 +2,9 @@ import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import React, { useEffect, useContext } from 'react';
 import { TokenContext } from "../Context.tsx"
 import {apiUrl} from "../constants/global.ts";
+import {Button} from "@chakra-ui/react";
 
-function Login(): JSX.Element {
+function Login(): React.Element {
 
     const { user, setUser, logout } = useContext(TokenContext)
     const googleLogin = useGoogleLogin({
@@ -68,11 +69,10 @@ function Login(): JSX.Element {
          <>
              {user ? (
                  <div>
-                     <p>Logged In</p>
-                     <button type="button" onClick={logOut}>Logout</button>
+                     <Button type="button" colorPalette="blue" onClick={logOut}>Logout</Button>
                  </div>
              ) : (
-                 <button type="button" onClick={() => googleLogin()}>Sign in with Google 🚀 </button>
+                 <Button type="button" colorPalette="blue" variant="solid" shadow="lg" onClick={() => googleLogin()}>Sign in with Google 🚀 </Button>
              )}
          </>
     );

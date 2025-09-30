@@ -4,6 +4,7 @@ import Login from "./Login.tsx";
 import Groups from "./Groups.tsx"
 import { TokenContext } from "../Context.tsx";
 import {useNavigate} from "react-router-dom"
+import {Heading} from "@chakra-ui/react";
 
 function Home() {
     const [cookies, setCookie, removeCookie] = useCookies(['user']);
@@ -33,7 +34,7 @@ function Home() {
 
     return (
         <>
-            <h1>Klatre</h1>
+            <Heading size="2xl">Klatre</Heading>
             <TokenContext.Provider value={contextValue} >
                 {user ? (
                     <div>
