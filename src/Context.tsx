@@ -1,4 +1,5 @@
-import { createContext } from 'react'
+import React, { createContext } from 'react'
+import {ActiveSession} from "./interfaces/ActiveSession.ts";
 
 
 export const TokenContext: React.Context<any> = createContext(undefined)

@@ -10,6 +10,7 @@ import {TokenContext} from "../Context.tsx"
 import { GroupContext } from "../contexts/GroupContext.tsx"
 import Settings from "./Settings.tsx";
 import {PlaceContext} from "../Context.tsx";
+import Sessions from "./Sessions.tsx";
 
 function Group() {
 
@@ -29,7 +30,7 @@ function Group() {
     }
 
     useEffect(() => {
-        fetch(`${apiUrl}/api/groups/test/${groupUUID}`, {
+        fetch(`${apiUrl}/api/groups/uuid/${groupUUID}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -85,6 +86,9 @@ function Group() {
                                 </Tabs.Content>
                                 <Tabs.Content value="settings">
                                     <Settings groupID={groupData.id} places={placeData} />
+                                </Tabs.Content>
+                                <Tabs.Content value="sessions">
+                                    <Sessions/>
                                 </Tabs.Content>
                             </Tabs.Root>
                         </Container>

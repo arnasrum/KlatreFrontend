@@ -8,7 +8,7 @@ import "./App.css"
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import type User from "./interfaces/User.ts";
 import {GroupProvider} from "./contexts/GroupContext.tsx";
-
+import SessionContextProvider from "./contexts/SessionContext.tsx";
 
 function App() {
     const [cookies, setCookie, removeCookie] = useCookies(['user']);
@@ -53,10 +53,12 @@ function App() {
 
     return (
         <TokenContext.Provider value={contextValue}>
-            <GroupProvider>
-                <RouterProvider router={router}>
-                </RouterProvider>
-            </GroupProvider>
+            <SessionContextProvider>
+                <GroupProvider>
+                    <RouterProvider router={router}>
+                    </RouterProvider>
+                </GroupProvider>
+            </SessionContextProvider>
         </TokenContext.Provider>
     )
 }
