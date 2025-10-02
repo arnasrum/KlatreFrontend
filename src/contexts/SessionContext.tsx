@@ -31,6 +31,12 @@ export default function SessionContextProvider({ children }: { children: React.R
         setActiveSessions([session])
     }
 
+    function updateSession(activeSession: ActiveSession) {
+        setActiveSessions([...activeSessions.filter(session => session.id != activeSession.id), activeSession])
+    }
+
+
+
     function closeSession(id: string) {
         setActiveSessions(prev => prev.filter(session => session.id !== id))
     }
@@ -38,6 +44,7 @@ export default function SessionContextProvider({ children }: { children: React.R
     const contextValue = {
         activeSessions,
         addRouteAttempt,
+        updateSession,
         addSession,
         closeSession
     }

@@ -127,7 +127,14 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                            </Field.Root>
                        )
 
-                   } else {
+                   } else if(field.type == "hidden") {
+                        return(
+                            <Box>
+                                <input type="hidden" value={field.value} name={field.name}/>
+                            </Box>
+                        )
+
+                   }  else {
                        return (
                            <Field.Root key={field.name || index} required={field.required}>
                                <Field.Label 

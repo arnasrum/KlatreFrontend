@@ -28,9 +28,11 @@ function Sessions({places}: SessionProps): React.ReactElement {
 
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
     const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
+    const [editClimbModalOpen, setEditClimbModalOpen] = useState(false)
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [boulders, setBoulders] = useState<Boulder[]>([])
+    const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
 
     useEffect(() => {
         if(!selectedPlace && activeSessions.activeSessions.length <= 0) {
@@ -154,12 +156,87 @@ function Sessions({places}: SessionProps): React.ReactElement {
         const completed = formData.get("completed") == "on"
         const activeSession = activeSessions.activeSessions[0]
         const place = places.filter(place => place.id === activeSession.placeId)[0]
-        activeSessions.addRouteAttempt({routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed})
+        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed})
 
         setLogClimbModalOpen(false)
     }
 
+    function handleEditAttemptClick(attempt: RouteAttempt) {
+        setEditingAttempt(attempt)
+        setEditClimbModalOpen(true)
+    }
 
+    function saveEditedClimbAttempt(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        if(!editingAttempt || activeSessions.activeSessions.length < 1) {
+            toaster.create({
+                title: "Error",
+                description: "Invalid attempt data",
+                type: "error"
+            })
+            return
+        }
+        const formData = new FormData(event.currentTarget)
+        const attempts = formData.get("attempts") as string
+        if(!attempts) {
+            toaster.create({
+                title: "Error",
+                description: "Please fill in all fields",
+                type: "error"
+            })
+            return
+        }
+        const completed = formData.get("completed") == "on"
+        
+        // Update the route attempt
+        const activeSession = activeSessions.activeSessions[0]
+        const updatedAttempts = activeSession.routeAttempts.map(attempt => 
+            attempt.id === editingAttempt.id 
+                ? {...attempt, attempts: parseInt(attempts), completed: completed}
+                : attempt
+        )
+        
+        // Update the session with the new attempts
+        activeSessions.updateSession({
+            ...activeSession,
+            routeAttempts: updatedAttempts
+        })
+
+        setEditClimbModalOpen(false)
+        setEditingAttempt(null)
+        
+        toaster.create({
+            title: "Success",
+            description: "Climb attempt updated",
+            type: "success"
+        })
+    }
+
+    function handleRemoveAttemptClick(attemptId: string) {
+        if(activeSessions.activeSessions.length < 1) {
+            toaster.create({
+                title: "Error",
+                description: "No active session",
+                type: "error"
+            })
+            return
+        }
+
+        const activeSession = activeSessions.activeSessions[0]
+        const updatedAttempts = activeSession.routeAttempts.filter(attempt => attempt.id !== attemptId)
+        
+        // Update the session with the filtered attempts
+        activeSessions.updateSession({
+            ...activeSession,
+            routeAttempts: updatedAttempts
+        })
+
+        toaster.create({
+            title: "Success",
+            description: "Climb attempt removed",
+            type: "success"
+        })
+    }
 
 
     const placeFields = places.map((place: Place) => {
@@ -173,6 +250,11 @@ function Sessions({places}: SessionProps): React.ReactElement {
         {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts"},
         {label: "Completed", name: "completed", type: "checkbox"},
     ]
+
+    const editFormFields = editingAttempt ? [
+        {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts", defaultValue: editingAttempt.attempts.toString()},
+        {label: "Completed", name: "completed", type: "checkbox", defaultValue: editingAttempt.completed},
+    ] : []
 
 
 
@@ -311,8 +393,19 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                                 <Text color="gray.700" fontSize="sm">
                                                     <strong>Attempts:</strong> {attempt.attempts}
                                                 </Text>
-                                                <Button color="fg">
-                                                    Test
+                                                <Button 
+                                                    colorPalette="blue"
+                                                    size="sm"
+                                                    onClick={() => handleEditAttemptClick(attempt)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button 
+                                                    colorPalette="red"
+                                                    size="sm"
+                                                    onClick={() => handleRemoveAttemptClick(attempt.id)}
+                                                >
+                                                    Remove
                                                 </Button>
                                             </HStack>
                                             {boulder?.description && (
@@ -383,6 +476,39 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                     >Close</Button>
                                 </HStack>
                             }/>
+                    </Box>
+                </Modal.Body>
+            </Modal>
+            <Modal isOpen={editClimbModalOpen} title="Edit Climb Attempt" size="md">
+                <Modal.Body>
+                    <Box>
+                        {editingAttempt && (
+                            <>
+                                <Text color="black" fontWeight="bold" mb={2}>
+                                    {boulders.find(b => b.boulder.id === editingAttempt.routeId)?.boulder.name || `Route #${editingAttempt.routeId}`}
+                                </Text>
+                                <AbstractForm
+                                    fields={[...editFormFields, {label: "", name: "id", type: "hidden", value: editingAttempt.id}]}
+                                    handleSubmit={saveEditedClimbAttempt}
+                                    footer={
+                                        <HStack justifySelf="center" display="flex" justifyContent="center" w="full">
+                                            <Button
+                                                type="submit"
+                                                colorPalette="blue"
+                                                mt={2}
+                                            >Save</Button>
+                                            <Button
+                                                onClick={() => {
+                                                    setEditClimbModalOpen(false)
+                                                    setEditingAttempt(null)
+                                                }}
+                                                colorPalette="red"
+                                                mt={2}
+                                            >Close</Button>
+                                        </HStack>
+                                    }/>
+                            </>
+                        )}
                     </Box>
                 </Modal.Body>
             </Modal>

@@ -1,6 +1,7 @@
 
 
 interface InputField {
+    value?: string | string[] | number;
     label: string,
     type: string,
     name: string,
