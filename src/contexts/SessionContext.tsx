@@ -12,33 +12,38 @@ export default function SessionContextProvider({ children }: { children: React.R
     });
 
     function addSession(session: ActiveSession) {
-        // Need extra logic to check if session within the group already exists
-        if(activeSessions.length >= 1) {
-            console.log("Session already exists")
-            return
+        // Check if session within the same group already exists
+        const existingSessionInGroup = activeSessions.find(s => s.groupId === session.groupId);
+        if(existingSessionInGroup) {
+            console.log("Session already exists for this group");
+            return;
         }
-        setActiveSessions(prev => [...prev, session])
+        setActiveSessions(prev => [...prev, session]);
     }
 
-    function addRouteAttempt(routeAttempt: RouteAttempt) {
-        if(activeSessions.length <= 0) {
-            console.error("No active sessions")
-            return
+    function addRouteAttempt(routeAttempt: RouteAttempt, groupId: number) {
+        const session = activeSessions.find(s => s.groupId === groupId);
+        if(!session) {
+            console.error("No active session for this group");
+            return;
         }
-
-        const session = activeSessions[0]
-        session.routeAttempts.push(routeAttempt)
-        setActiveSessions([session])
+        const updatedSession = {
+            ...session,
+            routeAttempts: [...session.routeAttempts, routeAttempt]
+        };
+        setActiveSessions(prev =>
+            prev.map(s => s.groupId === groupId ? updatedSession : s)
+        );
     }
 
     function updateSession(activeSession: ActiveSession) {
-        setActiveSessions([...activeSessions.filter(session => session.id != activeSession.id), activeSession])
+        setActiveSessions(prev => 
+            prev.map(s => s.id === activeSession.id ? activeSession : s)
+        );
     }
 
-
-
     function closeSession(id: string) {
-        setActiveSessions(prev => prev.filter(session => session.id !== id))
+        setActiveSessions(prev => prev.filter(session => session.id !== id));
     }
 
     const contextValue = {
@@ -47,11 +52,11 @@ export default function SessionContextProvider({ children }: { children: React.R
         updateSession,
         addSession,
         closeSession
-    }
+    };
 
     // Save to localStorage whenever activeSessions changes
     useEffect(() => {
-        console.log("updating active sessions")
+        console.log("new active sessions:", activeSessions)
         localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
     }, [activeSessions]);
 
@@ -59,5 +64,5 @@ export default function SessionContextProvider({ children }: { children: React.R
         <SessionContext.Provider value={contextValue}>
             {children}
         </SessionContext.Provider>
-    )
+    );
 }

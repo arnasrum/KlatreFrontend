@@ -1,13 +1,12 @@
 
 
-interface InputField {
-    value?: string | string[] | number;
-    label: string,
-    type: string,
-    name: string,
-    required?: boolean,
-    accept?: string,
-    placeholder?: string,
+export default interface InputField {
+    label: string;
+    name: string;
+    type: string;
+    placeholder?: string;
+    defaultValue?: string | number;
+    options?: Array<{label: string, value: string}>;
+    value?: string[];
+    disabled?: boolean;
 }
-
-export default InputField;

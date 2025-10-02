@@ -146,6 +146,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                                    {field.required && <Field.RequiredIndicator color="red.500"/>}
                                </Field.Label>
                                <Input
+                                   defaultValue={field.defaultValue}
                                    type={field.type}
                                    name={field.name}
                                    required={field.required}

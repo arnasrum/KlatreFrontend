@@ -15,30 +15,32 @@ import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 
 interface SessionProps{
     places: Place[]
+    groupId: number
 }
 
 
 
-function Sessions({places}: SessionProps): React.ReactElement {
+function Sessions({places, groupId}: SessionProps): React.ReactElement {
 
     const activeSessions = useContext(SessionContext)
     const { user } = useContext(TokenContext)
 
-    const date = new Date()
-
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
     const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
     const [editClimbModalOpen, setEditClimbModalOpen] = useState(false)
+    const [closeSessionModalOpen, setCloseSessionModalOpen] = useState(false)
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [boulders, setBoulders] = useState<Boulder[]>([])
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
 
+    const activeSession = activeSessions.activeSessions.find(s => s.groupId === groupId);
+
     useEffect(() => {
-        if(!selectedPlace && activeSessions.activeSessions.length <= 0) {
+        if(!selectedPlace && !activeSession) {
             return
         }
-        const placeId = selectedPlace ? selectedPlace.id : activeSessions.activeSessions[0].placeId
+        const placeId = selectedPlace ? selectedPlace.id : activeSession!.placeId
         fetch(`${apiUrl}/boulders/place?placeID=${placeId}`, {
             headers: {
                 "Authorization": `Bearer ${user.access_token}`
@@ -58,32 +60,19 @@ function Sessions({places}: SessionProps): React.ReactElement {
                     description: error.message,
                 })
             })
-        }, [selectedPlace])
+        }, [selectedPlace, activeSession])
 
 
     function handleLogClimbClick() {
         setLogClimbModalOpen(true)
     }
 
-    function handleLogClimbSubmit() {
-        if(activeSessions.activeSessions.length < 1) {
-            toaster.create({
-                title: "Error",
-                description: "You must start a session before logging a climb",
-                type: "error"
-            })
-            return
-        }
-        const activeSession = activeSessions.activeSessions[0]
-        const place = places.filter(place => place.id === activeSession.placeId)[0]
-    }
-
     function startNewSessionClick() {
 
-        if(activeSessions.activeSessions.length > 0) {
+        if(activeSession) {
             toaster.create({
                 title: "Error",
-                description: "You already have an active session",
+                description: "You already have an active session for this group",
                 type: "error"
             })
             return
@@ -114,13 +103,13 @@ function Sessions({places}: SessionProps): React.ReactElement {
             )
         }
         setSelectedPlace(place)
-        activeSessions.addSession({id: crypto.randomUUID(), dateStarted: date.toDateString(), placeId: placeId, routeAttempts: []})
+        activeSessions.addSession({id: crypto.randomUUID(), groupId: groupId,  dateStarted: new Date().toDateString(), placeId: placeId, routeAttempts: []})
         setNewSessionModalOpen(false)
         setSelectFieldPlaceValue([])
     }
 
     function handleCloseSessionClick() {
-        if(activeSessions.activeSessions.length < 1) {
+        if(!activeSession) {
             toaster.create({
                 title: "Error",
                 description: "You must start a session before closing it",
@@ -128,13 +117,66 @@ function Sessions({places}: SessionProps): React.ReactElement {
             })
             return
         }
+        setCloseSessionModalOpen(true)
+    }
+
+    async function handleSaveAndCloseSession() {
+        if(!activeSession) {
+            return
+        }
+
+        try {
+            const response = await fetch(`${apiUrl}/sessions`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${user.access_token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(activeSession)
+            })
+
+            if(!response.ok) {
+                const json = await response.json()
+                throw new Error(json.errorMessage || "Failed to save session")
+            }
+
+            toaster.create({
+                title: "Success",
+                description: "Session saved successfully",
+                type: "success"
+            })
+
+            setSelectedPlace(null)
+            activeSessions.closeSession(activeSession.id)
+            setCloseSessionModalOpen(false)
+        } catch (error) {
+            toaster.create({
+                title: "Error",
+                type: "error",
+                description: error instanceof Error ? error.message : "Failed to save session",
+            })
+        }
+    }
+
+    function handleDeleteSession() {
+        if(!activeSession) {
+            return
+        }
+
         setSelectedPlace(null)
-        activeSessions.closeSession(activeSessions.activeSessions[0].id)
+        activeSessions.closeSession(activeSession.id)
+        setCloseSessionModalOpen(false)
+
+        toaster.create({
+            title: "Session Deleted",
+            description: "Session was closed without saving",
+            type: "info"
+        })
     }
 
     function saveClimbAttempt(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        if(activeSessions.activeSessions.length < 1) {
+        if(!activeSession) {
             toaster.create({
                 title: "Error",
                 description: "You must start a session before logging a climb",
@@ -154,9 +196,8 @@ function Sessions({places}: SessionProps): React.ReactElement {
             return
         }
         const completed = formData.get("completed") == "on"
-        const activeSession = activeSessions.activeSessions[0]
-        const place = places.filter(place => place.id === activeSession.placeId)[0]
-        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed})
+        console.log("Adding route attempt for groupId:", groupId)
+        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed, timestamp: Date.now()}, groupId)
 
         setLogClimbModalOpen(false)
     }
@@ -168,7 +209,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
 
     function saveEditedClimbAttempt(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        if(!editingAttempt || activeSessions.activeSessions.length < 1) {
+        if(!editingAttempt || !activeSession) {
             toaster.create({
                 title: "Error",
                 description: "Invalid attempt data",
@@ -187,15 +228,14 @@ function Sessions({places}: SessionProps): React.ReactElement {
             return
         }
         const completed = formData.get("completed") == "on"
-        
+
         // Update the route attempt
-        const activeSession = activeSessions.activeSessions[0]
-        const updatedAttempts = activeSession.routeAttempts.map(attempt => 
-            attempt.id === editingAttempt.id 
+        const updatedAttempts = activeSession.routeAttempts.map(attempt =>
+            attempt.id === editingAttempt.id
                 ? {...attempt, attempts: parseInt(attempts), completed: completed}
                 : attempt
         )
-        
+
         // Update the session with the new attempts
         activeSessions.updateSession({
             ...activeSession,
@@ -204,7 +244,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
 
         setEditClimbModalOpen(false)
         setEditingAttempt(null)
-        
+
         toaster.create({
             title: "Success",
             description: "Climb attempt updated",
@@ -213,7 +253,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
     }
 
     function handleRemoveAttemptClick(attemptId: string) {
-        if(activeSessions.activeSessions.length < 1) {
+        if(!activeSession) {
             toaster.create({
                 title: "Error",
                 description: "No active session",
@@ -222,9 +262,8 @@ function Sessions({places}: SessionProps): React.ReactElement {
             return
         }
 
-        const activeSession = activeSessions.activeSessions[0]
         const updatedAttempts = activeSession.routeAttempts.filter(attempt => attempt.id !== attemptId)
-        
+
         // Update the session with the filtered attempts
         activeSessions.updateSession({
             ...activeSession,
@@ -252,14 +291,12 @@ function Sessions({places}: SessionProps): React.ReactElement {
     ]
 
     const editFormFields = editingAttempt ? [
-        {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts", defaultValue: editingAttempt.attempts.toString()},
+        {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter Attempts", defaultValue: editingAttempt.attempts.toString()},
         {label: "Completed", name: "completed", type: "checkbox", defaultValue: editingAttempt.completed},
     ] : []
 
 
 
-
-    const activeSession = activeSessions.activeSessions[0]
 
     return(
         <Box shadow="2px" w="full" color="bg.subtle" display="flex" justifyContent="center">
@@ -290,7 +327,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
 
                 {/* Active session */}
                 {
-                    activeSessions.activeSessions.length > 0 ? (
+                    activeSession ? (
                         <Box>
                             <Box
                                 rounded="md"
@@ -305,17 +342,17 @@ function Sessions({places}: SessionProps): React.ReactElement {
                             >
                                 <HStack>
                                     <Text color="black">Active Session:</Text>
-                                    {activeSessions.activeSessions.map((session: ActiveSession) => {
-                                        const place = places.filter(place => place.id === session.placeId)[0]
+                                    {(() => {
+                                        const place = places.filter(place => place.id === activeSession.placeId)[0]
                                         if(!place) {
                                             return (<></>)
                                         }
                                         return (
                                             <HStack>
-                                                <Text color="fg">{`${place.name}, ${session.dateStarted}`}</Text>
+                                                <Text color="fg">{`${place.name}, ${activeSession.dateStarted}`}</Text>
                                             </HStack>
                                         )
-                                    })}
+                                    })()}
                                 </HStack>
                             </Box>
                         </Box>
@@ -331,12 +368,12 @@ function Sessions({places}: SessionProps): React.ReactElement {
                             alignItems="center"
                             mb="md"
                         >
-                            <Text color="black">No Active Sessions</Text>
+                            <Text color="black">No Active Session for this Group</Text>
                         </Box>
                     )
                 }
                 {
-                    activeSessions.activeSessions.length > 0 && (
+                    activeSession && (
                         <Card.Root w="full">
                             <Card.Header>
                                 <Card.Title>
@@ -351,10 +388,10 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                 </Card.Title>
 
                             </Card.Header>
-                            { activeSessions.activeSessions[0].routeAttempts.length > 0 ? (
+                            { activeSession.routeAttempts.length > 0 ? (
                             <Card.Body>
                             <VStack gap={3} align="stretch">
-                                {activeSessions.activeSessions[0].routeAttempts.map((attempt: RouteAttempt, index) => {
+                                {activeSession.routeAttempts.map((attempt: RouteAttempt, index) => {
                                     const boulder = boulders.find(b => b.boulder.id === attempt.routeId);
                                     const place = boulder ? places.find(p => p.id === boulder.boulder.place) : null;
                                     const gradeString = boulder && place
@@ -367,8 +404,8 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                             p={3}
                                             bg="gray.50"
                                             rounded="md"
-                                            borderLeft="4px solid"
-                                            borderColor={attempt.completed ? "green.500" : "orange.500"}
+                                            border="1px solid"
+                                            borderColor="fg.subtle"
                                         >
                                             <HStack justify="space-between" mb={2}>
                                                 <Text color="black" fontWeight="bold" fontSize="lg">
@@ -393,14 +430,14 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                                 <Text color="gray.700" fontSize="sm">
                                                     <strong>Attempts:</strong> {attempt.attempts}
                                                 </Text>
-                                                <Button 
+                                                <Button
                                                     colorPalette="blue"
                                                     size="sm"
                                                     onClick={() => handleEditAttemptClick(attempt)}
                                                 >
                                                     Edit
                                                 </Button>
-                                                <Button 
+                                                <Button
                                                     colorPalette="red"
                                                     size="sm"
                                                     onClick={() => handleRemoveAttemptClick(attempt.id)}
@@ -446,7 +483,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                             onClick={() => handleSessionStartClick()}
                             mr={2}
                             mt={2}
-                        >Save</Button>
+                        >Start Climbing!</Button>
                         <Button
                             colorPalette="red"
                             onClick={() => {setNewSessionModalOpen(false); setSelectFieldPlaceValue([])}}
@@ -488,7 +525,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                     {boulders.find(b => b.boulder.id === editingAttempt.routeId)?.boulder.name || `Route #${editingAttempt.routeId}`}
                                 </Text>
                                 <AbstractForm
-                                    fields={[...editFormFields, {label: "", name: "id", type: "hidden", value: editingAttempt.id}]}
+                                    fields={editFormFields}
                                     handleSubmit={saveEditedClimbAttempt}
                                     footer={
                                         <HStack justifySelf="center" display="flex" justifyContent="center" w="full">
@@ -511,6 +548,37 @@ function Sessions({places}: SessionProps): React.ReactElement {
                         )}
                     </Box>
                 </Modal.Body>
+            </Modal>
+            <Modal isOpen={closeSessionModalOpen} title="Close Session" size="md">
+                <Modal.Body>
+                    <Box>
+                        <Text color="black" mb={4}>
+                            Would you like to save this session before closing it?
+                        </Text>
+                        <Text color="gray.600" fontSize="sm">
+                            Saving will store your session data to the backend. Deleting will remove it permanently.
+                        </Text>
+                    </Box>
+                </Modal.Body>
+                <Modal.Footer>
+                    <HStack justifySelf="center" display="flex" justifyContent="center" w="full">
+                        <Button
+                            colorPalette="green"
+                            onClick={handleSaveAndCloseSession}
+                            mt={2}
+                        >Save Session</Button>
+                        <Button
+                            colorPalette="red"
+                            onClick={handleDeleteSession}
+                            mt={2}
+                        >Delete Session</Button>
+                        <Button
+                            colorPalette="gray"
+                            onClick={() => setCloseSessionModalOpen(false)}
+                            mt={2}
+                        >Cancel</Button>
+                    </HStack>
+                </Modal.Footer>
             </Modal>
             <Toaster/>
         </Box>
