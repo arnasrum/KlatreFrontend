@@ -23,7 +23,7 @@ function Modal(props: ModalProps) {
             <Dialog.Positioner>
                 <Dialog.Content>
                     <Dialog.Header>
-                        <Dialog.Title>{title}</Dialog.Title>
+                        <Dialog.Title color="fg">{title}</Dialog.Title>
                     </Dialog.Header>
                     <Dialog.Body overflow="auto">
                         {children}
