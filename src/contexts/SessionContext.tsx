@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {ActiveSession} from "../interfaces/ActiveSession.ts";
 import SessionContext from "../hooks/useSession.ts";
+import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 
 
 export default function SessionContextProvider({ children }: { children: React.ReactNode }) {
@@ -19,12 +20,24 @@ export default function SessionContextProvider({ children }: { children: React.R
         setActiveSessions(prev => [...prev, session])
     }
 
+    function addRouteAttempt(routeAttempt: RouteAttempt) {
+        if(activeSessions.length <= 0) {
+            console.error("No active sessions")
+            return
+        }
+
+        const session = activeSessions[0]
+        session.routeAttempts.push(routeAttempt)
+        setActiveSessions([session])
+    }
+
     function closeSession(id: string) {
         setActiveSessions(prev => prev.filter(session => session.id !== id))
     }
 
     const contextValue = {
         activeSessions,
+        addRouteAttempt,
         addSession,
         closeSession
     }

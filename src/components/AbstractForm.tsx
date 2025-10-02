@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Input, Field, VStack, Box, Checkbox, HStack} from "@chakra-ui/react";
+import { Input, Field, VStack, Box, Checkbox, HStack} from "@chakra-ui/react";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
 import SelectField from "./SelectField.tsx";

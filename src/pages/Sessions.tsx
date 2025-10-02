@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect} from "react";
+import React, {useContext, useState, useEffect, FormEvent} from "react";
 import {Box, Button, Heading, HStack, VStack, Text, Card} from "@chakra-ui/react";
 import Place from "../interfaces/Place.ts";
 import SessionContext from "../hooks/useSession.ts"
@@ -10,6 +10,7 @@ import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
 import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
+import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 
 
 interface SessionProps{
@@ -62,7 +63,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
         setLogClimbModalOpen(true)
     }
 
-    function handleLogClimbSumbit() {
+    function handleLogClimbSubmit() {
         if(activeSessions.activeSessions.length < 1) {
             toaster.create({
                 title: "Error",
@@ -129,6 +130,34 @@ function Sessions({places}: SessionProps): React.ReactElement {
         activeSessions.closeSession(activeSessions.activeSessions[0].id)
     }
 
+    function saveClimbAttempt(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        if(activeSessions.activeSessions.length < 1) {
+            toaster.create({
+                title: "Error",
+                description: "You must start a session before logging a climb",
+                type: "error"
+            })
+            return
+        }
+        const formData = new FormData(event.currentTarget)
+        const routeId = formData.get("route") as string
+        const attempts = formData.get("attempts") as string
+        if(!routeId || !attempts) {
+            toaster.create({
+                title: "Error",
+                description: "Please fill in all fields",
+                type: "error"
+            })
+            return
+        }
+        const completed = formData.get("completed") == "on"
+        const activeSession = activeSessions.activeSessions[0]
+        const place = places.filter(place => place.id === activeSession.placeId)[0]
+        activeSessions.addRouteAttempt({routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed})
+
+        setLogClimbModalOpen(false)
+    }
 
 
 
@@ -142,7 +171,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
     const formFields = [
         {label: "Route", name: "route", type: "select", options: routeFields, placeholder: "Select a route"},
         {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts"},
-        {label: "Completed", name: "completed", type: "checkbox" value="completed"},
+        {label: "Completed", name: "completed", type: "checkbox"},
     ]
 
 
@@ -222,7 +251,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                         >
                             <Text color="black">No Active Sessions</Text>
                         </Box>
-                        )
+                    )
                 }
                 {
                     activeSessions.activeSessions.length > 0 && (
@@ -241,26 +270,69 @@ function Sessions({places}: SessionProps): React.ReactElement {
 
                             </Card.Header>
                             { activeSessions.activeSessions[0].routeAttempts.length > 0 ? (
-                                <Card.Body>
-                                    {activeSessions.activeSessions[0].routeAttempts.map((attempt) => {
-                                        return(
-                                            <Box>
-                                                <Text color="black">Route Name: {attempt.routeId}</Text>
-                                                <Text color="black">Route Attempts: {attempt.attempts}</Text>
-                                            </Box>
-                                        )
-                                    })}
-                                </Card.Body>
-                            ) : (
-                                <Card.Body>
-                                    <Text color="black">No route attempts</Text>
-                                </Card.Body>
-                            )}
+                            <Card.Body>
+                            <VStack gap={3} align="stretch">
+                                {activeSessions.activeSessions[0].routeAttempts.map((attempt: RouteAttempt, index) => {
+                                    const boulder = boulders.find(b => b.boulder.id === attempt.routeId);
+                                    const place = boulder ? places.find(p => p.id === boulder.boulder.place) : null;
+                                    const gradeString = boulder && place
+                                        ? place.gradingSystem.grades.find(g => g.id === boulder.boulder.grade)?.gradeString
+                                        : "N/A";
 
+                                    return(
+                                        <Box
+                                            key={index}
+                                            p={3}
+                                            bg="gray.50"
+                                            rounded="md"
+                                            borderLeft="4px solid"
+                                            borderColor={attempt.completed ? "green.500" : "orange.500"}
+                                        >
+                                            <HStack justify="space-between" mb={2}>
+                                                <Text color="black" fontWeight="bold" fontSize="lg">
+                                                    {boulder ? boulder.boulder.name : `Route #${attempt.routeId}`}
+                                                </Text>
+                                                <Text
+                                                    color="white"
+                                                    bg={attempt.completed ? "green.500" : "orange.500"}
+                                                    px={2}
+                                                    py={1}
+                                                    rounded="full"
+                                                    fontSize="sm"
+                                                    fontWeight="medium"
+                                                >
+                                                    {attempt.completed ? "✓ Sent" : "In Progress"}
+                                                </Text>
+                                            </HStack>
+                                            <HStack gap={4} w="full" display="flex">
+                                                <Text color="gray.700" fontSize="sm">
+                                                    <strong>Grade:</strong> {gradeString}
+                                                </Text>
+                                                <Text color="gray.700" fontSize="sm">
+                                                    <strong>Attempts:</strong> {attempt.attempts}
+                                                </Text>
+                                                <Button color="fg">
+                                                    Test
+                                                </Button>
+                                            </HStack>
+                                            {boulder?.description && (
+                                                <Text color="gray.600" fontSize="sm" mt={2} fontStyle="italic">
+                                                    {boulder.description}
+                                                </Text>
+                                            )}
+                                        </Box>
+                                    )
+                                })}
+                                </VStack>
+                                </Card.Body>
+                                ) : (
+                                <Card.Body>
+                                <Text color="black">No route attempts</Text>
+                            </Card.Body>
+                            )}
                         </Card.Root>
                     )
                 }
-
             </VStack>
             <Modal isOpen={newSessionModalOpen} title="Choose a place to climb" size="md">
                 <Modal.Body>
@@ -294,18 +366,26 @@ function Sessions({places}: SessionProps): React.ReactElement {
             <Modal isOpen={logClimbModalOpen} title="Log Climb" size="md">
                 <Modal.Body>
                     <Box>
-                        <AbstractForm fields={formFields} handleSubmit={handleLogClimbSumbit} footer={<></>} />
+                        <AbstractForm
+                            fields={formFields}
+                            handleSubmit={saveClimbAttempt}
+                            footer={
+                                <HStack justifySelf="center" display="flex" justifyContent="center" w="full">
+                                    <Button
+                                        type="submit"
+                                        colorPalette="blue"
+                                        mt={2}
+                                    >Save</Button>
+                                    <Button
+                                        onClick={() => setLogClimbModalOpen(false)}
+                                        colorPalette="red"
+                                        mt={2}
+                                    >Close</Button>
+                                </HStack>
+                            }/>
                     </Box>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button
-                        onClick={() => setLogClimbModalOpen(false)}
-                        colorPalette="red"
-                        mt={2}
-                    >Close</Button>
-                </Modal.Footer>
             </Modal>
-
             <Toaster/>
         </Box>
     )
