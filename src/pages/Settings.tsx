@@ -88,16 +88,15 @@ export default function Settings(props: SettingsProps) {
         const selectPlaceObject = places.filter(place => place.id === parseInt(selectedPlace[0]))[0]
         const formData = new FormData()
         formData.append("placeId", selectedPlace[0])
-        const selectedId = selectedGradingSystem[0]
-        const parsedId = parseInt(selectedId)
-        if (
-            selectedId &&
-            !isNaN(parsedId) &&
-            selectPlaceObject.gradingSystem.id !== parsedId
-        ) {
-            formData.append("gradingSystemId", selectedId)
+        
+        // Get grading system value from form data
+        const gradingSystemValue = event.target.gradingSystem?.value
+        if (gradingSystemValue) {
+            const parsedId = parseInt(gradingSystemValue)
+            if (!isNaN(parsedId) && selectPlaceObject.gradingSystem.id !== parsedId) {
+                formData.append("gradingSystemId", gradingSystemValue)
+            }
         }
-
 
         if(event.target.description.value) {
             formData.append("description", event.target.description.value)
