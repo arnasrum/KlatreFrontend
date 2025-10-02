@@ -1,5 +1,5 @@
 export type ActiveSession = {
-    id: number
+    id: string,
     groupId: number,
     dateStarted: string,
     routeAttempts: {

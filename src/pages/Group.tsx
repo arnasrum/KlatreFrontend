@@ -88,7 +88,7 @@ function Group() {
                                     <Settings groupID={groupData.id} places={placeData} />
                                 </Tabs.Content>
                                 <Tabs.Content value="sessions">
-                                    <Sessions/>
+                                    <Sessions places={placeData}/>
                                 </Tabs.Content>
                             </Tabs.Root>
                         </Container>

@@ -8,10 +8,14 @@ export default function SessionContextProvider({ children }: { children: React.R
 
     function addSession(session: ActiveSession) {
         // Need extra logic to check if session within the group already exists
+        if(activeSessions.length >= 1) {
+            console.log("Session already exists")
+            return
+        }
         setActiveSessions(prev => [...prev, session])
     }
 
-    function closeSession(id: number) {
+    function closeSession(id: string) {
         setActiveSessions(prev => prev.filter(session => session.id !== id))
     }
 
