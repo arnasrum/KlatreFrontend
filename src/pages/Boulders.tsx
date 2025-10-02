@@ -55,7 +55,6 @@ function Boulders(props: BoulderProps) {
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement)
         formData.set("placeID", placeID.toString())
-        formData.set("grade", selectedGrade.toString())
         handleFormDataImage(formData)
 
         fetch(`${apiUrl}/boulders/place/add`, {
@@ -68,7 +67,6 @@ function Boulders(props: BoulderProps) {
             .then(_ => {
                 setBoulderAdded(true)
                 setBoulderAction(null)
-                setSelectedGrade([])
                 refetchBoulders()
             })
             .catch(error => console.error(error))
@@ -83,7 +81,6 @@ function Boulders(props: BoulderProps) {
         handleFormDataImage(formData)
         formData.set("placeID", boulders[page].place.toString());
         formData.set("boulderID", boulders[page].id.toString());
-        formData.set("grade", selectedGrade.toString());
         formData.entries().forEach(entry => {
             if(!entry[1]) {
                 formData.delete(entry[0])
@@ -99,7 +96,6 @@ function Boulders(props: BoulderProps) {
         })
             .then(_ => {
                 refetchBoulders()
-                setSelectedGrade([])
             })
             .catch(error => console.error(error))
             .finally(() => {setBoulderAction(null)})
@@ -137,7 +133,7 @@ function Boulders(props: BoulderProps) {
     const fields = [
         {"label": "Name", "type": "string", "name": "name", "required": true},
         {"label": "Description", "type": "string", "name": "description", "required": false},
-        {"label": "Grade", "type": "select", "name": "grade", "required": true, "options": gradeOptions, value: selectedGrade, setter: setSelectedGrade},
+        {"label": "Grade", "type": "select", "name": "grade", "required": true, "options": gradeOptions},
         {"label": "Image", "type": "image", "name": "image", "required": false, "accept": "image/*"},
     ]
 

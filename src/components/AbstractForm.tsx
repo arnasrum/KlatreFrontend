@@ -1,5 +1,5 @@
-import React from "react";
-import { Input, Field, VStack, Box } from "@chakra-ui/react";
+import React, { useState } from "react";
+import { Input, Field, VStack, Box} from "@chakra-ui/react";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
 import SelectField from "./SelectField.tsx";
@@ -11,8 +11,8 @@ interface FormProps{
     width?: string
 }
 
-interface SelectFieldType {
-    options: { label: string, value: string}[],
+interface SelectFieldType {    fields: Array<InputField>,
+    options: { label: string, value: string, description?: string}[],
     value: string,
     setValue: (value: string) => void,
     name: string,
@@ -23,10 +23,35 @@ interface SelectFieldType {
 }
 
 function Form({fields, handleSubmit, footer, width}: FormProps) {
-   return(
+
+    const [selectValues, setSelectValues] = useState<Record<string, string[]>>({});
+
+    const handleSelectChange = (fieldName: string, value: string[]) => {
+        setSelectValues(prev => ({
+            ...prev,
+            [fieldName]: value
+        }));
+    };
+
+    const onSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        
+        // Add hidden inputs for select fields to the form data
+        const form = event.target as HTMLFormElement;
+        const formData = new FormData(form);
+        
+        // Add select values to form data
+        Object.entries(selectValues).forEach(([fieldName, values]) => {
+            formData.set(fieldName, values.join(','));
+        });
+        
+        handleSubmit(event);
+    };
+
+    return(
        <Box 
          as="form" 
-         onSubmit={handleSubmit} 
+         onSubmit={onSubmit} 
          p={6}
          bg="white"
          borderRadius="lg"
@@ -36,6 +61,19 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
          w={width}
        >
            <VStack gap={4} align="stretch">
+
+               {fields.some(field => field.type == "select") && (
+                   <>
+                       {Object.entries(selectValues).map(([fieldName, values]) => (
+                           <input 
+                               key={fieldName}
+                               type="hidden" 
+                               name={fieldName} 
+                               value={values.join(',')} 
+                           />
+                       ))}
+                   </>
+               )}
                {fields.map((field: (InputField), index: number) => {
                    if(field.type == "image") {
                         return(
@@ -44,6 +82,9 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                             </Box>
                         );
                    } else if(field.type == "select") {
+                        const fieldName = field.name || `select-${index}`;
+                        const currentValue = selectValues[fieldName] || [];
+                        
                         return(
                             <Field.Root key={field.name || index} width="full" required={field.required} w="full">
                                 <Field.Label
@@ -56,11 +97,12 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                                 </Field.Label>
                                 <SelectField
                                     fields={field.options}
-                                    setValue={field.setter}
-                                    value={field.value}
+                                    setValue={(value) => handleSelectChange(fieldName, value)}
+                                    value={currentValue}
                                     placeholder={field.placeholder}
                                     disabled={field.disabled}
                                     width="full"
+                                    zIndex={9000}
                                 />
                             </Field.Root>
 
