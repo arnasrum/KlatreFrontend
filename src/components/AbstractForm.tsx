@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input, Field, VStack, Box} from "@chakra-ui/react";
+import {Input, Field, VStack, Box, Checkbox, HStack} from "@chakra-ui/react";
 import type InputField from "../interfaces/InputField.ts";
 import ImageField from "./ImageField.tsx"
 import SelectField from "./SelectField.tsx";
@@ -65,10 +65,10 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                {fields.some(field => field.type == "select") && (
                    <>
                        {Object.entries(selectValues).map(([fieldName, values]) => (
-                           <input 
+                           <input
+                               type="hidden"
                                key={fieldName}
-                               type="hidden" 
-                               name={fieldName} 
+                               name={fieldName}
                                value={values.join(',')} 
                            />
                        ))}
@@ -84,7 +84,6 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                    } else if(field.type == "select") {
                         const fieldName = field.name || `select-${index}`;
                         const currentValue = selectValues[fieldName] || [];
-                        
                         return(
                             <Field.Root key={field.name || index} width="full" required={field.required} w="full">
                                 <Field.Label
@@ -107,6 +106,27 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                             </Field.Root>
 
                         )
+                   } else if(field.type == "checkbox") {
+                       return(
+                           <Field.Root key={field.name || index} width="full" required={field.required} w="full">
+
+                               <Checkbox.Root>
+                                   <HStack>
+                                       <Checkbox.Label color="fg">
+                                           {field.label}
+                                           {field.required && <Field.RequiredIndicator color="red.500"/>}
+                                       </Checkbox.Label>
+                                       <Checkbox.Control />
+                                   </HStack>
+                                   <Checkbox.HiddenInput name={field.name} />
+                                   <Field.HelperText color="gray.600" fontSize="sm" />
+                                   <Field.ErrorText color="red.500" fontSize="sm">
+                                       This field is required
+                                   </Field.ErrorText>
+                               </Checkbox.Root>
+                           </Field.Root>
+                       )
+
                    } else {
                        return (
                            <Field.Root key={field.name || index} required={field.required}>
@@ -128,6 +148,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                                    bg="gray.50"
                                    border="1px"
                                    borderColor="gray.300"
+                                   color="fg"
                                    _hover={{
                                      borderColor: "gray.400"
                                    }}

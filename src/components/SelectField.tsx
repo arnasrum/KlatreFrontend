@@ -1,8 +1,8 @@
 import React from 'react';
-import { Stack, Select, Portal, createListCollection} from "@chakra-ui/react"
+import { Stack, Text, Box, Select, HStack, Portal, createListCollection} from "@chakra-ui/react"
 
 interface SelectFieldProps {
-    fields: Array<{label: string, value: string}>,
+    fields: Array<{label: string, value: string, description?: string}>,
     value: string[],
     setValue: (val: string[]) => void,
     label?: string,
@@ -47,7 +47,7 @@ function SelectField(props: SelectFieldProps) {
                 <Select.HiddenSelect />
                 {props.label && <Select.Label>{props.label}</Select.Label>}
                 <Select.Control>
-                    <Select.Trigger>
+                    <Select.Trigger color="fg">
                         {capitalizeFirstLetter(getDisplayText())}
                     </Select.Trigger>
                     <Select.IndicatorGroup>
@@ -58,9 +58,14 @@ function SelectField(props: SelectFieldProps) {
                     <Select.Positioner>
                         <Select.Content zIndex={props.zIndex}>
                             {fields.items.map((item) => (
-                                <Select.Item item={item} key={item.value}>
+                                <Select.Item color="fg" item={item} key={item.value}>
                                     {capitalizeFirstLetter(item.label)}
-                                    <Select.ItemIndicator />
+                                    <HStack>
+                                        { item.description && (
+                                            <Text color="fg.subtle">{item.description}</Text>
+                                        )}
+                                        <Select.ItemIndicator />
+                                    </HStack>
                                 </Select.Item>
                             ))}
                         </Select.Content>

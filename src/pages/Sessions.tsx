@@ -1,9 +1,14 @@
-import React, {useContext, useState} from "react";
+import React, {useContext, useState, useEffect} from "react";
 import {Box, Button, Heading, HStack, VStack, Text, Card} from "@chakra-ui/react";
 import Place from "../interfaces/Place.ts";
 import SessionContext from "../hooks/useSession.ts"
 import {ActiveSession} from "../interfaces/ActiveSession.ts";
 import Modal from "../components/Modal.tsx";
+import SelectField from "../components/SelectField.tsx";
+import {toaster, Toaster} from "../components/ui/toaster.tsx";
+import {apiUrl} from "../constants/global.ts";
+import Boulder from "../interfaces/Boulder.ts";
+import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 
 
@@ -15,16 +20,132 @@ interface SessionProps{
 
 function Sessions({places}: SessionProps): React.ReactElement {
 
-    const date = new Date()
     const activeSessions = useContext(SessionContext)
+    const { user } = useContext(TokenContext)
+
+    const date = new Date()
+
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
+    const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
+    const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
+    const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+    const [boulders, setBoulders] = useState<Boulder[]>([])
+
+    useEffect(() => {
+        if(!selectedPlace && activeSessions.activeSessions.length <= 0) {
+            return
+        }
+        const placeId = selectedPlace ? selectedPlace.id : activeSessions.activeSessions[0].placeId
+        fetch(`${apiUrl}/boulders/place?placeID=${placeId}`, {
+            headers: {
+                "Authorization": `Bearer ${user.access_token}`
+            }
+        })
+            .then(response => {
+                if(!response.ok) {
+                    return response.json().then(json => {throw new Error(json.errorMessage)})
+                }
+                return response.json()
+            })
+            .then(data => {setBoulders(data); return data})
+            .catch(error => {
+                toaster.create({
+                    title: "Error",
+                    type: "error",
+                    description: error.message,
+                })
+            })
+        }, [selectedPlace])
 
 
-
-    function click() {
-        setNewSessionModalOpen(true)
-        //activeSessions.addSession({id: crypto.randomUUID(), dateStarted: date.toUTCString(), groupId: 1, routeAttempts: []})
+    function handleLogClimbClick() {
+        setLogClimbModalOpen(true)
     }
+
+    function handleLogClimbSumbit() {
+        if(activeSessions.activeSessions.length < 1) {
+            toaster.create({
+                title: "Error",
+                description: "You must start a session before logging a climb",
+                type: "error"
+            })
+            return
+        }
+        const activeSession = activeSessions.activeSessions[0]
+        const place = places.filter(place => place.id === activeSession.placeId)[0]
+    }
+
+    function startNewSessionClick() {
+
+        if(activeSessions.activeSessions.length > 0) {
+            toaster.create({
+                title: "Error",
+                description: "You already have an active session",
+                type: "error"
+            })
+            return
+        }
+        setNewSessionModalOpen(true)
+    }
+
+    function handleSessionStartClick() {
+        if(selectFieldPlaceValue.length < 1) {
+            toaster.create(
+                {
+                    title: "Error",
+                    description: "Please select a place to climb",
+                    type: "error"
+                }
+            )
+            return
+        }
+        const placeId = parseInt(selectFieldPlaceValue[0])
+        const place = places.filter(place => place.id === placeId)[0]
+        if(!place) {
+            toaster.create(
+                {
+                    title: "Error",
+                    description: "Place not found",
+                    type: "error"
+                }
+            )
+        }
+        setSelectedPlace(place)
+        activeSessions.addSession({id: crypto.randomUUID(), dateStarted: date.toDateString(), placeId: placeId, routeAttempts: []})
+        setNewSessionModalOpen(false)
+        setSelectFieldPlaceValue([])
+    }
+
+    function handleCloseSessionClick() {
+        if(activeSessions.activeSessions.length < 1) {
+            toaster.create({
+                title: "Error",
+                description: "You must start a session before closing it",
+                type: "error"
+            })
+            return
+        }
+        setSelectedPlace(null)
+        activeSessions.closeSession(activeSessions.activeSessions[0].id)
+    }
+
+
+
+
+
+    const placeFields = places.map((place: Place) => {
+        return({label: place.name, value: place.id.toString()})
+    })
+    const routeFields = boulders.map((boulder) => {
+        return({label: `${boulder.boulder.name}`, value: boulder.boulder.id.toString(), description: boulder.boulder.description || "No description"})
+    })
+    const formFields = [
+        {label: "Route", name: "route", type: "select", options: routeFields, placeholder: "Select a route"},
+        {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts"},
+        {label: "Completed", name: "completed", type: "checkbox" value="completed"},
+    ]
+
+
 
 
     const activeSession = activeSessions.activeSessions[0]
@@ -32,7 +153,6 @@ function Sessions({places}: SessionProps): React.ReactElement {
     return(
         <Box shadow="2px" w="full" color="bg.subtle" display="flex" justifyContent="center">
             <VStack>
-
                 {/* Header, start new session button */}
                 <HStack display="flex" justifyContent="space-between" w="md" justifySelf="center">
                     <Heading color="black" mr="md" size="2xl">Sessions</Heading>
@@ -43,7 +163,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                 size="sm"
                                 colorPalette="blue"
                                 rounded="lg"
-                                onClick={click}
+                                onClick={startNewSessionClick}
                             >Start New Session</Button>
                         ) : (
                             <Button
@@ -51,7 +171,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                 size="sm"
                                 colorPalette="red"
                                 rounded="lg"
-                                onClick={() => activeSessions.closeSession(activeSession.id)}
+                                onClick={() => handleCloseSessionClick()}
                             >Close Session</Button>
                         )
                     }
@@ -73,11 +193,15 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                 mb="md"
                             >
                                 <HStack>
-                                    <Text color="black">Active Session</Text>
+                                    <Text color="black">Active Session:</Text>
                                     {activeSessions.activeSessions.map((session: ActiveSession) => {
+                                        const place = places.filter(place => place.id === session.placeId)[0]
+                                        if(!place) {
+                                            return (<></>)
+                                        }
                                         return (
                                             <HStack>
-                                                <Text color="fg">{session.dateStarted}</Text>
+                                                <Text color="fg">{`${place.name}, ${session.dateStarted}`}</Text>
                                             </HStack>
                                         )
                                     })}
@@ -110,6 +234,7 @@ function Sessions({places}: SessionProps): React.ReactElement {
                                         <Button
                                             colorPalette="gray"
                                             mr={2}
+                                            onClick={() => {handleLogClimbClick()}}
                                         >+ Log Climb</Button>
                                     </HStack>
                                 </Card.Title>
@@ -137,22 +262,51 @@ function Sessions({places}: SessionProps): React.ReactElement {
                 }
 
             </VStack>
-            <Modal isOpen={newSessionModalOpen} title="Add a new session">
+            <Modal isOpen={newSessionModalOpen} title="Choose a place to climb" size="md">
                 <Modal.Body>
                     <Box>
-                        <AbstractForm fields={undefined} handleSubmit={undefined}/>
-
+                        <SelectField
+                            value={selectFieldPlaceValue}
+                            setValue={setSelectFieldPlaceValue}
+                            fields={placeFields}
+                            zIndex={9999}
+                        />
 
                     </Box>
                 </Modal.Body>
                 <Modal.Footer>
                     <Box>
-                        <Button colorPalette="blue" onClick={() => setNewSessionModalOpen(false)}>Save</Button>
-                        <Button colorPalette="red" onClick={() => setNewSessionModalOpen(false)}>Close</Button>
+                        <Button
+                            colorPalette="blue"
+                            onClick={() => handleSessionStartClick()}
+                            mr={2}
+                            mt={2}
+                        >Save</Button>
+                        <Button
+                            colorPalette="red"
+                            onClick={() => {setNewSessionModalOpen(false); setSelectFieldPlaceValue([])}}
+                            ml={2}
+                            mt={2}
+                        >Close</Button>
                     </Box>
                 </Modal.Footer>
             </Modal>
+            <Modal isOpen={logClimbModalOpen} title="Log Climb" size="md">
+                <Modal.Body>
+                    <Box>
+                        <AbstractForm fields={formFields} handleSubmit={handleLogClimbSumbit} footer={<></>} />
+                    </Box>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        onClick={() => setLogClimbModalOpen(false)}
+                        colorPalette="red"
+                        mt={2}
+                    >Close</Button>
+                </Modal.Footer>
+            </Modal>
 
+            <Toaster/>
         </Box>
     )
 }

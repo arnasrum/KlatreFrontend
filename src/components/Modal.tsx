@@ -9,15 +9,16 @@ interface ModalProps {
     title: string,
     children: React.ReactNode,
     footer?: React.ReactNode,
+    size?: "sm" | "md" | "lg" | "xl" | "full" | "xs" | "cover",
 }
 
 
 function Modal(props: ModalProps) {
 
-    const { isOpen, title, children, footer } = props
+    const { isOpen, title, children, footer, size = "xl" } = props
 
     return (
-        <Dialog.Root open={isOpen} size="xl">
+        <Dialog.Root open={isOpen} size={size}>
             <Dialog.Trigger/>
             <Dialog.Backdrop/>
             <Dialog.Positioner>

@@ -1,6 +1,6 @@
 export type ActiveSession = {
     id: string,
-    groupId: number,
+    placeId: number,
     dateStarted: string,
     routeAttempts: {
         routeId: number,

@@ -4,7 +4,11 @@ import SessionContext from "../hooks/useSession.ts";
 
 
 export default function SessionContextProvider({ children }: { children: React.ReactNode }) {
-    const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([]);
+    // Initialize state from localStorage if available
+    const [activeSessions, setActiveSessions] = useState<ActiveSession[]>(() => {
+        const savedSessions = localStorage.getItem('activeSessions');
+        return savedSessions ? JSON.parse(savedSessions) : [];
+    });
 
     function addSession(session: ActiveSession) {
         // Need extra logic to check if session within the group already exists
@@ -25,8 +29,10 @@ export default function SessionContextProvider({ children }: { children: React.R
         closeSession
     }
 
+    // Save to localStorage whenever activeSessions changes
     useEffect(() => {
         console.log("updating active sessions")
+        localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
     }, [activeSessions]);
 
     return(
