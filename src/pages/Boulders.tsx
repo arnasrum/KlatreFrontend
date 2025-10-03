@@ -310,10 +310,6 @@ function Boulders(props: BoulderProps) {
                         {/* Left Column - Stats and Controls */}
                         <VStack align="stretch">
                             {/* Route Sends Component */}
-                            <RouteSends
-                                boulderID={boulders[page].id}
-                                routeSend={boulderData?.[page].routeSend}
-                            />
                             <Card.Root display="flex" h="full" w="full" mb={2}>
                                 <Card.Header>
                                     <Heading size="md" color="gray.700" justtify-self="flex-start">Description</Heading>

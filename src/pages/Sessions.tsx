@@ -10,7 +10,7 @@ import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
 import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
+import {RouteAttempt, NewRouteAttempt} from "../interfaces/RouteAttempt.ts";
 
 
 interface SessionProps{
@@ -32,7 +32,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [boulders, setBoulders] = useState<Boulder[]>([])
-    const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
+    const [editingAttempt, setEditingAttempt] = useState<NewRouteAttempt | null>(null)
 
     const activeSession = activeSessions.activeSessions.find(s => s.groupId === groupId);
 
