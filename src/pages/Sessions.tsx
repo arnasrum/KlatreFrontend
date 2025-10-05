@@ -10,7 +10,7 @@ import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
 import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import {RouteAttempt, NewRouteAttempt} from "../interfaces/RouteAttempt.ts";
+import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 
 
 interface SessionProps{
@@ -32,7 +32,9 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [boulders, setBoulders] = useState<Boulder[]>([])
-    const [editingAttempt, setEditingAttempt] = useState<NewRouteAttempt | null>(null)
+    const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
+    const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
+    const [refetchPastSessions, setRefetchPastSessions] = useState(false)
 
     const activeSession = activeSessions.activeSessions.find(s => s.groupId === groupId);
 
@@ -53,6 +55,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                 return response.json()
             })
             .then(data => {setBoulders(data); return data})
+            .then(_ => handleRefetchPastSessions())
             .catch(error => {
                 toaster.create({
                     title: "Error",
@@ -62,7 +65,34 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
             })
         }, [selectedPlace, activeSession])
 
+    useEffect(() => {
+        fetch(`${apiUrl}/api/climbingSessions?groupId=${groupId}`, {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${user.access_token}`,
+                "Content-Type": "application/json"
+            }
+        })
+            .then(response => {
+                if(!response.ok) {
+                    return response.json().then(json => {throw new Error(json.errorMessage)})
+                }
+                return response.json()
+            })
+            .then(data => setPastSessions(data.data))
+            .catch(error => {
+                console.error(error)
+                toaster.create({
+                    title: "Error",
+                    type: "error",
+                    description: error instanceof Error ? error.message : "Failed to fetch past sessions",
+                })
+            })
+    }, [refetchPastSessions]);
 
+    function handleRefetchPastSessions() {
+        setRefetchPastSessions(!refetchPastSessions)
+    }
     function handleLogClimbClick() {
         setLogClimbModalOpen(true)
     }
@@ -103,7 +133,9 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
             )
         }
         setSelectedPlace(place)
-        activeSessions.addSession({id: crypto.randomUUID(), groupId: groupId,  dateStarted: new Date().toDateString(), placeId: placeId, routeAttempts: []})
+        const date = new Date()
+        const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        activeSessions.addSession({id: crypto.randomUUID(), groupId: groupId,  startDate: dateString, placeId: placeId, routeAttempts: []})
         setNewSessionModalOpen(false)
         setSelectFieldPlaceValue([])
     }
@@ -124,15 +156,14 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         if(!activeSession) {
             return
         }
-
         try {
-            const response = await fetch(`${apiUrl}/sessions`, {
+            const response = await fetch(`${apiUrl}/api/climbingSessions`, {
                 method: 'POST',
                 headers: {
                     "Authorization": `Bearer ${user.access_token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(activeSession)
+                body: JSON.stringify({...activeSession, "name": activeSession.startDate})
             })
 
             if(!response.ok) {
@@ -197,7 +228,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         }
         const completed = formData.get("completed") == "on"
         console.log("Adding route attempt for groupId:", groupId)
-        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed, timestamp: Date.now()}, groupId)
+        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed}, groupId)
 
         setLogClimbModalOpen(false)
     }
@@ -282,7 +313,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         return({label: place.name, value: place.id.toString()})
     })
     const routeFields = boulders.map((boulder) => {
-        return({label: `${boulder.boulder.name}`, value: boulder.boulder.id.toString(), description: boulder.boulder.description || "No description"})
+        return({label: `${boulder.name}`, value: boulder.id.toString(), description: boulder.description || "No description"})
     })
     const formFields = [
         {label: "Route", name: "route", type: "select", options: routeFields, placeholder: "Select a route"},
@@ -349,7 +380,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                         }
                                         return (
                                             <HStack>
-                                                <Text color="fg">{`${place.name}, ${activeSession.dateStarted}`}</Text>
+                                                <Text color="fg">{`${place.name}, ${activeSession.startDate}`}</Text>
                                             </HStack>
                                         )
                                     })()}
@@ -392,10 +423,10 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             <Card.Body>
                             <VStack gap={3} align="stretch">
                                 {activeSession.routeAttempts.map((attempt: RouteAttempt, index) => {
-                                    const boulder = boulders.find(b => b.boulder.id === attempt.routeId);
-                                    const place = boulder ? places.find(p => p.id === boulder.boulder.place) : null;
+                                    const boulder = boulders.find(boulder => boulder.id === attempt.routeId);
+                                    const place = boulder ? places.find(p => p.id === boulder.place) : null;
                                     const gradeString = boulder && place
-                                        ? place.gradingSystem.grades.find(g => g.id === boulder.boulder.grade)?.gradeString
+                                        ? place.gradingSystem.grades.find(g => g.id === boulder.grade)?.gradeString
                                         : "N/A";
 
                                     return(
@@ -409,7 +440,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                         >
                                             <HStack justify="space-between" mb={2}>
                                                 <Text color="black" fontWeight="bold" fontSize="lg">
-                                                    {boulder ? boulder.boulder.name : `Route #${attempt.routeId}`}
+                                                    {boulder ? boulder.name : `Route #${attempt.routeId}`}
                                                 </Text>
                                                 <Text
                                                     color="white"
@@ -463,6 +494,44 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                         </Card.Root>
                     )
                 }
+                <VStack w="full">
+                    <HStack display="flex" justifyContent="space-between" w="full">
+                        <Heading justifySelf="flex-start" color="black">Past Sessions</Heading>
+                        <Button
+                            colorPalette="gray"
+                            ml={2}
+                            onClick={() => handleRefetchPastSessions()}
+                        >Refresh</Button>
+                    </HStack>
+                    {pastSessions && pastSessions.length > 0 && (
+                       pastSessions.map((session: ActiveSession, index: number) => {
+                           return(
+                                <Card.Root key={index} shadow="md" w="full">
+                                    <Card.Header>
+                                        <Heading justifyContent="space-between">{places.find(place => place.id == session.placeId).name} | {session.startDate.split(" ")[0]}</Heading>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        {session.routeAttempts && (
+                                            session.routeAttempts.map((attempt: RouteAttempt, index: number) => {
+                                                return(
+                                                    <HStack>
+                                                        <Heading size="lg">{boulders.find(boulder => boulder.id === attempt.routeId)?.name || `Route #${attempt.routeId}`} |</Heading>
+                                                        <span>Attempts: {attempt.attempts}</span>
+                                                        <span>Completed: {attempt.completed? "True" : "false"}</span>
+                                                    </HStack>
+                                                )
+                                        }))}
+                                    </Card.Body>
+                                </Card.Root>
+                           )
+                       })
+                    )}
+
+
+                </VStack>
+
+
+
             </VStack>
             <Modal isOpen={newSessionModalOpen} title="Choose a place to climb" size="md">
                 <Modal.Body>
@@ -522,7 +591,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                         {editingAttempt && (
                             <>
                                 <Text color="black" fontWeight="bold" mb={2}>
-                                    {boulders.find(b => b.boulder.id === editingAttempt.routeId)?.boulder.name || `Route #${editingAttempt.routeId}`}
+                                    {boulders.find(boulder => boulder.id === editingAttempt.routeId)?.name || `Route #${editingAttempt.routeId}`}
                                 </Text>
                                 <AbstractForm
                                     fields={editFormFields}

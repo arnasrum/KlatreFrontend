@@ -19,7 +19,7 @@ import InputField from "../interfaces/InputField.ts";
 import {Grade} from "../interfaces/Grade.ts";
 
 interface BoulderProps{
-    boulderData: Array<BoulderData> | undefined
+    boulderData: Boulder[] | undefined
     isLoading?: boolean
     placeID: number,
     grades: Grade[],
@@ -28,7 +28,7 @@ interface BoulderProps{
 
 function Boulders(props: BoulderProps) {
     const { placeID, boulderData, refetchBoulders, isLoading = false } = props
-    const boulders: Array<Boulder> | undefined = boulderData?.map((boulder: BoulderData) => boulder.boulder)
+    const boulders = boulderData
     const boulderLength = boulders?.length || 0
     const [page, setPage] = useState<number>(0)
     const [boulderAdded, setBoulderAdded] = useState<boolean>(false)
@@ -309,7 +309,12 @@ function Boulders(props: BoulderProps) {
                     <SimpleGrid columns={{base: 1, lg: 2}}>
                         {/* Left Column - Stats and Controls */}
                         <VStack align="stretch">
-                            {/* Route Sends Component */}
+                            {/* Route Sends Component
+                                <RouteSends
+                                    boulderID={boulders[page].id}
+                                    routeSend={boulderData?.[page].routeSend}
+                                />
+                            */}
                             <Card.Root display="flex" h="full" w="full" mb={2}>
                                 <Card.Header>
                                     <Heading size="md" color="gray.700" justtify-self="flex-start">Description</Heading>
