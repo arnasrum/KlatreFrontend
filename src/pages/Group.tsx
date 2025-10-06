@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useContext, useMemo, useRef } from "react"
 import { useParams, useLocation, Outlet } from "react-router-dom"
-import Boulders from "./Boulders.tsx";
 import {Box, Grid, GridItem, Tabs, Spinner, Container, Heading, Center, Text} from "@chakra-ui/react"
 import "./Group.css"
 import Places from "./Places.tsx";
@@ -62,7 +61,7 @@ function Group() {
     return (
         <PlaceContext.Provider value={placeContext} >
             <Container bg="Background" >
-                <Grid templateColumns="repeat(3, 1fr)" gap={6}>PlaceContext
+                <Grid templateColumns="repeat(3, 1fr)" gap={6}>
                     <GridItem colSpan={3}>
                         <Container maxW="container.xl" p={4} bg="Background" borderRadius="lg" boxShadow="lg" overflow="hidden">
                             <Heading size="4xl">{groupData.name}</Heading>

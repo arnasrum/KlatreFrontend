@@ -49,6 +49,8 @@ function UserContextProvider({children}: { children: React.ReactNode}) {
     }
 
     function logout() {
+        setIsLoggedIn(false);
+        setUser(null);
         console.log("logout")
     }
 
