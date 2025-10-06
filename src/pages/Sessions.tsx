@@ -8,9 +8,9 @@ import SelectField from "../components/SelectField.tsx";
 import {toaster, Toaster} from "../components/ui/toaster.tsx";
 import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
-import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
+import { UserContext } from "../contexts/UserContext.ts"
 
 
 interface SessionProps{
@@ -18,12 +18,9 @@ interface SessionProps{
     groupId: number
 }
 
-
-
 function Sessions({places, groupId}: SessionProps): React.ReactElement {
 
     const activeSessions = useContext(SessionContext)
-    const { user } = useContext(TokenContext)
 
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
     const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
@@ -35,6 +32,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
+    const { user } = useContext(UserContext)
 
     const activeSession = activeSessions.activeSessions.find(s => s.groupId === groupId);
 
@@ -44,9 +42,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         }
         const placeId = selectedPlace ? selectedPlace.id : activeSession!.placeId
         fetch(`${apiUrl}/boulders/place?placeID=${placeId}`, {
-            headers: {
-                "Authorization": `Bearer ${user.access_token}`
-            }
+            credentials: "include",
         })
             .then(response => {
                 if(!response.ok) {
@@ -68,8 +64,8 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     useEffect(() => {
         fetch(`${apiUrl}/api/climbingSessions?groupId=${groupId}`, {
             method: 'GET',
+            credentials: "include",
             headers: {
-                "Authorization": `Bearer ${user.access_token}`,
                 "Content-Type": "application/json"
             }
         })
@@ -159,8 +155,8 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         try {
             const response = await fetch(`${apiUrl}/api/climbingSessions`, {
                 method: 'POST',
+                credentials: "include",
                 headers: {
-                    "Authorization": `Bearer ${user.access_token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({...activeSession, "name": activeSession.startDate})
@@ -504,8 +500,8 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                         >Refresh</Button>
                     </HStack>
                     {pastSessions && pastSessions.length > 0 && (
-                       pastSessions.map((session: ActiveSession, index: number) => {
-                           return(
+                        pastSessions.map((session: ActiveSession, index: number) => {
+                            return(
                                 <Card.Root key={index} shadow="md" w="full">
                                     <Card.Header>
                                         <Heading justifyContent="space-between">{places.find(place => place.id == session.placeId).name} | {session.startDate.split(" ")[0]}</Heading>
@@ -517,7 +513,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                                     <HStack>
                                                         <Heading size="lg">{boulders.find(boulder => boulder.id === attempt.routeId)?.name || `Route #${attempt.routeId}`} |</Heading>
                                                         <span>Attempts: {attempt.attempts}</span>
-                                                        <span>Completed: {attempt.completed? "True" : "false"}</span>
+                                                        <span>Completed: {attempt.completed? "True" : "False"}</span>
                                                     </HStack>
                                                 )
                                         }))}
@@ -526,12 +522,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                            )
                        })
                     )}
-
-
                 </VStack>
-
-
-
             </VStack>
             <Modal isOpen={newSessionModalOpen} title="Choose a place to climb" size="md">
                 <Modal.Body>
@@ -542,7 +533,6 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             fields={placeFields}
                             zIndex={9999}
                         />
-
                     </Box>
                 </Modal.Body>
                 <Modal.Footer>

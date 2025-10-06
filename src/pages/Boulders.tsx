@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import type Boulder from "../interfaces/Boulder.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
-import type {BoulderData} from "../interfaces/BoulderData.ts";
-import RouteSends from "./RouteSends.tsx";
 import {apiUrl} from "../constants/global.ts";
-import {TokenContext} from "../Context.tsx";
 import {
     Container, Box, Flex, VStack, HStack,
     Heading, Image as ImageTag, Text, Badge,
@@ -32,7 +29,6 @@ function Boulders(props: BoulderProps) {
     const boulderLength = boulders?.length || 0
     const [page, setPage] = useState<number>(0)
     const [boulderAdded, setBoulderAdded] = useState<boolean>(false)
-    const { user } = useContext(TokenContext)
     const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null)
     const [imageFullscreen, setImageFullscreen] = useState<boolean>(false)
     const [imageInfo, setImageInfo] = useState<{ width: number; height: number; aspectRatio: number } | null>(null)

@@ -1,5 +1,4 @@
 import React, {useRef, useState, useEffect, useContext} from "react"
-import {TokenContext} from "../Context.tsx"
 import {apiUrl} from "../constants/global.ts"
 import {Separator, Box, VStack, Button, Field, Slider, Input, EmptyState} from "@chakra-ui/react"
 import SelectField from "./SelectField.tsx";
@@ -34,7 +33,6 @@ function GradeCreation({
     const [customGrades, setCustomGrades] = useState<Array<CustomGrade>>([])
     const [customGradeSystemName, setCustomGradeSystemName] = useState<string>("")
     const customGradeID = useRef(0)
-    const {user} = useContext(TokenContext)
 
 
     useEffect(() => {

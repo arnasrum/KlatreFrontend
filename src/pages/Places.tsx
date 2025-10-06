@@ -2,23 +2,14 @@ import React, { useState, useEffect, useContext, useMemo } from 'react';
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
 import Boulders from "./Boulders.tsx";
-import {TokenContext} from "../Context.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import type InputField from "../interfaces/InputField.ts";
 import type {BoulderData} from "../interfaces/BoulderData.ts";
 import {apiUrl} from "../constants/global.ts";
-import {
-    Box,
-    Container,
-    Listbox,
-    useListCollection,
-    Spinner,
-    Input,
-    Text,
-    useFilter, VStack,
-} from "@chakra-ui/react"
+import {Box, Container, Spinner, VStack} from "@chakra-ui/react"
 import Modal from "../components/Modal.tsx";
 import MyListbox from "../components/MyListbox.tsx";
+import { UserContext } from "../contexts/UserContext.ts";
 
 interface PlacesProps {
     groupID?: number | null
@@ -32,10 +23,10 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
     const [boulders, setBoulders] = useState<Array<BoulderData>>([]);
     const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
-    const { user } = useContext(TokenContext);
     const [places, setPlaces] = useState<Array<Place>>([])
     const [placesItems, setPlacesItems] = useState<Array<any>>([])
     const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false)
+    const { user } = useContext(UserContext)
 
     useEffect(() => {
         if(!groupID) {
@@ -43,9 +34,9 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
         }
         fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
         })
             .then(response => {
@@ -78,7 +69,7 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                 console.error('Failed to fetch places:', error)
                 setPlaces([])
             })
-    }, [user.access_token, groupID, refetchPlaces])
+    }, [user, groupID, refetchPlaces])
 
 
     useEffect(() => {
@@ -87,9 +78,9 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
         }
         fetch(`${apiUrl}/boulders/place?placeID=${selectedPlace}`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
             }
         })
             .then(response => response.json())
@@ -124,9 +115,7 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
         formData.set("groupID", groupID.toString())
         fetch(`http://localhost:8080/api/groups/place`, {
             method: "POST",
-            headers: {
-                "Authorization": "Bearer " + user.access_token,
-            },
+            credentials: "include",
             body: formData
         })
             //.then(response => response.json())

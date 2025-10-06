@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 
 import {apiUrl} from "../constants/global.ts";
-import {PlaceContext, TokenContext} from "../Context.tsx";
 import GradeSystem from "../interfaces/GradeSystem.ts";
 import Place from "../interfaces/Place.ts"
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -12,6 +11,7 @@ import ManageGradingSystems from "../components/ManageGradingSystems.tsx";
 import {Box, Button, Heading, Separator} from "@chakra-ui/react";
 import SelectField from "../components/SelectField";
 import { toaster, Toaster} from "../components/ui/toaster.tsx";
+import { UserContext } from "../contexts/UserContext.ts"
 
 
 interface SettingsProps {
@@ -28,9 +28,8 @@ export default function Settings(props: SettingsProps) {
     const [ modalIsOpen, setModalIsOpen ] = useState<boolean>(false)
     const [ modalMangeUsersModalIsOpen, setMangeUsersModalIsOpen ] = useState<boolean>(false)
     const [ refetchGradingSystems, setRefetchGradingSystems ] = useState<boolean>(false)
-    const { user } = useContext(TokenContext)
     const disable = !(selectedPlace && selectedPlace.length > 0)
-    const { refetchPlaces } = useContext(PlaceContext)
+    const { user } = useContext(UserContext)
 
 
     useEffect(() => {
@@ -54,9 +53,9 @@ export default function Settings(props: SettingsProps) {
         }
         fetch(`${apiUrl}/api/groups/grading?groupID=${groupID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
         })
             .then(response => response.json())
@@ -121,9 +120,7 @@ export default function Settings(props: SettingsProps) {
         }
         fetch(`${apiUrl}/api/places`, {
             method: "PUT",
-            headers: {
-                "Authorization": `Bearer ${user.access_token}`
-            },
+            credentials: "include",
             body: formData
         })
             .then(response => {
@@ -133,7 +130,7 @@ export default function Settings(props: SettingsProps) {
                 return response.json()
             })
             .then(() => toaster.create({title: "Success", description: "Route updated", type: "success"}))
-            .then(() => refetchPlaces())
+            //.then(() => refetchPlaces())
             .then(() => {setSelectedPlace([])})
             .catch(error => { toaster.create({title: "Error occurred", description: error.message, type: "error"})})
     }

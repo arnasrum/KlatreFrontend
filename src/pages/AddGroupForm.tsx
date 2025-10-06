@@ -1,11 +1,9 @@
 import React, { useState, useContext } from 'react';
-import { TokenContext, GroupContext } from "../Context.tsx";
 import {apiUrl} from "../constants/global.ts";
 import "./AddGroupFrom.css"
 
 function AddGroupForm() {
     const { refetch, setRefetch, setShowGroupModal } = useContext(GroupContext);
-    const { user } = useContext(TokenContext);
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
     const [emailInput, setEmailInput] = useState('');
 

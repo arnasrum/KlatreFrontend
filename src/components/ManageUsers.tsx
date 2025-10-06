@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useContext} from 'react'
 import {Heading, Box, Card, Button, Text, VStack} from '@chakra-ui/react'
 import { apiUrl } from "../constants/global.ts";
-import {TokenContext} from "../Context.tsx";
-import {toaster, Toaster} from "../components/ui/toaster.tsx";
+import {toaster, Toaster} from "./ui/toaster";
+import { UserContext } from "../contexts/UserContext.ts"
 
 
 
@@ -12,7 +12,7 @@ interface ManageUsersProps {
 
 function ManageUsers({groupID}: ManageUsersProps) {
 
-    const { user, isLoading: userLoading } = useContext(TokenContext)
+    const { user } = useContext(UserContext)
     const [refetch, setRefetch] = useState<boolean>(false)
     const [users, setUsers] = useState<Array<any>>([])
 
@@ -21,9 +21,9 @@ function ManageUsers({groupID}: ManageUsersProps) {
 
         fetch(`${apiUrl}/api/groups/users?groupID=${groupID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
         })
             .then(response => response.json())
@@ -38,9 +38,7 @@ function ManageUsers({groupID}: ManageUsersProps) {
         formData.set("userID", userID.toString());
         fetch(`${apiUrl}/api/groups/users/permissions`, {
             method: "PUT",
-            headers: {
-                "Authorization": `Bearer ${user.access_token}`
-            },
+            credentials: "include",
             body: formData
         })
             .then(response => {
@@ -63,9 +61,7 @@ function ManageUsers({groupID}: ManageUsersProps) {
         formData.set("userID", userID.toString())
         fetch(`${apiUrl}/api/groups/users/kick`, {
             method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${user.access_token}`
-            },
+            credentials: "include",
             body: formData,
             })
                 .then(response => {

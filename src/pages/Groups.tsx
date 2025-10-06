@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import { TokenContext } from "../Context.tsx";
 import AddGroupForm from "./AddGroupForm.tsx";
 import type Place from "../interfaces/Place.ts";
 import ReusableButton from "../components/ReusableButton.tsx";
@@ -8,6 +7,7 @@ import { Grid, GridItem, Card, Blockquote } from "@chakra-ui/react"
 import type Group from "../interfaces/Group.ts";
 import {useNavigate} from "react-router";
 import { GroupContext } from "../contexts/GroupContext.tsx"
+import { UserContext } from "../contexts/UserContext.ts";
 
 interface Groups {
     group: Group,
@@ -25,11 +25,12 @@ function Groups() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const { setCurrentGroup } = useContext(GroupContext)
-    
+    const { user } = useContext(UserContext)
+
+
     // Modal states
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
 
-    const { user } = useContext(TokenContext)
     const navigate = useNavigate();
 
     // Use custom hook for boulder management
@@ -45,17 +46,12 @@ function Groups() {
 
     // Fetch groups
     useEffect(() => {
-        if (!user?.access_token) {
-            setIsLoading(false);
-            return;
-        }
-        
-        setIsLoading(true);
+
         fetch(`${apiUrl}/api/groups`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
             }
         })
             .then(response => {
@@ -82,8 +78,8 @@ function Groups() {
         fetch(`${apiUrl}/api/groups`, {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
             },
+            credentials: "include",
             method: "DELETE",
             body: JSON.stringify({
                 groupID: selectedGroupId,
@@ -96,11 +92,6 @@ function Groups() {
             })
     } 
     
-    // Helper functions
-    const selectGroup = (groupId: number) => {
-        setSelectedGroupId(groupId);
-    };
-
     const getSelectedGroup = (): Groups | null => {
         if (selectedGroupId == null) return null;
         return groups.find((group: Groups) => group.group.id === selectedGroupId) || null;
@@ -115,7 +106,7 @@ function Groups() {
         return <div>Loading groups...</div>;
     }
 
-    if (!user?.access_token) {
+    if (!user) {
         return <div>Please log in to view groups.</div>;
     }
 

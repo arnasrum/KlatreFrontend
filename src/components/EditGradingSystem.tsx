@@ -4,7 +4,6 @@ import SelectField from "./SelectField.tsx";
 import React, {useContext, useState} from "react";
 import {Grade} from "../interfaces/Grade.ts";
 import {apiUrl} from "../constants/global.ts";
-import {TokenContext} from "../Context.tsx";
 import {toaster, Toaster} from "./ui/toaster.tsx";
 
 
@@ -19,7 +18,6 @@ function EditGradingSystem(
     {groupID, refetch, gradeSystems}: EditGradingSystemProps
 ) {
 
-    const { user } = useContext(TokenContext)
     const [selectedGradeSystem, setSelectedGradeSystem] = useState<string[]>([])
     const [selectedGrade, setSelectedGrade] = useState<string[]>([])
     const gradeSystemFields = gradeSystems.map((gradeSystem: GradeSystem) => {
@@ -36,7 +34,6 @@ function EditGradingSystem(
         fetch(`${apiUrl}/api/gradingSystems`, {
             method: "DELETE",
             headers: {
-                "Authorization": `Bearer ${user.access_token}`
             },
             body: formData,
         })

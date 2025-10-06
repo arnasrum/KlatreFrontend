@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@chakra-ui/react";
-import { colorPalettes, sizes, variants} from "../theme/themeUtilities.ts";
+import { colorPalettes, sizes, variants} from "../ChakraUIThemeConfig";
 
 interface ButtonProps {
     children: React.ReactNode,

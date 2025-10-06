@@ -1,4 +1,7 @@
 
 export default interface User {
-    access_token: string,
+    id: number,
+    name: string,
+    email: string,
+    access_token?: string,
 }

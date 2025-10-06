@@ -4,17 +4,13 @@ import Boulders from "./Boulders.tsx";
 import {Box, Grid, GridItem, Tabs, Spinner, Container, Heading, Center, Text} from "@chakra-ui/react"
 import "./Group.css"
 import Places from "./Places.tsx";
-//import type Group from "../interfaces/Group.ts"
 import {apiUrl} from "../constants/global.ts"
-import {TokenContext} from "../Context.tsx"
-import { GroupContext } from "../contexts/GroupContext.tsx"
 import Settings from "./Settings.tsx";
-import {PlaceContext} from "../Context.tsx";
 import Sessions from "./Sessions.tsx";
+import { UserContext } from "../contexts/UserContext.ts";
+import { PlaceContext } from "../contexts/PlaceContext.ts";
 
 function Group() {
-
-    const { user } = useContext(TokenContext)
 
     const location = useLocation()
     const groupUUID = location.pathname.split("/").pop()
@@ -23,6 +19,7 @@ function Group() {
     const [tab, setTab] = useState<string>("boulders")
     const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false)
     const [ placeData, setPlaceData ] = useState<Array<any>>([])
+    const { user } = useContext(UserContext)
     const groupID = groupData?.id
 
     function setPlaces(places: Array<any>) {
@@ -32,9 +29,9 @@ function Group() {
     useEffect(() => {
         fetch(`${apiUrl}/api/groups/uuid/${groupUUID}`, {
             method: "GET",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${user.access_token}`
             }
         })
             .then(response => {
@@ -45,7 +42,7 @@ function Group() {
             })
             .then(responseBody => setGroupData(responseBody.data))
             .catch(error => console.error('Failed to fetch group:', error))
-    }, [groupUUID, user.access_token]);
+    }, [groupUUID, user]);
 
     function refetchPlacesHandler() {
         setRefetchPlaces((prev: boolean) => !prev)
@@ -65,7 +62,7 @@ function Group() {
     return (
         <PlaceContext.Provider value={placeContext} >
             <Container bg="Background" >
-                <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+                <Grid templateColumns="repeat(3, 1fr)" gap={6}>PlaceContext
                     <GridItem colSpan={3}>
                         <Container maxW="container.xl" p={4} bg="Background" borderRadius="lg" boxShadow="lg" overflow="hidden">
                             <Heading size="4xl">{groupData.name}</Heading>
