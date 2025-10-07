@@ -17,25 +17,13 @@ import {
 import { FiHome, FiUsers, FiSettings, FiLogOut, FiLogIn } from "react-icons/fi"
 
 function NavBar() {
-    const { user, setUser } = useContext(UserContext)
+    const { user, setUser, logout } = useContext(UserContext)
     const navigate = useNavigate()
     const location = useLocation()
 
     const handleLogout = async () => {
-        try {
-            await fetch(`${apiUrl}/api/logout`, {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            })
-        } catch (error) {
-            console.error("Logout error:", error)
-        } finally {
-            setUser(null)
-            navigate("/")
-        }
+        logout()
+        navigate("/")
     }
 
     const isActive = (path: string) => location.pathname === path
@@ -72,24 +60,24 @@ function NavBar() {
                                 variant={isActive("/") ? "solid" : "ghost"}
                                 colorPalette={isActive("/") ? "brand" : "gray"}
                                 onClick={() => navigate("/")}
-                                leftIcon={<FiHome />}
                             >
+                                <FiHome />
                                 Home
                             </Button>
                             <Button
                                 variant={isActive("/groups") ? "solid" : "ghost"}
                                 colorPalette={isActive("/groups") ? "brand" : "gray"}
                                 onClick={() => navigate("/groups")}
-                                leftIcon={<FiUsers />}
                             >
+                                <FiUsers />
                                 Groups
                             </Button>
                             <Button
                                 variant={isActive("/settings") ? "solid" : "ghost"}
                                 colorPalette={isActive("/settings") ? "brand" : "gray"}
                                 onClick={() => navigate("/settings")}
-                                leftIcon={<FiSettings />}
                             >
+                                <FiSettings />
                                 Settings
                             </Button>
                         </HStack>
@@ -112,9 +100,9 @@ function NavBar() {
                                     colorPalette="red"
                                     variant="outline"
                                     onClick={handleLogout}
-                                    leftIcon={<FiLogOut />}
                                     size={{ base: "sm", md: "md" }}
                                 >
+                                    <FiLogOut />
                                     Log Out
                                 </Button>
                             </>
@@ -122,8 +110,8 @@ function NavBar() {
                             <Button
                                 colorPalette="brand"
                                 onClick={() => navigate("/login")}
-                                leftIcon={<FiLogIn />}
                             >
+                                <FiLogIn />
                                 Log In
                             </Button>
                         )}

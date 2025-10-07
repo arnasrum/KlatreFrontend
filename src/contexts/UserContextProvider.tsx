@@ -28,7 +28,6 @@ function UserContextProvider({children}: { children: React.ReactNode}) {
             }
         })
             .then( async response => {
-                console.log("response", response)
                 if (response.ok) {
                     const userData = await response.json();
                     setUserHandler(userData.user);
@@ -51,7 +50,20 @@ function UserContextProvider({children}: { children: React.ReactNode}) {
     function logout() {
         setIsLoggedIn(false);
         setUser(null);
-        console.log("logout")
+        fetch(`${apiUrl}/api/oauth2/logout`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+            .catch((error) => {
+                console.error("Logout error:", error)
+            })
+            .finally(() => {
+                setIsLoggedIn(false)
+                setUser(null)
+            })
     }
 
 
