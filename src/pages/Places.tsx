@@ -42,8 +42,6 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
 
     const [selectedPlace, setSelectedPlace] = useState<number | null>(null);
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
-    const [boulders, setBoulders] = useState<Array<BoulderData>>([]);
-    const [refetchBoulders, setRefetchBoulders] = useState<boolean>(false);
     const [places, setPlaces] = useState<Array<Place>>([]);
     const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false);
     const { user } = useContext(UserContext);
@@ -77,30 +75,9 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
     }, [user, groupID, refetchPlaces]);
 
     useEffect(() => {
-        if(!selectedPlace) {
-            return
-        }
-        fetch(`${apiUrl}/boulders/place?placeID=${selectedPlace}`, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-            .then(response => response.json())
-            .then(data => setBoulders(data))
-            .catch(error => console.error(error))
-
-    }, [selectedPlace, refetchBoulders]);
-
-    useEffect(() => {
         setShowPlaceModal(false);
         setSelectedPlace(null);
     }, [groupID]);
-
-    function refetchBouldersHandler() {
-        setRefetchBoulders((prev: boolean) => !prev);
-    }
 
     let grades = null;
     if(selectedPlace) {
@@ -157,14 +134,12 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                     variant="solid"
                     colorPalette="brand"
                     onClick={handleBackToPlaces}
-                    leftIcon={<FiChevronRight style={{ transform: "rotate(180deg)" }} />}
                 >
+                    <FiChevronRight style={{ transform: "rotate(180deg)" }} />
                     Back to Places
                 </Button>
                 <Boulders 
                     placeID={selectedPlace} 
-                    boulderData={boulders} 
-                    refetchBoulders={refetchBouldersHandler} 
                     grades={grades}
                 />
             </Box>
@@ -227,7 +202,6 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                 <Button
                     colorPalette="brand"
                     size="lg"
-                    leftIcon={<FiPlus />}
                     onClick={() => setShowPlaceModal(true)}
                     _hover={{
                         transform: "translateY(-2px)",
@@ -235,6 +209,7 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                     }}
                     transition="all 0.2s"
                 >
+                    <FiPlus />
                     Add Place
                 </Button>
             </Flex>
@@ -305,7 +280,6 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                                     color="fg.muted"
                                     fontSize="sm"
                                     minH="40px"
-                                    noOfLines={2}
                                 >
                                     {place.description || "No description provided"}
                                 </Text>

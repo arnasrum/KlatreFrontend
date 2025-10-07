@@ -41,6 +41,7 @@ import {
     FiTrendingUp,
     FiActivity
 } from "react-icons/fi";
+import { useBouldersAll } from "../hooks/useBouldersHooks"
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);
@@ -60,40 +61,22 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [closeSessionModalOpen, setCloseSessionModalOpen] = useState(false)
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
-    const [boulders, setBoulders] = useState<Boulder[]>([])
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
     const { user } = useContext(UserContext)
 
+
     const activeSession = activeSessions
         ? activeSessions.activeSessions.find(s => s.groupId === groupId)
         : null;
+    const placeId = selectedPlace ? selectedPlace.id : activeSession!.placeId
+    const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active"})
+
 
     useEffect(() => {
-        if(!selectedPlace && !activeSession) {
-            return
-        }
-        const placeId = selectedPlace ? selectedPlace.id : activeSession!.placeId
-        fetch(`${apiUrl}/boulders/place?placeID=${placeId}`, {
-            credentials: "include",
-        })
-            .then(response => {
-                if(!response.ok) {
-                    return response.json().then(json => {throw new Error(json.errorMessage)})
-                }
-                return response.json()
-            })
-            .then(data => {setBoulders(data); return data})
-            .then(_ => handleRefetchPastSessions())
-            .catch(error => {
-                toaster.create({
-                    title: "Error",
-                    type: "error",
-                    description: error.message,
-                })
-            })
+        refetchBoulders()
     }, [selectedPlace, activeSession])
 
     useEffect(() => {
@@ -606,9 +589,9 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                     </Text>
                                     <Button
                                         colorPalette="brand"
-                                        leftIcon={<FiPlus />}
                                         onClick={handleLogClimbClick}
                                     >
+                                        <FiPlus />
                                         Log Your First Climb
                                     </Button>
                                 </Box>
@@ -632,8 +615,8 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             variant="outline"
                             colorPalette="gray"
                             onClick={handleRefetchPastSessions}
-                            leftIcon={<FiTrendingUp />}
                         >
+                            <FiTrendingUp />
                             Refresh
                         </Button>
                     </Flex>
@@ -739,10 +722,10 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                     {!activeSession && (
                                         <Button
                                             colorPalette="brand"
-                                            leftIcon={<FiPlay />}
                                             onClick={startNewSessionClick}
                                             mt={2}
                                         >
+                                            <FiPlay />
                                             Start Your First Session
                                         </Button>
                                     )}
@@ -770,7 +753,14 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                     </VStack>
                 </Modal.Body>
                 <Modal.Footer>
-                    <HStack gap={3}>
+                    <HStack gap={3} mt={4} justifyContent="center" display="flex">
+                        <Button
+                            colorPalette="brand"
+                            onClick={handleSessionStartClick}
+                        >
+                            {<FiPlay />}
+                            Start Session
+                        </Button>
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -779,13 +769,6 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             }}
                         >
                             Cancel
-                        </Button>
-                        <Button
-                            colorPalette="brand"
-                            onClick={handleSessionStartClick}
-                            leftIcon={<FiPlay />}
-                        >
-                            Start Session
                         </Button>
                     </HStack>
                 </Modal.Footer>
@@ -893,15 +876,15 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             colorPalette="red"
                             variant="outline"
                             onClick={handleDeleteSession}
-                            leftIcon={<FiTrash2 />}
                         >
+                            <FiTrash2 />
                             Delete
                         </Button>
                         <Button
                             colorPalette="green"
                             onClick={handleSaveAndCloseSession}
-                            leftIcon={<FiSave />}
                         >
+                            <FiSave />
                             Save Session
                         </Button>
                     </HStack>

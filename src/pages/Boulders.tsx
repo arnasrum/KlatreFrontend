@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react'
 import type Boulder from "../interfaces/Boulder.ts";
-import ReusableButton from "../components/ReusableButton.tsx";
 import {apiUrl} from "../constants/global.ts";
 import {
     Container, Box, Flex, VStack, HStack,
     Heading, Image as ImageTag, Text, Badge,
     AspectRatio, Card, Separator, Button, Grid,
-    SimpleGrid, Skeleton, Alert, Dialog, GridItem
+    SimpleGrid, Skeleton, Alert, Dialog, GridItem, Switch
 } from "@chakra-ui/react";
 import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import Pagination from "../components/Pagination.tsx";
 import {handleFormDataImage} from "../Helpers.ts";
 import InputField from "../interfaces/InputField.ts";
 import {Grade} from "../interfaces/Grade.ts";
 import { UserContext } from "../contexts/UserContext.ts";
+import { useBouldersPaginated } from "../hooks/useBouldersHooks.ts"
 import { motion } from "framer-motion";
 import { 
     FiImage, 
@@ -23,38 +22,74 @@ import {
     FiPlus,
     FiArrowLeft,
     FiArrowRight,
-    FiInfo
+    FiInfo,
+    FiCheckCircle,
+    FiXCircle,
+    FiFilter
 } from "react-icons/fi";
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);
 
-interface BoulderProps{
-    boulderData: Boulder[] | undefined
+interface BoulderProps {
     isLoading?: boolean
     placeID: number,
-    grades: Grade[],
-    refetchBoulders: () => void
 }
 
-function Boulders(props: BoulderProps) {
-    const { placeID, boulderData, refetchBoulders, isLoading = false } = props;
-    const { user } = useContext(UserContext);
-    const boulders = boulderData;
-    const boulderLength = boulders?.length || 0;
-    const [page, setPage] = useState<number>(0);
-    const [boulderAdded, setBoulderAdded] = useState<boolean>(false);
-    const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null);
-    const [imageFullscreen, setImageFullscreen] = useState<boolean>(false);
-    const [imageInfo, setImageInfo] = useState<{ width: number; height: number; aspectRatio: number } | null>(null);
-    const [selectedGrade, setSelectedGrade] = useState<string[]>([]);
+const BOULDERS_PER_PAGE = 12;
 
-    useEffect(() => {
-        if(boulders && boulderLength > 0 && boulderAdded) {
-            setPage(0);
-            setBoulderAdded(false);
+function Boulders(props: BoulderProps) {
+    const { placeID } = props;
+    const { user } = useContext(UserContext);
+    
+    const [boulderAction, setBoulderAction] = useState<"add" | "edit" | "delete" | null>(null);
+    const [selectedBoulder, setSelectedBoulder] = useState<Boulder | null>(null);
+    const [imageFullscreen, setImageFullscreen] = useState<boolean>(false);
+    const [selectedGrade, setSelectedGrade] = useState<string[]>([]);
+    const [filterActive, setFilterActive] = useState<'all' | 'active' | 'retired'>('all');
+
+
+    const {
+        boulders,
+        isLoading,
+        isFetchingMore,
+        hasMore,
+        totalCount,
+        refetchBoulders,
+        observerTarget,
+
+    } = useBouldersPaginated({placeID, limit: BOULDERS_PER_PAGE})
+
+    // Filter boulders based on active status
+    const filteredBoulders = boulders.filter(boulder => {
+        if (filterActive === 'all') return true;
+        if (filterActive === 'active') return boulder.active;
+        if (filterActive === 'retired') return !boulder.active;
+        return true;
+    });
+
+    // Toggle active status
+    async function handleToggleActive(boulder: Boulder) {
+        try {
+            console.log('Toggling boulder active status:', boulder);
+            const response = await fetch(`${apiUrl}/boulders/update/${boulder.id}`, {
+                method: "PUT",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    active: !boulder.active
+                })
+            });
+
+            if (response.ok) {
+                refetchBoulders();
+            }
+        } catch (error) {
+            console.error('Error toggling boulder active status:', error);
         }
-    }, [boulders]);
+    }
 
     function handleAddSubmit(event: React.FormEvent) {
         event.preventDefault();
@@ -68,7 +103,6 @@ function Boulders(props: BoulderProps) {
             body: formData
         })
             .then(_ => {
-                setBoulderAdded(true);
                 setBoulderAction(null);
                 refetchBoulders();
             })
@@ -78,12 +112,12 @@ function Boulders(props: BoulderProps) {
 
     function handleEditSubmit(event: React.FormEvent){
         event.preventDefault();
-        if (!boulders || boulders.length < 1) { return }
+        if (!selectedBoulder) { return }
 
         const formData = new FormData(event.target as HTMLFormElement);
         handleFormDataImage(formData);
-        formData.set("placeID", boulders[page].place.toString());
-        formData.set("boulderID", boulders[page].id.toString());
+        formData.set("placeID", selectedBoulder.place.toString());
+        formData.set("boulderID", selectedBoulder.id.toString());
         formData.entries().forEach(entry => {
             if(!entry[1]) {
                 formData.delete(entry[0]);
@@ -99,14 +133,17 @@ function Boulders(props: BoulderProps) {
                 refetchBoulders();
             })
             .catch(error => console.error(error))
-            .finally(() => {setBoulderAction(null)});
+            .finally(() => {
+                setBoulderAction(null);
+                setSelectedBoulder(null);
+            });
     }
 
     function handleDeleteClick() {
-        if(!boulders || !user) {
+        if(!selectedBoulder || !user) {
             return;
         }
-        const boulderID: number = boulders[page].id;
+        const boulderID: number = selectedBoulder.id;
 
         fetch(`${apiUrl}/boulders`,
             {
@@ -122,10 +159,8 @@ function Boulders(props: BoulderProps) {
         )
             .then(() => refetchBoulders())
             .then(() => {
-                if(page == 0) {
-                    return;
-                }
-                setPage(page - 1);
+                setBoulderAction(null);
+                setSelectedBoulder(null);
             });
     }
 
@@ -140,43 +175,23 @@ function Boulders(props: BoulderProps) {
         {"label": "Image", "type": "image", "name": "image", "required": false, "accept": "image/*"},
     ];
 
-    function handleBoulderActionClick(action: "add" | "edit" | "delete" | null ) {
+    function handleBoulderActionClick(action: "add" | "edit" | "delete" | null, boulder?: Boulder) {
         setBoulderAction(action);
-    }
-
-    function getImageInfo(imageUrl: string): Promise<{ width: number; height: number; aspectRatio: number}> {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-
-            img.onload = () => {
-                resolve({ width: img.naturalWidth, height: img.naturalHeight, aspectRatio: img.naturalWidth / img.naturalHeight });
-            };
-
-            img.onerror = (error) => {
-                reject(new Error(`Failed to load image from URL: ${imageUrl}. Error: ${error}`));
-            };
-
-            img.src = imageUrl;
-        });
-    }
-
-    if (boulders && boulderLength > page && boulders[page].image) {
-        getImageInfo(boulders[page].image).then(info => setImageInfo(info));
+        if (boulder) {
+            setSelectedBoulder(boulder);
+        }
     }
 
     // Loading State
     if (isLoading) {
         return (
-            <Container maxW="6xl" py={8}>
+            <Container maxW="7xl" py={8}>
                 <VStack gap={6}>
                     <Skeleton height="60px" width="full" />
-                    <SimpleGrid columns={{base: 1, lg: 2}} gap={8} width="full">
-                        <VStack gap={4}>
-                            <Skeleton height="200px" width="full" />
-                            <Skeleton height="150px" width="full" />
-                            <Skeleton height="50px" width="full" />
-                        </VStack>
-                        <Skeleton height="400px" width="full" />
+                    <SimpleGrid columns={{base: 1, md: 2, lg: 3}} gap={6} width="full">
+                        {[...Array(6)].map((_, i) => (
+                            <Skeleton key={i} height="350px" width="full" borderRadius="md" />
+                        ))}
                     </SimpleGrid>
                 </VStack>
             </Container>
@@ -223,17 +238,13 @@ function Boulders(props: BoulderProps) {
     }
 
     // Edit Boulder Form
-    let gradeString = "";
-    if(boulders && boulderLength > 0 && page < boulderLength) {
-        gradeString = props.grades.find(item => item.id == boulders[page].grade)?.gradeString || "";
-    }
-
-    if(boulderAction === "edit") {
+    if(boulderAction === "edit" && selectedBoulder) {
+        const gradeString = props.grades.find(item => item.id == selectedBoulder.grade)?.gradeString || "";
         const editFields = fields.map((field: InputField) => {
             if(field.name === "grade" && props.grades.length > 0) {
-                return {...field, required: false, placeholder: props.grades.find(item => item.id == boulders[page].grade).gradeString};
+                return {...field, required: false, placeholder: gradeString};
             }
-            return {...field, required: false, placeholder: boulders[page][field.name] || ""};
+            return {...field, required: false, placeholder: selectedBoulder[field.name] || ""};
         });
 
         return (
@@ -257,6 +268,7 @@ function Boulders(props: BoulderProps) {
                                     <Button
                                         onClick={() => {
                                             setBoulderAction(null);
+                                            setSelectedBoulder(null);
                                             setSelectedGrade([]);
                                         }}
                                         variant="outline"
@@ -276,7 +288,7 @@ function Boulders(props: BoulderProps) {
     }
 
     // Empty State
-    if(!boulders || boulderLength === 0) {
+    if(boulders.length === 0 && !isLoading) {
         return (
             <Container maxW="4xl" py={8}>
                 <Card.Root>
@@ -292,9 +304,9 @@ function Boulders(props: BoulderProps) {
                             <Button
                                 colorPalette="brand"
                                 size="lg"
-                                leftIcon={<FiPlus />}
                                 onClick={() => handleBoulderActionClick("add")}
                             >
+                                <FiPlus />
                                 Add First Boulder
                             </Button>
                         </VStack>
@@ -304,146 +316,263 @@ function Boulders(props: BoulderProps) {
         );
     }
 
-    const currentBoulder = boulders[page];
+    const activeBoulderCount = boulders.filter(b => b.active).length;
+    const retiredBoulderCount = totalCount - activeBoulderCount;
 
-    // Main Boulder Display
+    // Main Scrollable Boulder Grid
     return (
         <Container maxW="7xl" py={8}>
             <VStack gap={8} align="stretch">
                 {/* Header with Actions */}
                 <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
                     <Box>
-                        <Heading size="2xl" mb={2}>Boulder Problem</Heading>
-                        <Text color="fg.muted">
-                            Viewing {page + 1} of {boulderLength}
-                        </Text>
+                        <Heading size="2xl" mb={2}>Boulder Problems</Heading>
+                        <HStack gap={4}>
+                            <Text color="fg.muted">
+                                {totalCount} total
+                            </Text>
+                            <Badge colorPalette="green" size="sm">
+                                <FiCheckCircle style={{ display: "inline", marginRight: "4px" }} />
+                                {activeBoulderCount} active
+                            </Badge>
+                            <Badge colorPalette="gray" size="sm">
+                                <FiXCircle style={{ display: "inline", marginRight: "4px" }} />
+                                {retiredBoulderCount} retired
+                            </Badge>
+                        </HStack>
                     </Box>
-                    <HStack gap={3}>
-                        <Button
-                            colorPalette="brand"
-                            variant="outline"
-                            leftIcon={<FiPlus />}
-                            onClick={() => handleBoulderActionClick("add")}
-                        >
-                            Add Boulder
-                        </Button>
-                        <Button
-                            colorPalette="blue"
-                            variant="outline"
-                            leftIcon={<FiEdit3 />}
-                            onClick={() => handleBoulderActionClick("edit")}
-                        >
-                            Edit
-                        </Button>
-                        <Button
-                            colorPalette="red"
-                            variant="outline"
-                            leftIcon={<FiTrash2 />}
-                            onClick={handleDeleteClick}
-                        >
-                            Delete
-                        </Button>
-                    </HStack>
+                    <Button
+                        colorPalette="brand"
+                        size="lg"
+                        onClick={() => handleBoulderActionClick("add")}
+                    >
+                        <FiPlus />
+                        Add Boulder
+                    </Button>
                 </Flex>
 
-                {/* Main Content */}
-                <Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={8}>
-                    {/* Info Card */}
-                    <Card.Root>
-                        <Card.Header>
-                            <HStack justify="space-between" align="start">
-                                <Box>
-                                    <Heading size="xl" mb={2}>{currentBoulder.name}</Heading>
-                                    <Badge colorPalette="purple" size="lg">
-                                        Grade: {gradeString}
-                                    </Badge>
-                                </Box>
-                            </HStack>
-                        </Card.Header>
-                        <Card.Body>
-                            <VStack align="stretch" gap={4}>
-                                <Box>
-                                    <Text fontWeight="bold" color="gray.700" mb={2}>
-                                        <FiInfo style={{ display: "inline", marginRight: "6px" }} />
-                                        Description
-                                    </Text>
-                                    <Text color="fg.muted" fontSize="md">
-                                        {currentBoulder.description || "No description provided"}
-                                    </Text>
-                                </Box>
-                                <Separator />
-                                <HStack justify="space-between">
-                                    <Text fontSize="sm" color="gray.600">Boulder ID</Text>
-                                    <Badge>{currentBoulder.id}</Badge>
-                                </HStack>
-                            </VStack>
-                        </Card.Body>
-                    </Card.Root>
-
-                    {/* Image Card */}
-                    <Card.Root>
-                        <Card.Body p={0}>
-                            {currentBoulder.image ? (
-                                <AspectRatio ratio={imageInfo?.aspectRatio || 4/3}>
-                                    <ImageTag
-                                        src={currentBoulder.image}
-                                        alt={currentBoulder.name}
-                                        objectFit="cover"
-                                        cursor="pointer"
-                                        onClick={() => setImageFullscreen(true)}
-                                        borderRadius="md"
-                                        _hover={{ opacity: 0.9 }}
-                                        transition="opacity 0.2s"
-                                    />
-                                </AspectRatio>
-                            ) : (
-                                <Flex
-                                    h="400px"
-                                    align="center"
-                                    justify="center"
-                                    bg="gray.100"
-                                    borderRadius="md"
-                                >
-                                    <VStack>
-                                        <FiImage size={48} color="gray" />
-                                        <Text color="gray.500">No image available</Text>
-                                    </VStack>
-                                </Flex>
-                            )}
-                        </Card.Body>
-                    </Card.Root>
-                </Grid>
-
-                {/* Pagination */}
+                {/* Filter Buttons */}
                 <Card.Root>
                     <Card.Body>
-                        <HStack justify="space-between">
-                            <Button
-                                variant="outline"
-                                leftIcon={<FiArrowLeft />}
-                                onClick={() => setPage(Math.max(0, page - 1))}
-                                disabled={page === 0}
-                            >
-                                Previous
-                            </Button>
-                            <Text color="gray.600" fontWeight="medium">
-                                Boulder {page + 1} / {boulderLength}
-                            </Text>
-                            <Button
-                                variant="outline"
-                                rightIcon={<FiArrowRight />}
-                                onClick={() => setPage(Math.min(boulderLength - 1, page + 1))}
-                                disabled={page === boulderLength - 1}
-                            >
-                                Next
-                            </Button>
-                        </HStack>
+                        <Flex align="center" gap={4} wrap="wrap">
+                            <HStack>
+                                <FiFilter />
+                                <Text fontWeight="medium">Filter:</Text>
+                            </HStack>
+                            <HStack gap={2}>
+                                <Button
+                                    size="sm"
+                                    variant={filterActive === 'all' ? 'solid' : 'outline'}
+                                    colorPalette={filterActive === 'all' ? 'brand' : 'gray'}
+                                    onClick={() => setFilterActive('all')}
+                                >
+                                    All ({totalCount})
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={filterActive === 'active' ? 'solid' : 'outline'}
+                                    colorPalette={filterActive === 'active' ? 'green' : 'gray'}
+                                    onClick={() => setFilterActive('active')}
+                                >
+                                    <FiCheckCircle />
+                                    Active ({activeBoulderCount})
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={filterActive === 'retired' ? 'solid' : 'outline'}
+                                    colorPalette={filterActive === 'retired' ? 'gray' : 'gray'}
+                                    onClick={() => setFilterActive('retired')}
+                                >
+                                    <FiXCircle />
+                                    Retired ({retiredBoulderCount})
+                                </Button>
+                            </HStack>
+                        </Flex>
                     </Card.Body>
                 </Card.Root>
+
+                {/* Scrollable Grid */}
+                <SimpleGrid columns={{base: 1, md: 2, lg: 3}} gap={6}>
+                    {filteredBoulders.map((boulder, index) => {
+                        const gradeString = props.grades.find(item => item.id == boulder.grade)?.gradeString || "";
+                        
+                        return (
+                            <MotionCard
+                                key={boulder.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: (index % BOULDERS_PER_PAGE) * 0.05 }}
+                                overflow="hidden"
+                                _hover={{ boxShadow: "lg", transform: "translateY(-4px)" }}
+                                style={{ 
+                                    transition: "all 0.2s",
+                                    opacity: boulder.active ? 1 : 0.7
+                                }}
+                                borderWidth={boulder.active ? "2px" : "1px"}
+                                borderColor={boulder.active ? "green.500" : "gray.200"}
+                            >
+                                {/* Image Section */}
+                                <Box position="relative">
+                                    {boulder.image ? (
+                                        <AspectRatio ratio={4/3}>
+                                            <ImageTag
+                                                src={boulder.image}
+                                                alt={boulder.name}
+                                                objectFit="cover"
+                                                cursor="pointer"
+                                                onClick={() => {
+                                                    setSelectedBoulder(boulder);
+                                                    setImageFullscreen(true);
+                                                }}
+                                                style={{
+                                                    filter: boulder.active ? 'none' : 'grayscale(50%)'
+                                                }}
+                                            />
+                                        </AspectRatio>
+                                    ) : (
+                                        <AspectRatio ratio={4/3}>
+                                            <Flex
+                                                align="center"
+                                                justify="center"
+                                                bg={boulder.active ? "gray.100" : "gray.50"}
+                                            >
+                                                <VStack>
+                                                    <FiImage size={32} color="gray" />
+                                                    <Text color="gray.500" fontSize="sm">No image</Text>
+                                                </VStack>
+                                            </Flex>
+                                        </AspectRatio>
+                                    )}
+                                    {/* Grade Badge */}
+                                    <Badge
+                                        position="absolute"
+                                        top={3}
+                                        right={3}
+                                        colorPalette="purple"
+                                        size="lg"
+                                    >
+                                        {gradeString}
+                                    </Badge>
+                                    {/* Active Status Badge */}
+                                    <Badge
+                                        position="absolute"
+                                        top={3}
+                                        left={3}
+                                        colorPalette={boulder.active ? "green" : "gray"}
+                                        size="sm"
+                                    >
+                                        {boulder.active ? (
+                                            <>
+                                                <FiCheckCircle style={{ display: "inline", marginRight: "4px" }} />
+                                                On Wall
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FiXCircle style={{ display: "inline", marginRight: "4px" }} />
+                                                Retired
+                                            </>
+                                        )}
+                                    </Badge>
+                                </Box>
+
+                                {/* Content Section */}
+                                <Card.Body>
+                                    <VStack align="stretch" gap={3}>
+                                        <Heading size="lg" color={boulder.active ? "fg" : "fg.muted"}>
+                                            {boulder.name}
+                                        </Heading>
+                                        <Text 
+                                            color="fg.muted" 
+                                            fontSize="sm"
+                                            noOfLines={3}
+                                        >
+                                            {boulder.description || "No description provided"}
+                                        </Text>
+                                    </VStack>
+                                </Card.Body>
+
+                                {/* Action Buttons */}
+                                <Card.Footer>
+                                    <VStack width="full" gap={2}>
+                                        <HStack width="full" gap={2}>
+                                            <Button
+                                                flex={1}
+                                                colorPalette="blue"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleBoulderActionClick("edit", boulder)}
+                                            >
+                                                <FiEdit3 />
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                flex={1}
+                                                colorPalette="red"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedBoulder(boulder);
+                                                    handleDeleteClick();
+                                                }}
+                                            >
+                                                <FiTrash2 />
+                                                Delete
+                                            </Button>
+                                        </HStack>
+                                        <Button
+                                            width="full"
+                                            size="sm"
+                                            colorPalette={boulder.active ? "gray" : "green"}
+                                            variant="outline"
+                                            onClick={() => handleToggleActive(boulder)}
+                                        >
+                                            {boulder.active ? (
+                                                <>
+                                                    <FiXCircle />
+                                                    Mark as Retired
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FiCheckCircle />
+                                                    Mark as Active
+                                                </>
+                                            )}
+                                        </Button>
+                                    </VStack>
+                                </Card.Footer>
+                            </MotionCard>
+                        );
+                    })}
+                </SimpleGrid>
+
+                {/* Loading More Indicator & Intersection Observer Target */}
+                {hasMore && (
+                    <Box ref={observerTarget} py={8}>
+                        {isFetchingMore && (
+                            <VStack gap={4}>
+                                <SimpleGrid columns={{base: 1, md: 2, lg: 3}} gap={6} width="full">
+                                    {[...Array(3)].map((_, i) => (
+                                        <Skeleton key={i} height="350px" width="full" borderRadius="md" />
+                                    ))}
+                                </SimpleGrid>
+                                <Text color="gray.500" fontSize="sm">Loading more boulders...</Text>
+                            </VStack>
+                        )}
+                    </Box>
+                )}
+
+                {/* All Loaded Indicator */}
+                {!hasMore && boulders.length > 0 && (
+                    <Box py={4}>
+                        <Text textAlign="center" color="gray.500" fontSize="sm">
+                            All {totalCount} boulders loaded
+                        </Text>
+                    </Box>
+                )}
             </VStack>
 
             {/* Fullscreen Image Modal */}
-            {imageFullscreen && currentBoulder.image && (
+            {imageFullscreen && selectedBoulder?.image && (
                 <Box
                     position="fixed"
                     top={0}
@@ -452,7 +581,10 @@ function Boulders(props: BoulderProps) {
                     bottom={0}
                     bg="blackAlpha.900"
                     zIndex={9999}
-                    onClick={() => setImageFullscreen(false)}
+                    onClick={() => {
+                        setImageFullscreen(false);
+                        setSelectedBoulder(null);
+                    }}
                     cursor="pointer"
                     display="flex"
                     alignItems="center"
@@ -460,8 +592,8 @@ function Boulders(props: BoulderProps) {
                     p={8}
                 >
                     <ImageTag
-                        src={currentBoulder.image}
-                        alt={currentBoulder.name}
+                        src={selectedBoulder.image}
+                        alt={selectedBoulder.name}
                         maxH="90vh"
                         maxW="90vw"
                         objectFit="contain"

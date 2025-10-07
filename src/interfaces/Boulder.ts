@@ -5,4 +5,5 @@ export default interface Boulder {
     image: string,
     place: number,
     description: string,
+    active: boolean,
 }
