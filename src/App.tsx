@@ -14,7 +14,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/groups" element={<Groups />} />
-                    <Route path="/group" element={<Group />} />
+                    <Route path="/groups/:uuid" element={<Group />} />
                     <Route path="/login" element={<Login />} />
                 </Routes>
             </Router>

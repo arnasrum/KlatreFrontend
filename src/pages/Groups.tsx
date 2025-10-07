@@ -211,7 +211,7 @@ function Groups() {
             <Container maxW="2xl" py={8}>
                 <Card.Root>
                     <Card.Header>
-                        <Heading size="xl">Create New Group</Heading>
+                        <Heading color="fg" size="xl">Create New Group</Heading>
                     </Card.Header>
                     <Card.Body>
                         <GroupContext.Provider value={groupContext}>
@@ -309,20 +309,20 @@ function Groups() {
                             <Card.Body py={6}>
                                 <Flex justify="space-around" align="center" wrap="wrap" gap={6}>
                                     <VStack gap={1}>
-                                        <Heading size="2xl">{groups.length}</Heading>
-                                        <Text opacity={0.9}>Total Groups</Text>
+                                        <Heading size="2xl" color="fg">{groups.length}</Heading>
+                                        <Text opacity={0.9} color="fg">Total Groups</Text>
                                     </VStack>
                                     <Separator orientation="vertical" height="50px" display={{ base: "none", md: "block" }} />
                                     <VStack gap={1}>
-                                        <Heading size="2xl">
+                                        <Heading size="2xl" color="fg">
                                             {groups.reduce((acc, g) => acc + g.places.length, 0)}
                                         </Heading>
-                                        <Text opacity={0.9}>Climbing Spots</Text>
+                                        <Text opacity={0.9} color="fg">Climbing Spots</Text>
                                     </VStack>
                                     <Separator orientation="vertical" height="50px" display={{ base: "none", md: "block" }} />
                                     <VStack gap={1}>
-                                        <Heading size="2xl">∞</Heading>
-                                        <Text opacity={0.9}>Routes to Climb</Text>
+                                        <Heading size="2xl" color="fg">∞</Heading>
+                                        <Text opacity={0.9} color="fg">Routes to Climb</Text>
                                     </VStack>
                                 </Flex>
                             </Card.Body>
@@ -375,7 +375,7 @@ function Groups() {
                                     <Card.Body pt={4} pb={6} px={6}>
                                         <VStack align="stretch" gap={4}>
                                             {/* Group Name */}
-                                            <Heading size="lg" color="gray.800" noOfLines={1}>
+                                            <Heading size="lg" color="gray.800">
                                                 {item.name}
                                             </Heading>
 
@@ -383,7 +383,6 @@ function Groups() {
                                             <Text
                                                 color="fg.muted"
                                                 fontSize="sm"
-                                                noOfLines={2}
                                                 minH="40px"
                                             >
                                                 {item.description || "No description provided"}
@@ -409,14 +408,15 @@ function Groups() {
                                     </Card.Body>
 
                                     <Card.Footer
-                                        justify="flex-end"
+                                        justifySelf="flex-end"
+                                        justifyContent="flex-end"
                                         bg="gray.50"
                                         borderTopWidth="1px"
                                         borderColor="gray.200"
                                         py={3}
                                     >
                                         <Button
-                                            variant="ghost"
+                                            variant="outline"
                                             colorPalette="brand"
                                             rightIcon={<FiArrowRight />}
                                             size="sm"

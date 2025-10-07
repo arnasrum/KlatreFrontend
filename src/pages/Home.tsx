@@ -106,10 +106,10 @@ function Home() {
                                 <Card.Body py={8}>
                                     <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
                                         <Box>
-                                            <Heading size="3xl" mb={2}>
+                                            <Heading color="fg" size="3xl" mb={2}>
                                                 Welcome back, {user.username || user.name || "Climber"}! 👋
                                             </Heading>
-                                            <Text fontSize="lg" opacity={0.9}>
+                                            <Text fontSize="lg" color="fg" opacity={0.9}>
                                                 Ready to crush some routes today?
                                             </Text>
                                         </Box>
@@ -165,10 +165,8 @@ function Home() {
                             {/* Groups Section */}
                             <Box>
                                 <Flex justify="space-between" align="center" mb={4}>
-                                    <Heading size="xl" color="gray.700">
-                                        Your Groups
-                                    </Heading>
                                     <Button
+                                        ml={4}
                                         colorPalette="brand"
                                         variant="outline"
                                         onClick={() => navigate("/groups")}
@@ -223,7 +221,7 @@ function Home() {
                             </MotionBox>
 
                             <MotionBox variants={itemVariants}>
-                                <Heading size="5xl" mb={4} lineHeight="1.2">
+                                <Heading color="fg" size="5xl" mb={4} lineHeight="1.2">
                                     Your Climbing Journey
                                     <br />
                                     Starts Here
@@ -231,7 +229,7 @@ function Home() {
                             </MotionBox>
 
                             <MotionBox variants={itemVariants}>
-                                <Text fontSize="2xl" opacity={0.95} maxW="3xl" mx="auto">
+                                <Text color="fg" fontSize="2xl" opacity={0.95} maxW="3xl" mx="auto">
                                     Track routes, share beta, and progress with your climbing crew.
                                     The ultimate companion for boulderers and route climbers.
                                 </Text>
@@ -253,24 +251,7 @@ function Home() {
                                         }}
                                         transition="all 0.2s"
                                     >
-                                        Get Started Free
-                                    </Button>
-                                    <Button
-                                        size="xl"
-                                        variant="outline"
-                                        colorScheme="whiteAlpha"
-                                        px={8}
-                                        py={6}
-                                        fontSize="lg"
-                                        borderColor="white"
-                                        color="white"
-                                        _hover={{
-                                            bg: "whiteAlpha.200",
-                                            transform: "translateY(-2px)"
-                                        }}
-                                        transition="all 0.2s"
-                                    >
-                                        Learn More
+                                        Login To Start
                                     </Button>
                                 </HStack>
                             </MotionBox>
@@ -348,7 +329,7 @@ function Home() {
                                     </Heading>
                                     <Text fontSize="lg" color="fg.muted">
                                         We understand climbers because we are climbers. Klatre is built
-                                        to solve real problems and help you progress faster.
+                                        to solve real problems and track your progress.
                                     </Text>
                                     <Button
                                         colorPalette="brand"
@@ -381,48 +362,6 @@ function Home() {
                     </MotionBox>
                 </Container>
             </Box>
-
-            {/* CTA Section */}
-            <Container maxW="4xl" py={20}>
-                <MotionCard
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <Card.Root
-                        bg="gradient-to-r"
-                        bgGradient="linear(to-r, brand.500, brand.600)"
-                        color="white"
-                    >
-                        <Card.Body p={12}>
-                            <VStack gap={6} textAlign="center">
-                                <Heading size="3xl">
-                                    Ready to Send Your Project?
-                                </Heading>
-                                <Text fontSize="xl" opacity={0.95}>
-                                    Join thousands of climbers already tracking their progress with Klatre
-                                </Text>
-                                <Button
-                                    size="xl"
-                                    colorPalette="white"
-                                    variant="solid"
-                                    onClick={() => navigate("/login")}
-                                    px={12}
-                                    py={6}
-                                    fontSize="lg"
-                                    mt={4}
-                                >
-                                    Get Started Now
-                                </Button>
-                                <Text fontSize="sm" opacity={0.8}>
-                                    Free forever. No credit card required.
-                                </Text>
-                            </VStack>
-                        </Card.Body>
-                    </Card.Root>
-                </MotionCard>
-            </Container>
         </Box>
     )
 }

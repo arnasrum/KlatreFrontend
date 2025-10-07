@@ -1,5 +1,20 @@
 import React, {useContext, useState, useEffect, FormEvent} from "react";
-import {Box, Button, Heading, HStack, VStack, Text, Card} from "@chakra-ui/react";
+import {
+    Box, 
+    Button, 
+    Heading, 
+    HStack, 
+    VStack, 
+    Text, 
+    Card,
+    Container,
+    Badge,
+    SimpleGrid,
+    Grid,
+    Separator,
+    Flex,
+    Spinner
+} from "@chakra-ui/react";
 import Place from "../interfaces/Place.ts";
 import SessionContext from "../hooks/useSession.ts"
 import {ActiveSession} from "../interfaces/ActiveSession.ts";
@@ -11,6 +26,24 @@ import Boulder from "../interfaces/Boulder.ts";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 import { UserContext } from "../contexts/UserContext.ts"
+import { motion } from "framer-motion";
+import { 
+    FiCalendar, 
+    FiPlay, 
+    FiPlus,
+    FiCheckCircle,
+    FiXCircle,
+    FiSave,
+    FiTrash2,
+    FiEdit3,
+    FiClock,
+    FiMapPin,
+    FiTrendingUp,
+    FiActivity
+} from "react-icons/fi";
+
+const MotionCard = motion.create(Card.Root);
+const MotionBox = motion.create(Box);
 
 
 interface SessionProps{
@@ -32,9 +65,13 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
+    const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
     const { user } = useContext(UserContext)
 
-    const activeSession = activeSessions.activeSessions.find(s => s.groupId === groupId);
+    const activeSession = activeSessions
+        ? activeSessions.activeSessions.find(s => s.groupId === groupId)
+        : null;
+
 
     useEffect(() => {
         if(!selectedPlace && !activeSession) {
@@ -62,6 +99,11 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         }, [selectedPlace, activeSession])
 
     useEffect(() => {
+        // Placeholder for fetching past sessions when API is ready
+        setIsLoadingPastSessions(true)
+        
+        // Uncomment when API is ready:
+        /*
         fetch(`${apiUrl}/api/climbingSessions?groupId=${groupId}`, {
             method: 'GET',
             credentials: "include",
@@ -84,7 +126,15 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                     description: error instanceof Error ? error.message : "Failed to fetch past sessions",
                 })
             })
-    }, [refetchPastSessions]);
+            .finally(() => setIsLoadingPastSessions(false))
+        */
+        
+        // Mock delay for loading state
+        setTimeout(() => {
+            setIsLoadingPastSessions(false)
+        }, 500)
+        
+    }, [refetchPastSessions, groupId]);
 
     function handleRefetchPastSessions() {
         setRefetchPastSessions(!refetchPastSessions)
@@ -130,10 +180,22 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
         }
         setSelectedPlace(place)
         const date = new Date()
-        const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-        activeSessions.addSession({id: crypto.randomUUID(), groupId: groupId,  startDate: dateString, placeId: placeId, routeAttempts: []})
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        activeSessions.addSession({
+            id: crypto.randomUUID(), 
+            groupId: groupId,  
+            startDate: dateString, 
+            placeId: placeId, 
+            routeAttempts: []
+        })
         setNewSessionModalOpen(false)
         setSelectFieldPlaceValue([])
+        
+        toaster.create({
+            title: "Session Started! 🧗",
+            description: `Climbing at ${place.name}`,
+            type: "success"
+        })
     }
 
     function handleCloseSessionClick() {
@@ -176,6 +238,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
             setSelectedPlace(null)
             activeSessions.closeSession(activeSession.id)
             setCloseSessionModalOpen(false)
+            handleRefetchPastSessions()
         } catch (error) {
             toaster.create({
                 title: "Error",
@@ -223,10 +286,20 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
             return
         }
         const completed = formData.get("completed") == "on"
-        console.log("Adding route attempt for groupId:", groupId)
-        activeSessions.addRouteAttempt({id: crypto.randomUUID(), routeId: parseInt(routeId), attempts: parseInt(attempts), completed: completed}, groupId)
+        activeSessions.addRouteAttempt({
+            id: crypto.randomUUID(), 
+            routeId: parseInt(routeId), 
+            attempts: parseInt(attempts), 
+            completed: completed
+        }, groupId)
 
         setLogClimbModalOpen(false)
+        
+        toaster.create({
+            title: completed ? "Send! 🎯" : "Attempt Logged",
+            description: completed ? "Great job crushing that route!" : "Keep pushing!",
+            type: "success"
+        })
     }
 
     function handleEditAttemptClick(attempt: RouteAttempt) {
@@ -308,9 +381,15 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const placeFields = places.map((place: Place) => {
         return({label: place.name, value: place.id.toString()})
     })
+    
     const routeFields = boulders.map((boulder) => {
-        return({label: `${boulder.name}`, value: boulder.id.toString(), description: boulder.description || "No description"})
+        return({
+            label: `${boulder.name}`, 
+            value: boulder.id.toString(), 
+            description: boulder.description || "No description"
+        })
     })
+    
     const formFields = [
         {label: "Route", name: "route", type: "select", options: routeFields, placeholder: "Select a route"},
         {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter attempts"},
@@ -318,9 +397,29 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     ]
 
     const editFormFields = editingAttempt ? [
-        {label: "Attempts", name: "attempts", type: "number", placeholder: "Enter Attempts", defaultValue: editingAttempt.attempts.toString()},
+        {
+            label: "Attempts", 
+            name: "attempts", 
+            type: "number", 
+            placeholder: "Enter Attempts", 
+            defaultValue: editingAttempt.attempts.toString()
+        },
         {label: "Completed", name: "completed", type: "checkbox", defaultValue: editingAttempt.completed},
     ] : []
+
+    // Animation variants
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.4 }
+        }
+    };
+
+    const currentPlace = activeSession 
+        ? places.find(place => place.id === activeSession.placeId)
+        : null;
 
 
 
@@ -416,76 +515,76 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
 
                             </Card.Header>
                             { activeSession.routeAttempts.length > 0 ? (
-                            <Card.Body>
-                            <VStack gap={3} align="stretch">
-                                {activeSession.routeAttempts.map((attempt: RouteAttempt, index) => {
-                                    const boulder = boulders.find(boulder => boulder.id === attempt.routeId);
-                                    const place = boulder ? places.find(p => p.id === boulder.place) : null;
-                                    const gradeString = boulder && place
-                                        ? place.gradingSystem.grades.find(g => g.id === boulder.grade)?.gradeString
-                                        : "N/A";
-
-                                    return(
-                                        <Box
-                                            key={index}
-                                            p={3}
-                                            bg="gray.50"
-                                            rounded="md"
-                                            border="1px solid"
-                                            borderColor="fg.subtle"
-                                        >
-                                            <HStack justify="space-between" mb={2}>
-                                                <Text color="black" fontWeight="bold" fontSize="lg">
-                                                    {boulder ? boulder.name : `Route #${attempt.routeId}`}
-                                                </Text>
-                                                <Text
-                                                    color="white"
-                                                    bg={attempt.completed ? "green.500" : "orange.500"}
-                                                    px={2}
-                                                    py={1}
-                                                    rounded="full"
-                                                    fontSize="sm"
-                                                    fontWeight="medium"
-                                                >
-                                                    {attempt.completed ? "✓ Sent" : "In Progress"}
-                                                </Text>
-                                            </HStack>
-                                            <HStack gap={4} w="full" display="flex">
-                                                <Text color="gray.700" fontSize="sm">
-                                                    <strong>Grade:</strong> {gradeString}
-                                                </Text>
-                                                <Text color="gray.700" fontSize="sm">
-                                                    <strong>Attempts:</strong> {attempt.attempts}
-                                                </Text>
-                                                <Button
-                                                    colorPalette="blue"
-                                                    size="sm"
-                                                    onClick={() => handleEditAttemptClick(attempt)}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    colorPalette="red"
-                                                    size="sm"
-                                                    onClick={() => handleRemoveAttemptClick(attempt.id)}
-                                                >
-                                                    Remove
-                                                </Button>
-                                            </HStack>
-                                            {boulder?.description && (
-                                                <Text color="gray.600" fontSize="sm" mt={2} fontStyle="italic">
-                                                    {boulder.description}
-                                                </Text>
-                                            )}
-                                        </Box>
-                                    )
-                                })}
-                                </VStack>
-                                </Card.Body>
-                                ) : (
                                 <Card.Body>
-                                <Text color="black">No route attempts</Text>
-                            </Card.Body>
+                                    <VStack gap={3} align="stretch">
+                                        {activeSession.routeAttempts.map((attempt: RouteAttempt, index) => {
+                                            const boulder = boulders.find(boulder => boulder.id === attempt.routeId);
+                                            const place = boulder ? places.find(p => p.id === boulder.place) : null;
+                                            const gradeString = boulder && place
+                                                ? place.gradingSystem.grades.find(g => g.id === boulder.grade)?.gradeString
+                                                : "N/A";
+
+                                            return(
+                                                <Box
+                                                    key={index}
+                                                    p={3}
+                                                    bg="gray.50"
+                                                    rounded="md"
+                                                    border="1px solid"
+                                                    borderColor="fg.subtle"
+                                                >
+                                                    <HStack justify="space-between" mb={2}>
+                                                        <Text color="black" fontWeight="bold" fontSize="lg">
+                                                            {boulder ? boulder.name : `Route #${attempt.routeId}`}
+                                                        </Text>
+                                                        <Text
+                                                            color="white"
+                                                            bg={attempt.completed ? "green.500" : "orange.500"}
+                                                            px={2}
+                                                            py={1}
+                                                            rounded="full"
+                                                            fontSize="sm"
+                                                            fontWeight="medium"
+                                                        >
+                                                            {attempt.completed ? "✓ Sent" : "In Progress"}
+                                                        </Text>
+                                                    </HStack>
+                                                    <HStack gap={4} w="full" display="flex">
+                                                        <Text color="gray.700" fontSize="sm">
+                                                            <strong>Grade:</strong> {gradeString}
+                                                        </Text>
+                                                        <Text color="gray.700" fontSize="sm">
+                                                            <strong>Attempts:</strong> {attempt.attempts}
+                                                        </Text>
+                                                        <Button
+                                                            colorPalette="blue"
+                                                            size="sm"
+                                                            onClick={() => handleEditAttemptClick(attempt)}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            colorPalette="red"
+                                                            size="sm"
+                                                            onClick={() => handleRemoveAttemptClick(attempt.id)}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </HStack>
+                                                    {boulder?.description && (
+                                                        <Text color="gray.600" fontSize="sm" mt={2} fontStyle="italic">
+                                                            {boulder.description}
+                                                        </Text>
+                                                    )}
+                                                </Box>
+                                            )
+                                        })}
+                                    </VStack>
+                                </Card.Body>
+                            ) : (
+                                <Card.Body>
+                                    <Text color="black">No route attempts</Text>
+                                </Card.Body>
                             )}
                         </Card.Root>
                     )
@@ -516,11 +615,11 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                                         <span>Completed: {attempt.completed? "True" : "False"}</span>
                                                     </HStack>
                                                 )
-                                        }))}
+                                            }))}
                                     </Card.Body>
                                 </Card.Root>
-                           )
-                       })
+                            )
+                        })
                     )}
                 </VStack>
             </VStack>
