@@ -20,7 +20,7 @@ import { FaGithub, FaFacebook, FaApple } from "react-icons/fa"
 
 interface OAuthProvider {
     name: string
-    icon: React.Element
+    icon: React.ReactNode
     colorPalette: string
     variant?: string
     onClick: () => void
@@ -40,7 +40,7 @@ function Login() {
     const handleGoogleLogin = () => {
         setLoading(true)
         setError(null)
-        window.location.href = `${apiUrl}/api/oauth2/authorization/google?origin=${origin}`
+        window.location.href = `${apiUrl}/api/oauth2/authorization/google`
     }
 
     const handleGithubLogin = () => {
@@ -175,13 +175,13 @@ function Login() {
                                     colorPalette={provider.colorPalette}
                                     onClick={provider.onClick}
                                     disabled={loading}
-                                    leftIcon={provider.icon}
                                     _hover={{
                                         transform: "translateY(-2px)",
                                         boxShadow: "md"
                                     }}
                                     transition="all 0.2s"
                                 >
+                                    {provider.icon}
                                     Continue with {provider.name}
                                 </Button>
                             ))}
