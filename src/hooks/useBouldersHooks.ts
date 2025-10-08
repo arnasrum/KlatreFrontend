@@ -180,6 +180,7 @@ export function useBouldersAll({
         setError(null);
 
         try {
+            if(!placeID) throw new Error("placeID is required");
             const active = fetchActive === "active" ? "true" : "false";
             const response = await fetch(
                 `${apiUrl}/boulders/place?placeId=${placeID}&active=${active}&page=0&limit=0`,

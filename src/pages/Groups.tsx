@@ -116,7 +116,8 @@ function Groups() {
 
     function navigateToGroup(uuid: string, group: Group) {
         setCurrentGroup(group);
-        navigate(`/groups/${uuid}`);
+        console.log("group", group);
+        navigate(`/groups/${uuid}`, { state: { group } });
     }
 
     // Animation variants
@@ -249,9 +250,9 @@ function Groups() {
                             <Button
                                 colorPalette="brand"
                                 size="lg"
-                                leftIcon={<FiPlus />}
                                 onClick={() => setShowGroupModal(true)}
                             >
+                                <FiPlus />
                                 Create Your First Group
                             </Button>
                         </VStack>
@@ -292,7 +293,6 @@ function Groups() {
                             <Button
                                 colorPalette="brand"
                                 size="lg"
-                                leftIcon={<FiPlus />}
                                 onClick={() => setShowGroupModal(true)}
                                 _hover={{
                                     transform: "translateY(-2px)",
@@ -300,6 +300,7 @@ function Groups() {
                                 }}
                                 transition="all 0.2s"
                             >
+                                <FiPlus />
                                 New Group
                             </Button>
                         </Flex>
@@ -351,7 +352,6 @@ function Groups() {
                                         borderColor: "brand.500",
                                         boxShadow: "xl"
                                     }}
-                                    transition="all 0.3s"
                                 >
                                     {/* Card Header with Gradient */}
                                     <Box
@@ -418,10 +418,10 @@ function Groups() {
                                         <Button
                                             variant="outline"
                                             colorPalette="brand"
-                                            rightIcon={<FiArrowRight />}
                                             size="sm"
                                         >
                                             View Group
+                                            <FiArrowRight />
                                         </Button>
                                     </Card.Footer>
                                 </MotionCard>

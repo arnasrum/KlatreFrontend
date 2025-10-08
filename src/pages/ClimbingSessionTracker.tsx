@@ -25,7 +25,6 @@ import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
-import { UserContext } from "../contexts/UserContext.ts"
 import { motion } from "framer-motion";
 import { 
     FiCalendar, 
@@ -42,16 +41,16 @@ import {
     FiActivity
 } from "react-icons/fi";
 import { useBouldersAll } from "../hooks/useBouldersHooks"
+import {usePlaceHooks} from "../hooks/usePlaceHooks";
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);
 
 interface SessionProps{
-    places: Place[]
     groupId: number
 }
 
-function Sessions({places, groupId}: SessionProps): React.ReactElement {
+function Sessions({groupId}: SessionProps): React.ReactElement {
 
     const activeSessions = useContext(SessionContext)
 
@@ -65,26 +64,26 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
-    const { user } = useContext(UserContext)
+    const { places, refetchPlaces } = usePlaceHooks({groupId: groupId})
 
 
     const activeSession = activeSessions
         ? activeSessions.activeSessions.find(s => s.groupId === groupId)
         : null;
-    const placeId = selectedPlace ? selectedPlace.id : activeSession!.placeId
-    const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active"})
+
+    const placeId = selectedPlace?.id ?? activeSession?.placeId ?? null;
+    const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
 
     useEffect(() => {
+        if(!placeId) {return }
         refetchBoulders()
     }, [selectedPlace, activeSession])
 
     useEffect(() => {
-        // Placeholder for fetching past sessions when API is ready
         setIsLoadingPastSessions(true)
         
         // Uncomment when API is ready:
-        /*
         fetch(`${apiUrl}/api/climbingSessions?groupId=${groupId}`, {
             method: 'GET',
             credentials: "include",
@@ -98,7 +97,11 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                 }
                 return response.json()
             })
-            .then(data => setPastSessions(data.data))
+            .then(data => {
+                activeSessions.closeSession(activeSession?.id)
+                setSelectedPlace(null)
+                setPastSessions(data.data)
+            })
             .catch(error => {
                 console.error(error)
                 toaster.create({
@@ -108,13 +111,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                 })
             })
             .finally(() => setIsLoadingPastSessions(false))
-        */
-        
-        // Mock delay for loading state
-        setTimeout(() => {
-            setIsLoadingPastSessions(false)
-        }, 500)
-        
+
     }, [refetchPastSessions, groupId]);
 
     function handleRefetchPastSessions() {
@@ -413,7 +410,6 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                         <Button
                             size="lg"
                             colorPalette="brand"
-                            leftIcon={<FiPlay />}
                             onClick={startNewSessionClick}
                             _hover={{
                                 transform: "translateY(-2px)",
@@ -421,6 +417,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             }}
                             transition="all 0.2s"
                         >
+                            <FiPlay />
                             Start New Session
                         </Button>
                     ) : (
@@ -428,9 +425,9 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                             <Button
                                 size="lg"
                                 colorPalette="green"
-                                leftIcon={<FiSave />}
                                 onClick={() => handleCloseSessionClick()}
                             >
+                                <FiSave />
                                 Save & Close
                             </Button>
                         </HStack>
@@ -503,9 +500,9 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
                                 <Heading size="lg">Session Details</Heading>
                                 <Button
                                     colorPalette="brand"
-                                    leftIcon={<FiPlus />}
                                     onClick={handleLogClimbClick}
                                 >
+                                    <FiPlus />
                                     Log Climb
                                 </Button>
                             </Flex>

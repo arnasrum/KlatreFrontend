@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import SelectField from "../components/SelectField";
 import { toaster, Toaster} from "../components/ui/toaster.tsx";
-import { UserContext } from "../contexts/UserContext.ts"
+import {usePlaceHooks} from "../hooks/usePlaceHooks.tsx";
 import { motion } from "framer-motion";
 import { 
     FiUsers, 
@@ -38,12 +38,11 @@ const MotionCard = motion.create(Card.Root);
 
 interface SettingsProps {
     groupID: number
-    places: Array<Place>
 }
 
 export default function Settings(props: SettingsProps) {
 
-    const { groupID, places } = props;
+    const { groupID } = props;
     const [selectedPlace, setSelectedPlace] = useState<string[]>([]);
     const [ gradingSystems, setGradingSystems ] = useState<Array<GradeSystem>>([]);
     const [ selectedGradingSystem, setSelectedGradingSystem ] = useState<string[]>([]);
@@ -51,7 +50,8 @@ export default function Settings(props: SettingsProps) {
     const [ modalMangeUsersModalIsOpen, setMangeUsersModalIsOpen ] = useState<boolean>(false);
     const [ refetchGradingSystems, setRefetchGradingSystems ] = useState<boolean>(false);
     const disable = !(selectedPlace && selectedPlace.length > 0);
-    const { user } = useContext(UserContext);
+    const { places } = usePlaceHooks({groupId: groupID, autoload: true})
+
 
     useEffect(() => {
         if(!selectedPlace || selectedPlace.length < 1) {
@@ -88,7 +88,7 @@ export default function Settings(props: SettingsProps) {
         value: system.id.toString()
     }));
 
-    const placeFields = props.places.map(place => {
+    const placeFields = places.map(place => {
         return {
             label: place.name,
             value: place.id.toString()

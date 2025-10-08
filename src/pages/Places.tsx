@@ -28,51 +28,20 @@ import {
     FiChevronRight,
     FiAlertCircle 
 } from "react-icons/fi";
+import {usePlaceHooks} from "../hooks/usePlaceHooks";
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);
 
 interface PlacesProps {
     groupID?: number | null
-    refetchGroups: () => void
-    setPlaces2: (places: any) => void
 }
 
-function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
+function Places({groupID}: PlacesProps) {
 
     const [selectedPlace, setSelectedPlace] = useState<number | null>(null);
     const [showPlaceModal, setShowPlaceModal] = useState<boolean>(false);
-    const [places, setPlaces] = useState<Array<Place>>([]);
-    const [refetchPlaces, setRefetchPlaces] = useState<boolean>(false);
-    const { user } = useContext(UserContext);
-
-    useEffect(() => {
-        if(!groupID) {
-            return
-        }
-        fetch(`${apiUrl}/api/places?groupID=${groupID}`, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                return response.json()
-            })
-            .then(data => {
-                const placesData = Array.isArray(data) ? data : [];
-                setPlaces(placesData);
-                setPlaces2(placesData);
-            })
-            .catch(error => {
-                console.error('Failed to fetch places:', error);
-                setPlaces([]);
-            })
-    }, [user, groupID, refetchPlaces]);
+    const { places, refetchPlaces } = usePlaceHooks({groupId: groupID})
 
     useEffect(() => {
         setShowPlaceModal(false);
@@ -98,8 +67,7 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
             credentials: "include",
             body: formData
         })
-            .then(() => setRefetchPlaces(prev => !prev))
-            .then(() => refetchGroups())
+            .then(() => refetchPlaces())
             .then(() => setShowPlaceModal(false))
             .catch(error => console.error(error));
     }
@@ -177,9 +145,9 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                             <Button
                                 colorPalette="brand"
                                 size="lg"
-                                leftIcon={<FiPlus />}
                                 onClick={() => setShowPlaceModal(true)}
                             >
+                                <FiPlus />
                                 Add First Place
                             </Button>
                         </VStack>
@@ -236,9 +204,9 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                         overflow="hidden"
                         _hover={{
                             borderColor: "brand.500",
-                            boxShadow: "xl"
+                            boxShadow: "xl",
+                            transition: "all 0.3s"
                         }}
-                        transition="all 0.3s"
                     >
                         {/* Card Header with Gradient */}
                         <Box
@@ -285,8 +253,14 @@ function Places({setPlaces2, refetchGroups, groupID}: PlacesProps) {
                                 </Text>
 
                                 {/* Grading System Badge */}
-                                <HStack justify="space-between" pt={2}>
-                                    <FiChevronRight color="var(--chakra-colors-brand-500)" />
+                                <HStack justify="flex-end" pt={2}>
+                                    <Button
+                                        variant="outline"
+                                        color="fg.muted"
+                                    >
+                                        Enter Place
+                                        <FiChevronRight color="var(--chakra-colors-brand-500)" />
+                                    </Button>
                                 </HStack>
                             </VStack>
                         </Card.Body>

@@ -25,7 +25,6 @@ import {apiUrl} from "../constants/global.ts";
 import Boulder from "../interfaces/Boulder.ts";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
-import { UserContext } from "../contexts/UserContext.ts"
 import { motion } from "framer-motion";
 import { 
     FiCalendar, 
@@ -47,11 +46,10 @@ const MotionBox = motion.create(Box);
 
 
 interface SessionProps{
-    places: Place[]
     groupId: number
 }
 
-function Sessions({places, groupId}: SessionProps): React.ReactElement {
+function Sessions({groupId}: SessionProps): React.ReactElement {
 
     const activeSessions = useContext(SessionContext)
 
@@ -66,7 +64,7 @@ function Sessions({places, groupId}: SessionProps): React.ReactElement {
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
-    const { user } = useContext(UserContext)
+
 
     const activeSession = activeSessions
         ? activeSessions.activeSessions.find(s => s.groupId === groupId)

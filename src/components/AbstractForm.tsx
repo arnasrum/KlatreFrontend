@@ -52,13 +52,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
        <Box 
          as="form" 
          onSubmit={onSubmit} 
-         p={6}
-         bg="white"
-         borderRadius="lg"
-         shadow="md"
-         border="1px"
-         borderColor="gray.200"
-         w={width}
+         w={width || "full"}
        >
            <VStack gap={4} align="stretch">
 
@@ -69,7 +63,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                                type="hidden"
                                key={fieldName}
                                name={fieldName}
-                               value={values.join(',')} 
+                               value={values.join(',')}
                            />
                        ))}
                    </>
@@ -129,7 +123,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
 
                    } else if(field.type == "hidden") {
                         return(
-                            <Box>
+                            <Box key={field.name || index}>
                                 <input type="hidden" value={field.value} name={field.name}/>
                             </Box>
                         )
@@ -137,7 +131,7 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                    }  else {
                        return (
                            <Field.Root key={field.name || index} required={field.required}>
-                               <Field.Label 
+                               <Field.Label
                                  fontWeight="semibold"
                                  color="gray.700"
                                  mb={2}
@@ -150,19 +144,18 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                                    type={field.type}
                                    name={field.name}
                                    required={field.required}
-                                   accept={field.accept}
                                    placeholder={field.placeholder}
                                    size="md"
-                                   bg="gray.50"
-                                   border="1px"
-                                   borderColor="gray.300"
+                                   bg="white"
+                                   border="1px solid"
+                                   borderColor="black"
                                    color="fg"
                                    _hover={{
                                      borderColor: "gray.400"
                                    }}
                                    _focus={{
-                                     borderColor: "blue.500",
-                                     boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                                     borderColor: "brand.500",
+                                     boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
                                      bg: "white"
                                    }}
                                />
@@ -174,9 +167,9 @@ function Form({fields, handleSubmit, footer, width}: FormProps) {
                        )
                    }
                })}
-               
+
                {footer && (
-                   <Box pt={4} borderTop="1px" borderColor="gray.200">
+                   <Box pt={2}>
                        {footer}
                    </Box>
                )}

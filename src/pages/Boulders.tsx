@@ -20,8 +20,6 @@ import {
     FiEdit3, 
     FiTrash2, 
     FiPlus,
-    FiArrowLeft,
-    FiArrowRight,
     FiInfo,
     FiCheckCircle,
     FiXCircle,
@@ -34,6 +32,7 @@ const MotionBox = motion.create(Box);
 interface BoulderProps {
     isLoading?: boolean
     placeID: number,
+    grades: Grade[],
 }
 
 const BOULDERS_PER_PAGE = 12;
@@ -71,16 +70,12 @@ function Boulders(props: BoulderProps) {
     // Toggle active status
     async function handleToggleActive(boulder: Boulder) {
         try {
-            console.log('Toggling boulder active status:', boulder);
+            const formData = new FormData();
+            formData.set("active", (!boulder.active).toString())
             const response = await fetch(`${apiUrl}/boulders/update/${boulder.id}`, {
                 method: "PUT",
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    active: !boulder.active
-                })
+                body: formData
             });
 
             if (response.ok) {
@@ -124,7 +119,7 @@ function Boulders(props: BoulderProps) {
             }
         });
 
-        fetch(`${apiUrl}/boulders/place/update`, {
+        fetch(`${apiUrl}/boulders/update/${selectedBoulder.id}`, {
             method: "PUT",
             credentials: "include",
             body: formData
@@ -484,7 +479,6 @@ function Boulders(props: BoulderProps) {
                                         <Text 
                                             color="fg.muted" 
                                             fontSize="sm"
-                                            noOfLines={3}
                                         >
                                             {boulder.description || "No description provided"}
                                         </Text>
