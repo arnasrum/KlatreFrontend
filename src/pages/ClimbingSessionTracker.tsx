@@ -64,10 +64,10 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
 
-    const { places, refetchPlaces } = usePlaceHooks({groupId: groupId})
+    const { places, refetchPlaces } = usePlaceHooks({groupId: groupId, autoload: true})
 
-    const placeId = selectedPlace?.id ?? null;
-    const { session, openSession, closeSession, routeAttempts, addRouteAttempt, updateRouteAttempt, deleteRouteAttempt } = useSession( {groupId: groupId, placeId: placeId} )
+    const { session, openSession, closeSession, routeAttempts, addRouteAttempt, updateRouteAttempt, deleteRouteAttempt } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
+    const placeId = session?.placeId ?? selectedPlace?.id ?? null
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
 
@@ -270,7 +270,13 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const placeFields = places.map((place: Place) => {
         return({label: place.name, value: place.id.toString()})
     })
-    
+
+    function selectPlacesField(places: Place[]): React.ReactNode {
+        if(!places || places.length < 1) {
+            return <Text color="gray.500">No places found</Text>
+        }
+    }
+
     const routeFields = boulders.map((boulder) => {
         return({
             label: `${boulder.name}`, 
@@ -657,13 +663,16 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         <Text color="fg.muted">
                             Choose where you'll be climbing today
                         </Text>
-                        <SelectField
-                            zIndex={9999}
-                            value={selectFieldPlaceValue}
-                            setValue={setSelectFieldPlaceValue}
-                            fields={placeFields}
-                            placeholder="Select a climbing place"
-                        />
+                        { places.length < 1 ? (
+                            <SelectField
+                                zIndex={9999}
+                                value={selectFieldPlaceValue}
+                                setValue={setSelectFieldPlaceValue}
+                                fields={placeFields}
+                                placeholder="Select a climbing place"
+                            />
+                        ): (<Text color="gray.500">No places found</Text>)}
+
                     </VStack>
                 </Modal.Body>
                 <Modal.Footer>
