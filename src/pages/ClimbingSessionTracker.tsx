@@ -1,46 +1,45 @@
-import React, {useContext, useState, useEffect, FormEvent} from "react";
+import React, {FormEvent, useContext, useEffect, useState} from "react";
 import {
-    Box, 
-    Button, 
-    Heading, 
-    HStack, 
-    VStack, 
-    Text, 
+    Badge,
+    Box,
+    Button,
     Card,
     Container,
-    Badge,
-    SimpleGrid,
-    Grid,
-    Separator,
     Flex,
-    Spinner
+    Grid,
+    Heading,
+    HStack,
+    Separator,
+    SimpleGrid,
+    Spinner,
+    Text,
+    VStack
 } from "@chakra-ui/react";
 import Place from "../interfaces/Place.ts";
-import SessionContext from "../hooks/useSession.ts"
+import useSession from "../hooks/useSession.tsx"
 import {ActiveSession} from "../interfaces/ActiveSession.ts";
 import Modal from "../components/Modal.tsx";
 import SelectField from "../components/SelectField.tsx";
 import {toaster, Toaster} from "../components/ui/toaster.tsx";
 import {apiUrl} from "../constants/global.ts";
-import Boulder from "../interfaces/Boulder.ts";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
-import { motion } from "framer-motion";
-import { 
-    FiCalendar, 
-    FiPlay, 
-    FiPlus,
+import {motion} from "framer-motion";
+import {
+    FiActivity,
+    FiCalendar,
     FiCheckCircle,
-    FiXCircle,
+    FiClock,
+    FiEdit3,
+    FiMapPin,
+    FiPlay,
+    FiPlus,
     FiSave,
     FiTrash2,
-    FiEdit3,
-    FiClock,
-    FiMapPin,
     FiTrendingUp,
-    FiActivity
+    FiXCircle
 } from "react-icons/fi";
-import { useBouldersAll } from "../hooks/useBouldersHooks"
+import {useBouldersAll} from "../hooks/useBouldersHooks"
 import {usePlaceHooks} from "../hooks/usePlaceHooks";
 
 const MotionCard = motion.create(Card.Root);
@@ -52,7 +51,7 @@ interface SessionProps{
 
 function Sessions({groupId}: SessionProps): React.ReactElement {
 
-    const activeSessions = useContext(SessionContext)
+    //const activeSessions = useContext(SessionContext)
 
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
     const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
@@ -64,55 +63,18 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
+
     const { places, refetchPlaces } = usePlaceHooks({groupId: groupId})
 
-
-    const activeSession = activeSessions
-        ? activeSessions.activeSessions.find(s => s.groupId === groupId)
-        : null;
-
-    const placeId = selectedPlace?.id ?? activeSession?.placeId ?? null;
+    const placeId = selectedPlace?.id ?? null;
+    const { session, openSession, closeSession, routeAttempts, addRouteAttempt, updateRouteAttempt, deleteRouteAttempt } = useSession( {groupId: groupId, placeId: placeId} )
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
 
     useEffect(() => {
         if(!placeId) {return }
         refetchBoulders()
-    }, [selectedPlace, activeSession])
-
-    useEffect(() => {
-        setIsLoadingPastSessions(true)
-        
-        // Uncomment when API is ready:
-        fetch(`${apiUrl}/api/climbingSessions?groupId=${groupId}`, {
-            method: 'GET',
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => {
-                if(!response.ok) {
-                    return response.json().then(json => {throw new Error(json.errorMessage)})
-                }
-                return response.json()
-            })
-            .then(data => {
-                activeSessions.closeSession(activeSession?.id)
-                setSelectedPlace(null)
-                setPastSessions(data.data)
-            })
-            .catch(error => {
-                console.error(error)
-                toaster.create({
-                    title: "Error",
-                    type: "error",
-                    description: error instanceof Error ? error.message : "Failed to fetch past sessions",
-                })
-            })
-            .finally(() => setIsLoadingPastSessions(false))
-
-    }, [refetchPastSessions, groupId]);
+    }, [selectedPlace, session])
 
     function handleRefetchPastSessions() {
         setRefetchPastSessions(!refetchPastSessions)
@@ -123,7 +85,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     }
 
     function startNewSessionClick() {
-        if(activeSession) {
+        if(session) {
             toaster.create({
                 title: "Error",
                 description: "You already have an active session for this group",
@@ -132,6 +94,12 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             return
         }
         setNewSessionModalOpen(true)
+    }
+
+
+    function getDate(): string {
+        const date = new Date()
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getHours()}:${date.getMinutes()}`
     }
 
     function handleSessionStartClick() {
@@ -154,27 +122,12 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             return
         }
         setSelectedPlace(place)
-        const date = new Date()
-        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-        activeSessions.addSession({
-            id: crypto.randomUUID(), 
-            groupId: groupId,  
-            startDate: dateString, 
-            placeId: placeId, 
-            routeAttempts: []
-        })
+        openSession(place.id)
         setNewSessionModalOpen(false)
-        setSelectFieldPlaceValue([])
-        
-        toaster.create({
-            title: "Session Started! 🧗",
-            description: `Climbing at ${place.name}`,
-            type: "success"
-        })
     }
 
     function handleCloseSessionClick() {
-        if(!activeSession) {
+        if(!session) {
             toaster.create({
                 title: "Error",
                 description: "You must start a session before closing it",
@@ -185,53 +138,22 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         setCloseSessionModalOpen(true)
     }
 
-    async function handleSaveAndCloseSession() {
-        if(!activeSession) {
+    async function handleSaveAndCloseSession(save: boolean) {
+        if(!session) {
             return
         }
-        try {
-            const response = await fetch(`${apiUrl}/api/climbingSessions`, {
-                method: 'POST',
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({...activeSession, "name": activeSession.startDate})
-            })
-
-            if(!response.ok) {
-                const json = await response.json()
-                throw new Error(json.errorMessage || "Failed to save session")
-            }
-
-            toaster.create({
-                title: "Success! 🎉",
-                description: "Session saved successfully",
-                type: "success"
-            })
-
-            setSelectedPlace(null)
-            activeSessions.closeSession(activeSession.id)
-            setCloseSessionModalOpen(false)
-            handleRefetchPastSessions()
-        } catch (error) {
-            toaster.create({
-                title: "Error",
-                type: "error",
-                description: error instanceof Error ? error.message : "Failed to save session",
-            })
-        }
+        closeSession(session.id, save)
+        setCloseSessionModalOpen(false)
     }
 
     function handleDeleteSession() {
-        if(!activeSession) {
+        if(!session) {
             return
         }
-
         setSelectedPlace(null)
-        activeSessions.closeSession(activeSession.id)
+        console.log("Deleting session", session)
+        closeSession(session.id, false)
         setCloseSessionModalOpen(false)
-
         toaster.create({
             title: "Session Deleted",
             description: "Session was closed without saving",
@@ -241,7 +163,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     function saveClimbAttempt(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        if(!activeSession) {
+        if(!session) {
             toaster.create({
                 title: "Error",
                 description: "You must start a session before logging a climb",
@@ -261,12 +183,12 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             return
         }
         const completed = formData.get("completed") == "on"
-        activeSessions.addRouteAttempt({
-            id: crypto.randomUUID(), 
-            routeId: parseInt(routeId), 
+        addRouteAttempt({
+            routeId: parseInt(routeId),
             attempts: parseInt(attempts), 
-            completed: completed
-        }, groupId)
+            completed: completed,
+            timestamp: getDate()
+        })
 
         setLogClimbModalOpen(false)
         
@@ -284,7 +206,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     function saveEditedClimbAttempt(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
-        if(!editingAttempt || !activeSession) {
+        if(!editingAttempt || !session) {
             toaster.create({
                 title: "Error",
                 description: "Invalid attempt data",
@@ -304,16 +226,19 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
         const completed = formData.get("completed") == "on"
 
-        const updatedAttempts = activeSession.routeAttempts.map(attempt =>
+        const updatedAttempts = routeAttempts.map(attempt =>
             attempt.id === editingAttempt.id
                 ? {...attempt, attempts: parseInt(attempts), completed: completed}
                 : attempt
         )
 
+        /*
         activeSessions.updateSession({
             ...activeSession,
+            timestamp: getDate(),
             routeAttempts: updatedAttempts
         })
+        */
 
         setEditClimbModalOpen(false)
         setEditingAttempt(null)
@@ -325,8 +250,8 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         })
     }
 
-    function handleRemoveAttemptClick(attemptId: string) {
-        if(!activeSession) {
+    function handleRemoveAttemptClick(attemptId: number) {
+        if(!session) {
             toaster.create({
                 title: "Error",
                 description: "No active session",
@@ -334,14 +259,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             })
             return
         }
-
-        const updatedAttempts = activeSession.routeAttempts.filter(attempt => attempt.id !== attemptId)
-
-        activeSessions.updateSession({
-            ...activeSession,
-            routeAttempts: updatedAttempts
-        })
-
+        deleteRouteAttempt(attemptId)
         toaster.create({
             title: "Success",
             description: "Climb attempt removed",
@@ -388,9 +306,8 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
     };
 
-    const currentPlace = activeSession 
-        ? places.find(place => place.id === activeSession.placeId)
-        : null;
+    const currentPlace = session
+        ? places.find(place => place.id === placeId) : null;
 
     return(
         <Container maxW="7xl" py={8}>
@@ -406,7 +323,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                             Track your climbing progress and performance
                         </Text>
                     </Box>
-                    {!activeSession ? (
+                    {!session ? (
                         <Button
                             size="lg"
                             colorPalette="brand"
@@ -439,48 +356,48 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                     variants={cardVariants}
                     initial="hidden"
                     animate="visible"
-                    bg={activeSession ? "green.50" : "red.50"}
+                    bg={session ? "green.50" : "red.50"}
                     borderWidth="2px"
-                    borderColor={activeSession ? "green.500" : "red.300"}
+                    borderColor={session ? "green.500" : "red.300"}
                 >
                     <Card.Body py={6}>
                         <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
                             <HStack gap={4}>
                                 <Box
                                     p={3}
-                                    bg={activeSession ? "green.500" : "red.400"}
+                                    bg={session ? "green.500" : "red.400"}
                                     borderRadius="full"
                                     color="white"
                                 >
-                                    {activeSession ? <FiActivity size={24} /> : <FiXCircle size={24} />}
+                                    {session ? <FiActivity size={24} /> : <FiXCircle size={24} />}
                                 </Box>
                                 <Box>
                                     <Heading size="md" color="gray.800">
-                                        {activeSession ? "Active Session" : "No Active Session"}
+                                        {session ? "Active Session" : "No Active Session"}
                                     </Heading>
-                                    {activeSession && currentPlace && (
+                                    {session && currentPlace && (
                                         <HStack mt={1} color="gray.700">
                                             <FiMapPin />
                                             <Text fontWeight="medium">{currentPlace.name}</Text>
                                             <Text>•</Text>
                                             <FiClock />
-                                            <Text>{activeSession.startDate}</Text>
+                                            <Text>{session.timestamp}</Text>
                                         </HStack>
                                     )}
-                                    {!activeSession && (
+                                    {!session && (
                                         <Text color="gray.600" fontSize="sm" mt={1}>
                                             Start a session to begin tracking your climbs
                                         </Text>
                                     )}
                                 </Box>
                             </HStack>
-                            {activeSession && (
+                            { session && (
                                 <HStack gap={2}>
                                     <Badge colorPalette="green" size="lg">
-                                        {activeSession.routeAttempts.length} {activeSession.routeAttempts.length === 1 ? 'climb' : 'climbs'}
+                                        {routeAttempts.length} {routeAttempts.length === 1 ? 'climb' : 'climbs'}
                                     </Badge>
                                     <Badge colorPalette="blue" size="lg">
-                                        {activeSession.routeAttempts.filter(a => a.completed).length} sent
+                                        {routeAttempts.filter(a => a.completed).length} sent
                                     </Badge>
                                 </HStack>
                             )}
@@ -489,7 +406,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                 </MotionCard>
 
                 {/* Active Session Details */}
-                {activeSession && (
+                {session && (
                     <MotionCard
                         variants={cardVariants}
                         initial="hidden"
@@ -508,9 +425,9 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                             </Flex>
                         </Card.Header>
                         <Card.Body>
-                            {activeSession.routeAttempts.length > 0 ? (
+                            {routeAttempts.length > 0 ? (
                                 <VStack gap={4} align="stretch">
-                                    {activeSession.routeAttempts.map((attempt: RouteAttempt, index) => {
+                                    {routeAttempts.map((attempt: RouteAttempt, index) => {
                                         const boulder = boulders.find(boulder => boulder.id === attempt.routeId);
                                         const place = boulder ? places.find(p => p.id === boulder.place) : null;
                                         const gradeString = boulder && place
@@ -716,7 +633,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                     <Text color="fg.muted" maxW="md">
                                         Your completed climbing sessions will appear here once you save them.
                                     </Text>
-                                    {!activeSession && (
+                                    {!session && (
                                         <Button
                                             colorPalette="brand"
                                             onClick={startNewSessionClick}
@@ -841,16 +758,16 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                             <Text color="gray.800" fontWeight="medium" mb={2}>
                                 Session Summary
                             </Text>
-                            {activeSession && (
+                            {session && (
                                 <VStack align="stretch" gap={2} fontSize="sm">
                                     <HStack justify="space-between">
                                         <Text color="gray.600">Total Climbs:</Text>
-                                        <Badge>{activeSession.routeAttempts.length}</Badge>
+                                        <Badge>{routeAttempts.length}</Badge>
                                     </HStack>
                                     <HStack justify="space-between">
                                         <Text color="gray.600">Completed:</Text>
                                         <Badge colorPalette="green">
-                                            {activeSession.routeAttempts.filter(a => a.completed).length}
+                                            {routeAttempts.filter(a => a.completed).length}
                                         </Badge>
                                     </HStack>
                                 </VStack>
@@ -879,7 +796,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         </Button>
                         <Button
                             colorPalette="green"
-                            onClick={handleSaveAndCloseSession}
+                            onClick={() => handleSaveAndCloseSession(true)}
                         >
                             <FiSave />
                             Save Session

@@ -10,17 +10,15 @@ import Group from "./pages/Group.tsx"
 function App() {
     return (
         <UserContextProvider>
-            <SessionContextProvider>
-                <Router>
-                    <NavBar />
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/groups" element={<Groups />} />
-                        <Route path="/groups/:uuid" element={<Group />} />
-                        <Route path="/login" element={<Login />} />
-                    </Routes>
-                </Router>
-            </SessionContextProvider>
+            <Router>
+                <NavBar />
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/groups" element={<Groups />} />
+                    <Route path="/groups/:uuid" element={<Group />} />
+                    <Route path="/login" element={<Login />} />
+                </Routes>
+            </Router>
         </UserContextProvider>
     )
 }
