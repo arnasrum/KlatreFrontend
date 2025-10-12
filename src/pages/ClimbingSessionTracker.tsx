@@ -152,7 +152,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
         setSelectedPlace(null)
         console.log("Deleting session", session)
-        closeSession(session.id, false)
+        closeSession(parseInt(session.id), false)
         setCloseSessionModalOpen(false)
         toaster.create({
             title: "Session Deleted",
@@ -270,12 +270,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const placeFields = places.map((place: Place) => {
         return({label: place.name, value: place.id.toString()})
     })
-
-    function selectPlacesField(places: Place[]): React.ReactNode {
-        if(!places || places.length < 1) {
-            return <Text color="gray.500">No places found</Text>
-        }
-    }
 
     const routeFields = boulders.map((boulder) => {
         return({
@@ -397,7 +391,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                     )}
                                 </Box>
                             </HStack>
-                            { session && (
+                            { session && routeAttempts.length > 0 && (
                                 <HStack gap={2}>
                                     <Badge colorPalette="green" size="lg">
                                         {routeAttempts.length} {routeAttempts.length === 1 ? 'climb' : 'climbs'}
@@ -663,16 +657,13 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         <Text color="fg.muted">
                             Choose where you'll be climbing today
                         </Text>
-                        { places.length < 1 ? (
-                            <SelectField
-                                zIndex={9999}
-                                value={selectFieldPlaceValue}
-                                setValue={setSelectFieldPlaceValue}
-                                fields={placeFields}
-                                placeholder="Select a climbing place"
-                            />
-                        ): (<Text color="gray.500">No places found</Text>)}
-
+                        <SelectField
+                            zIndex={9999}
+                            value={selectFieldPlaceValue}
+                            setValue={setSelectFieldPlaceValue}
+                            fields={placeFields}
+                            placeholder="Select a climbing place"
+                        />
                     </VStack>
                 </Modal.Body>
                 <Modal.Footer>
@@ -767,7 +758,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                             <Text color="gray.800" fontWeight="medium" mb={2}>
                                 Session Summary
                             </Text>
-                            {session && (
+                            {session && routeAttempts.length > 0 && (
                                 <VStack align="stretch" gap={2} fontSize="sm">
                                     <HStack justify="space-between">
                                         <Text color="gray.600">Total Climbs:</Text>
