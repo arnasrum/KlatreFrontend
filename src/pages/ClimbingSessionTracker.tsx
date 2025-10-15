@@ -226,20 +226,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
         const completed = formData.get("completed") == "on"
 
-        const updatedAttempts = routeAttempts.map(attempt =>
-            attempt.id === editingAttempt.id
-                ? {...attempt, attempts: parseInt(attempts), completed: completed}
-                : attempt
-        )
-
-        /*
-        activeSessions.updateSession({
-            ...activeSession,
-            timestamp: getDate(),
-            routeAttempts: updatedAttempts
-        })
-        */
-
+        updateRouteAttempt({...editingAttempt, completed: completed, attempts: parseInt(attempts), timestamp: Date.now()})
         setEditClimbModalOpen(false)
         setEditingAttempt(null)
 
@@ -428,12 +415,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                             {routeAttempts.length > 0 ? (
                                 <VStack gap={4} align="stretch">
                                     {routeAttempts.map((attempt: RouteAttempt, index) => {
-                                        const boulder = boulders.find(boulder => boulder.id === attempt.routeId);
-                                        const place = boulder ? places.find(p => p.id === boulder.place) : null;
-                                        const gradeString = boulder && place
-                                            ? place.gradingSystem.grades.find(g => g.id === boulder.grade)?.gradeString
-                                            : "N/A";
-
                                         return(
                                             <Card.Root
                                                 key={index}
@@ -446,7 +427,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                         <Box>
                                                             <HStack mb={2}>
                                                                 <Heading size="md" color="gray.800">
-                                                                    {boulder ? boulder.name : `Route #${attempt.routeId}`}
+                                                                    {attempt.route}
                                                                 </Heading>
                                                                 <Badge 
                                                                     colorPalette={attempt.completed ? "green" : "orange"}
@@ -457,14 +438,9 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                                     ) : "In Progress"}
                                                                 </Badge>
                                                             </HStack>
-                                                            {boulder?.description && (
-                                                                <Text color="gray.600" fontSize="sm" mb={2}>
-                                                                    {boulder.description}
-                                                                </Text>
-                                                            )}
                                                             <HStack gap={4} fontSize="sm" color="gray.700">
                                                                 <Text fontWeight="medium">
-                                                                    Grade: <Badge colorPalette="purple">{gradeString}</Badge>
+                                                                    Grade: <Badge colorPalette="purple">{attempt.grade}</Badge>
                                                                 </Text>
                                                                 <Text fontWeight="medium">
                                                                     Attempts: <Badge>{attempt.attempts}</Badge>

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {ActiveSession} from "../interfaces/ActiveSession.ts";
 import SessionContext from "../hooks/useSession.ts";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
+import {apiUrl} from "../constants/global.ts";
 
 
 export default function SessionContextProvider({ children }: { children: React.ReactNode }) {
@@ -11,15 +12,6 @@ export default function SessionContextProvider({ children }: { children: React.R
         return savedSessions ? JSON.parse(savedSessions) : [];
     });
 
-    function addSession(session: ActiveSession) {
-        // Check if session within the same group already exists
-        const existingSessionInGroup = activeSessions.find(s => s.groupId === session.groupId);
-        if(existingSessionInGroup) {
-            console.log("Session already exists for this group");
-            return;
-        }
-        setActiveSessions(prev => [...prev, session]);
-    }
 
     function addRouteAttempt(routeAttempt: RouteAttempt, groupId: number) {
         const session = activeSessions.find(s => s.groupId === groupId);
@@ -42,9 +34,6 @@ export default function SessionContextProvider({ children }: { children: React.R
         );
     }
 
-    function closeSession(id: string) {
-        setActiveSessions(prev => prev.filter(session => session.id !== id));
-    }
 
     const contextValue = {
         activeSessions,

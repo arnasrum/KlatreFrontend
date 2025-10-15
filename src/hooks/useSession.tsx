@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { apiUrl } from "../constants/global";
 import { RouteAttempt, RouteAttemptDTO } from "../interfaces/RouteAttempt";
-
-
 
 type Session = {
     id: string
@@ -10,7 +8,6 @@ type Session = {
     placeId: number
     timestamp: number
 }
-
 
 type UseSessionProps = {
     groupId: number
@@ -26,7 +23,7 @@ type UseSessionReturn = {
     isLoading: boolean
     error: Error | null
     openSession: (placeId: number) => void
-    closeSession: (id: string, save: boolean) => void
+    closeSession: (id: number, save: boolean) => void
 }
 
 export default function useSession({groupId, placeId}: UseSessionProps): UseSessionReturn {
@@ -38,8 +35,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
 
     useEffect(() => {
         fetchActiveSession()
-        fetchSessionAttempts()
-    }, [placeId, routeAttempts, refetch])
+    }, [placeId , refetch])
 
     function fetchActiveSession() {
         setIsLoading(true)
@@ -57,8 +53,12 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 return response.json()
             })
             .then(data => {
-                console.log("group fetch triggered", data)
                 setSession(data.data);
+                return data.data
+            })
+            .then(data => {
+                if(!data) return;
+                fetchSessionAttempts(data.id)
             })
             .catch(error => {
                 console.error('Failed to fetch places:', error);
@@ -66,9 +66,8 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
             .finally(() => {setIsLoading(false)})
     }
 
-    function fetchSessionAttempts() {
-        if(!session) return;
-        fetch(`${apiUrl}/api/climbingSessions/attempts?sessionId=${session.id}`, {
+    function fetchSessionAttempts(id: string) {
+        fetch(`${apiUrl}/api/climbingSessions/attempts?sessionId=${id}`, {
             method: "GET",
             credentials: "include",
         })
@@ -78,22 +77,19 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 }
                 return response.json()
             })
-            .then(data => {setRouteAttempts(data)})
+            .then(data => {setRouteAttempts(data.data); console.log("route attempts", data)})
             .catch(error => {setError(error)})
     }
 
     function addRouteAttempt(attempt: RouteAttemptDTO) {
         if(!session)  {return}
-        fetch(`${apiUrl}/api/climbingSessions/add/attempt`, {
+        fetch(`${apiUrl}/api/climbingSessions/add/attempt?sessionId=${session.id}`, {
             method: "POST",
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                sessionId: session.id,
-                attempt: attempt
-            })
+            body: JSON.stringify(attempt),
         })
             .then(response => {
                 if(!response.ok) {
@@ -102,7 +98,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 return response.json()
             })
             .then(data => {
-                setRouteAttempts(prev => [...prev, data])
+                setRouteAttempts(prev => [...prev, data.data])
             })
             .catch(error => {
                 console.error('Failed to fetch places:', error);
@@ -110,15 +106,18 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
     }
 
     function updateRouteAttempt(attempt: RouteAttempt) {
-        if(!session)  {return}
+        console.log("updating attempt", attempt)
         fetch(`${apiUrl}/api/climbingSessions/update/attempt`, {
-            method: "POST",
+            method: "PUT",
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                attempt: attempt
+                id: attempt.id,
+                attempts: attempt.attempts,
+                completed: attempt.completed,
+                timestamp: parseInt(attempt.timestamp),
             })
         })
             .then(response => {
@@ -127,13 +126,13 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 }
                 return response.json()
             })
+            .then(data => {console.log("updated attempt", data)})
             .then(() => {setRefetch(prev => !prev)})
             .catch(error => {setError(error)})
     }
 
     function deleteRouteAttempt(attemptId: number) {
-        if(!session)  {return}
-        fetch(`${apiUrl}/api/climbingSessions/delete/attempt`, {
+        fetch(`${apiUrl}/api/climbingSessions/remove/attempt`, {
             method: "DELETE",
             credentials: "include",
             headers: {
