@@ -63,10 +63,19 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
     const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
-
     const { places, refetchPlaces } = usePlaceHooks({groupId: groupId, autoload: true})
 
-    const { session, openSession, closeSession, routeAttempts, addRouteAttempt, updateRouteAttempt, deleteRouteAttempt } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
+    const {
+        session,
+        openSession,
+        closeSession,
+        routeAttempts,
+        addRouteAttempt,
+        updateRouteAttempt,
+        deleteRouteAttempt,
+        error,
+        clearError
+    } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
     const placeId = session?.placeId ?? selectedPlace?.id ?? null
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
@@ -75,6 +84,17 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         if(!placeId) {return }
         refetchBoulders()
     }, [selectedPlace, session])
+
+    useEffect(() => {
+        if(error) {
+            toaster.create({
+                title: "Error",
+                description: "Failed to open a session",
+                type: "error"
+            })
+            clearError()
+        }
+    } , [error])
 
     function handleRefetchPastSessions() {
         setRefetchPastSessions(!refetchPastSessions)
@@ -99,7 +119,8 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     function getDate(): string {
         const date = new Date()
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getHours()}:${date.getMinutes()}`
+        //return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getHours()}:${date.getMinutes()}`
+        return date.getTime().toString()
     }
 
     function handleSessionStartClick() {
@@ -185,18 +206,27 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         const completed = formData.get("completed") == "on"
         addRouteAttempt({
             routeId: parseInt(routeId),
-            attempts: parseInt(attempts), 
+            attempts: parseInt(attempts),
             completed: completed,
             timestamp: getDate()
         })
+            .then(() => {
+                toaster.create({
+                    title: completed ? "Send! 🎯" : "Attempt Logged",
+                    description: completed ? "Great job crushing that route!" : "Keep pushing!",
+                    type: "success"
+                })
 
+            })
+            .catch(err => {
+                console.log(err)
+                toaster.create({
+                    title: "Error",
+                    description: "Failed to log climb attempt",
+                    type: "error"
+                })
+            })
         setLogClimbModalOpen(false)
-        
-        toaster.create({
-            title: completed ? "Send! 🎯" : "Attempt Logged",
-            description: completed ? "Great job crushing that route!" : "Keep pushing!",
-            type: "success"
-        })
     }
 
     function handleEditAttemptClick(attempt: RouteAttempt) {
@@ -295,6 +325,8 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     const currentPlace = session
         ? places.find(place => place.id === placeId) : null;
+
+
 
     return(
         <Container maxW="7xl" py={8}>

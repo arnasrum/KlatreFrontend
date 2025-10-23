@@ -17,13 +17,14 @@ type UseSessionProps = {
 type UseSessionReturn = {
     session: Session | null
     routeAttempts: RouteAttempt[]
-    addRouteAttempt: (attempt: RouteAttemptDTO) => void
+    addRouteAttempt: (attempt: RouteAttemptDTO) => Promise<string>
     updateRouteAttempt: (attempt: RouteAttempt) => void
     deleteRouteAttempt: (attemptId: number) => void
     isLoading: boolean
     error: Error | null
     openSession: (placeId: number) => void
     closeSession: (id: number, save: boolean) => void
+    clearError: () => void
 }
 
 export default function useSession({groupId, placeId}: UseSessionProps): UseSessionReturn {
@@ -81,28 +82,34 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
             .catch(error => {setError(error)})
     }
 
-    function addRouteAttempt(attempt: RouteAttemptDTO) {
-        if(!session)  {return}
-        fetch(`${apiUrl}/api/climbingSessions/add/attempt?sessionId=${session.id}`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(attempt),
-        })
-            .then(response => {
-                if(!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                return response.json()
+    function addRouteAttempt(attempt: RouteAttemptDTO): Promise<string> {
+        return new Promise((resolve, reject) => {
+            if (!session) {
+                reject(new Error("Session is not defined"));
+                return;
+            }
+            fetch(`${apiUrl}/api/climbingSessions/add/attempt?sessionId=${session.id}`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(attempt),
             })
-            .then(data => {
-                setRouteAttempts(prev => [...prev, data.data])
-            })
-            .catch(error => {
-                console.error('Failed to fetch places:', error);
-            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    resolve(data.data);
+                })
+                .then(() => {setRefetch(prev => !prev)})
+                .catch(error => {
+                    reject(error);
+                });
+        });
     }
 
     function updateRouteAttempt(attempt: RouteAttempt) {
@@ -193,6 +200,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 return response.json()
             })
             .then(() => setSession(null))
+            .then(() => console.log("closed session"))
             .catch(error => {
                 console.error("Error closing session:", error)
                 setError(error.message);
@@ -200,11 +208,17 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
             .finally(() => setIsLoading(false))
     }
 
+    function clearError() {
+        setError(null);
+    }
+
+
     return {
         session,
         routeAttempts,
         isLoading,
         error,
+        clearError,
         openSession,
         closeSession,
         addRouteAttempt,
