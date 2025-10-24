@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useContext, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import type Boulder from "../interfaces/Boulder.ts";
 import {apiUrl} from "../constants/global.ts";
 import {
     Container, Box, Flex, VStack, HStack,
     Heading, Image as ImageTag, Text, Badge,
-    AspectRatio, Card, Separator, Button, Grid,
-    SimpleGrid, Skeleton, Alert, Dialog, GridItem, Switch
+    AspectRatio, Card, Button,
+    SimpleGrid, Skeleton
 } from "@chakra-ui/react";
-import MenuButton from "../components/MenuButton.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {handleFormDataImage} from "../Helpers.ts";
 import InputField from "../interfaces/InputField.ts";
@@ -97,7 +96,7 @@ function Boulders(props: BoulderProps) {
             credentials: "include",
             body: formData
         })
-            .then(_ => {
+            .then(() => {
                 setBoulderAction(null);
                 refetchBoulders();
             })
@@ -177,7 +176,6 @@ function Boulders(props: BoulderProps) {
         }
     }
 
-    // Loading State
     if (isLoading) {
         return (
             <Container maxW="7xl" py={8}>
@@ -232,7 +230,6 @@ function Boulders(props: BoulderProps) {
         );
     }
 
-    // Edit Boulder Form
     if(boulderAction === "edit" && selectedBoulder) {
         const gradeString = props.grades.find(item => item.id == selectedBoulder.grade)?.gradeString || "";
         const editFields = fields.map((field: InputField) => {
@@ -282,7 +279,6 @@ function Boulders(props: BoulderProps) {
         );
     }
 
-    // Empty State
     if(boulders.length === 0 && !isLoading) {
         return (
             <Container maxW="4xl" py={8}>

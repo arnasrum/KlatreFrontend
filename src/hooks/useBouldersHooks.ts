@@ -23,10 +23,6 @@ interface UseBouldersPaginatedReturn {
     observerTarget: React.RefObject<HTMLDivElement>;
 }
 
-/**
- * Custom hook for fetching boulders with pagination support
- * Includes lazy loading with Intersection Observer
- */
 export function useBouldersPaginated({
     placeID,
     limit = 12,
@@ -162,10 +158,6 @@ interface UseBouldersAllReturn {
     refetchBoulders: () => Promise<void>;
 }
 
-/**
- * Custom hook for fetching ALL boulders at once (no pagination)
- * Useful for select fields or when you need the complete list
- */
 export function useBouldersAll({
     placeID,
     autoFetch = true,
