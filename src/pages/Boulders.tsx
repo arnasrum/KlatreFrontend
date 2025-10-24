@@ -407,7 +407,7 @@ function Boulders(props: BoulderProps) {
                                     {boulder.image ? (
                                         <AspectRatio ratio={4/3}>
                                             <ImageTag
-                                                src={boulder.image}
+                                                src={`${apiUrl}/api/images/${boulder.image}`}
                                                 alt={boulder.name}
                                                 objectFit="cover"
                                                 cursor="pointer"
@@ -582,7 +582,7 @@ function Boulders(props: BoulderProps) {
                     p={8}
                 >
                     <ImageTag
-                        src={selectedBoulder.image}
+                        src={`${apiUrl}/api/images/${selectedBoulder.image}`}
                         alt={selectedBoulder.name}
                         maxH="90vh"
                         maxW="90vw"
