@@ -3,7 +3,7 @@ import {apiUrl} from "../constants/global.ts";
 import "./AddGroupFrom.css"
 
 function AddGroupForm() {
-    const { refetch, setRefetch, setShowGroupModal } = useContext(GroupContext);
+    //const { refetch, setRefetch, setShowGroupModal } = useContext(GroupContext);
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
     const [emailInput, setEmailInput] = useState('');
 
@@ -16,9 +16,9 @@ function AddGroupForm() {
         const formData = new FormData(e.currentTarget);
         fetch(`${apiUrl}/groups`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer " + user.access_token
             },
             body: JSON.stringify({
                 "name": formData.get("name") as string,
@@ -30,8 +30,8 @@ function AddGroupForm() {
             .then(_ => {
                 setSelectedEmails([]);
                 setEmailInput('');
-                setRefetch(!refetch);
-                setShowGroupModal(false);
+                //setRefetch(!refetch);
+                //setShowGroupModal(false);
             })
             .catch(error => console.error(error))
     };
