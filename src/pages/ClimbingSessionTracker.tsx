@@ -17,12 +17,12 @@ import {
 } from "@chakra-ui/react";
 import Place from "../interfaces/Place.ts";
 import useSession from "../hooks/useSession.tsx"
-import {ActiveSession} from "../interfaces/ActiveSession.ts";
+import {PastSession} from "../interfaces/ClimbingSession.ts";
 import Modal from "../components/Modal.tsx";
 import SelectField from "../components/SelectField.tsx";
 import {toaster, Toaster} from "../components/ui/toaster.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
+import {RouteAttempt, RouteAttemptDisplay} from "../interfaces/RouteAttempt.ts";
 import {motion} from "framer-motion";
 import {
     FiActivity,
@@ -51,8 +51,6 @@ interface SessionProps{
 
 function Sessions({groupId}: SessionProps): React.ReactElement {
 
-    //const activeSessions = useContext(SessionContext)
-
     const [newSessionModalOpen, setNewSessionModalOpen] = useState(false)
     const [logClimbModalOpen, setLogClimbModalOpen] = useState(false)
     const [editClimbModalOpen, setEditClimbModalOpen] = useState(false)
@@ -76,8 +74,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
 
     const { pastSessions, isLoadingPastSessions, refetchPastSession } = usePastSessions({groupId: groupId, autoLoad: true})
-    console.log("Past sessions", pastSessions)
-
     const placeId = session?.placeId ?? selectedPlace?.id ?? null
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
@@ -161,6 +157,9 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             return
         }
         closeSession(session.id, save)
+        setTimeout(() => {
+            refetchPastSession()
+        }, 100)
         setCloseSessionModalOpen(false)
     }
 
@@ -530,7 +529,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
                 <Separator />
 
-                {/* Past Sessions Section */}
+                {/* Past Sessions Section*/}
                 <Box>
                     <Flex justify="space-between" align="center" mb={6}>
                         <Box>
@@ -560,8 +559,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         </Card.Root>
                     ) : pastSessions && pastSessions.length > 0 ? (
                         <VStack align="stretch" gap={4}>
-                            {pastSessions.map((session: ActiveSession, index: number) => {
-                                console.log("PAST SESSIONS", pastSessions)
+                            {pastSessions.toSorted((a, b) => a.timestamp - b.timestamp).map((session: PastSession, index: number) => {
                                 const sessionPlace = places.find(place => place.id === session.placeId);
                                 return(
                                     <MotionCard
@@ -603,8 +601,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                         <Card.Body>
                                             {session.routeAttempts && session.routeAttempts.length > 0 ? (
                                                 <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
-                                                    {session.routeAttempts.map((attempt: RouteAttempt, idx: number) => {
-                                                        const boulder = boulders.find(b => b.id === attempt.routeId);
+                                                    {session.routeAttempts.map((attempt: RouteAttemptDisplay, idx: number) => {
                                                         return(
                                                             <Box
                                                                 key={idx}
@@ -616,18 +613,23 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                             >
                                                                 <HStack justify="space-between" mb={1}>
                                                                     <Text fontWeight="bold" fontSize="sm">
-                                                                        {boulder?.name || `Route #${attempt.routeId}`}
+                                                                        {attempt.routeName}
                                                                     </Text>
                                                                     {attempt.completed && (
                                                                         <FiCheckCircle color="green" />
                                                                     )}
                                                                 </HStack>
-                                                                <Text fontSize="xs" color="gray.600">
-                                                                    Attempts: {attempt.attempts}
-                                                                </Text>
-                                                                <Text fontSize="xs" color="gray.600">
-                                                                    Time: {timestampToDate(attempt.timestamp, "time")}
-                                                                </Text>
+                                                                <HStack display="flex" justifyContent="space-between">
+                                                                    <Text fontSize="xs" color="gray.600">
+                                                                        Attempts: {attempt.attempts}
+                                                                    </Text>
+                                                                    <Text fontSize="xs" color="gray.600">
+                                                                        Time: {timestampToDate(attempt.timestamp, "time")}
+                                                                    </Text>
+                                                                    <Badge colorPalette="purple">
+                                                                        {attempt.gradeName}
+                                                                    </Badge>
+                                                                </HStack>
                                                             </Box>
                                                         )
                                                     })}
