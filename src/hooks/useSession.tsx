@@ -3,7 +3,7 @@ import { apiUrl } from "../constants/global";
 import { RouteAttempt, RouteAttemptDTO } from "../interfaces/RouteAttempt";
 
 type Session = {
-    id: string
+    id: number
     groupId: number
     placeId: number
     timestamp: number
@@ -125,7 +125,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 id: attempt.id,
                 attempts: attempt.attempts,
                 completed: attempt.completed,
-                timestamp: parseInt(attempt.timestamp),
+                timestamp: attempt.timestamp,
             })
         })
             .then(response => {

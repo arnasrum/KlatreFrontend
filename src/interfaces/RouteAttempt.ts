@@ -2,11 +2,11 @@
 
 export type RouteAttempt = {
     id: number,
-    route: string,
+    routeId: number,
     grade: string,
     attempts: number,
     completed: boolean
-    timestamp: string,
+    timestamp: number,
 };
 
 export type RouteAttemptDTO = {

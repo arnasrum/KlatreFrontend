@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "../constants/global";
 
 type PastSessionProps = {
     groupId: number
@@ -8,22 +9,32 @@ type PastSessionProps = {
 
 type PastSessionReturn = {
     pastSessions: object[]
-    isLoading: boolean
+    isLoadingPastSessions: boolean
     error: Error | null
+    refetchPastSession: () => void
 }
 
 
 function usePastSessions(
     {groupId, autoLoad}: PastSessionProps,
-) {
+): PastSessionReturn {
     const [pastSessions, setPastSessions] = useState<object[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [refetch, setRefetch] = useState<boolean>(false)
 
     useEffect(() => {
-
+        fetchPastSession()
     }, [])
 
+
+    function refetchPastSession() {
+        fetchPastSession()
+    }
+
+
     function fetchPastSession() {
-        fetch(`{apiUrl}/api/climbingSessions/past?groupId=${groupId}}`, {
+        setIsLoading(true)
+        fetch(`${apiUrl}/api/climbingSessions/past/${groupId}`, {
             credentials: "include",
             method: "GET",
         })
@@ -39,11 +50,15 @@ function usePastSessions(
             .catch(error => {
                 console.error('Failed to fetch places:', error);
             })
+            .finally(() => {setIsLoading(false)})
     }
 
     return {
-        pastSessions
+        pastSessions,
+        isLoadingPastSessions: isLoading,
+        error: null,
+        refetchPastSession: refetchPastSession,
     }
 }
 
-export default usePastSessions
+export { usePastSessions }

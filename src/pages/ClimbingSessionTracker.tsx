@@ -1,4 +1,4 @@
-import React, {FormEvent, useContext, useEffect, useState} from "react";
+import React, {FormEvent, useEffect, useState} from "react";
 import {
     Badge,
     Box,
@@ -21,7 +21,6 @@ import {ActiveSession} from "../interfaces/ActiveSession.ts";
 import Modal from "../components/Modal.tsx";
 import SelectField from "../components/SelectField.tsx";
 import {toaster, Toaster} from "../components/ui/toaster.tsx";
-import {apiUrl} from "../constants/global.ts";
 import AbstractForm from "../components/AbstractForm.tsx";
 import {RouteAttempt} from "../interfaces/RouteAttempt.ts";
 import {motion} from "framer-motion";
@@ -44,7 +43,7 @@ import {usePlaceHooks} from "../hooks/usePlaceHooks";
 import {usePastSessions} from "../hooks/usePastSessions.tsx"
 
 const MotionCard = motion.create(Card.Root);
-const MotionBox = motion.create(Box);
+//const MotionBox = motion.create(Box);
 
 interface SessionProps{
     groupId: number
@@ -61,8 +60,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
-    const [refetchPastSessions, setRefetchPastSessions] = useState(false)
-    const { places, refetchPlaces } = usePlaceHooks({groupId: groupId, autoload: true})
+    const { places } = usePlaceHooks({groupId: groupId, autoload: true})
 
     const {
         session,
@@ -77,12 +75,11 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
 
 
-    const { pastSessions } = usePastSessions({groupId: groupId, autoload: true})
+    const { pastSessions, isLoadingPastSessions, refetchPastSession } = usePastSessions({groupId: groupId, autoLoad: true})
+    console.log("Past sessions", pastSessions)
 
     const placeId = session?.placeId ?? selectedPlace?.id ?? null
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
-
-    console.log("SESSION", session)
 
     useEffect(() => {
         if(!placeId) {return }
@@ -91,7 +88,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     useEffect(() => {
         if(error) {
-            console.log("ERROR: ", error)
             toaster.create({
                 title: "Error",
                 description: "Failed to open a session",
@@ -100,10 +96,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             clearError()
         }
     } , [error])
-
-    function handleRefetchPastSessions() {
-        setRefetchPastSessions(!refetchPastSessions)
-    }
 
     function handleLogClimbClick() {
         setLogClimbModalOpen(true)
@@ -178,7 +170,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
         setSelectedPlace(null)
         console.log("Deleting session", session)
-        closeSession(parseInt(session.id), false)
+        closeSession(session.id, false)
         setCloseSessionModalOpen(false)
         toaster.create({
             title: "Session Deleted",
@@ -331,7 +323,16 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const currentPlace = session
         ? places.find(place => place.id === placeId) : null;
 
+    function timestampToDate(timestamp: number, mode: "full" | "time"): string {
+        const date = new Date(timestamp)
+        if(mode === "full") {return date.toUTCString()}
+        else if(mode === "time") {
+            const hours = date.getHours()
+            const minutes = date.getMinutes()
+            return `${hours}:${minutes}`
+        }
 
+    }
 
     return(
         <Container maxW="7xl" py={8}>
@@ -464,7 +465,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                         <Box>
                                                             <HStack mb={2}>
                                                                 <Heading size="md" color="gray.800">
-                                                                    {attempt.route}
+                                                                    {attempt.routeId}
                                                                 </Heading>
                                                                 <Badge 
                                                                     colorPalette={attempt.completed ? "green" : "orange"}
@@ -541,7 +542,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         <Button
                             variant="outline"
                             colorPalette="gray"
-                            onClick={handleRefetchPastSessions}
+                            onClick={refetchPastSession}
                         >
                             <FiTrendingUp />
                             Refresh
@@ -560,6 +561,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                     ) : pastSessions && pastSessions.length > 0 ? (
                         <VStack align="stretch" gap={4}>
                             {pastSessions.map((session: ActiveSession, index: number) => {
+                                console.log("PAST SESSIONS", pastSessions)
                                 const sessionPlace = places.find(place => place.id === session.placeId);
                                 return(
                                     <MotionCard
@@ -584,7 +586,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                             {sessionPlace?.name || "Unknown Place"}
                                                         </Heading>
                                                         <Text fontSize="sm" color="fg.muted">
-                                                            {session.startDate.split(" ")[0]}
+                                                            {timestampToDate(session.timestamp, "full")}
                                                         </Text>
                                                     </Box>
                                                 </HStack>
@@ -622,6 +624,9 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                                 </HStack>
                                                                 <Text fontSize="xs" color="gray.600">
                                                                     Attempts: {attempt.attempts}
+                                                                </Text>
+                                                                <Text fontSize="xs" color="gray.600">
+                                                                    Time: {timestampToDate(attempt.timestamp, "time")}
                                                                 </Text>
                                                             </Box>
                                                         )
