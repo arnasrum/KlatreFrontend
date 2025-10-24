@@ -68,6 +68,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
     }
 
     function fetchSessionAttempts(id: string) {
+        console.log("fetching attempts", id)
         fetch(`${apiUrl}/api/climbingSessions/attempts?sessionId=${id}`, {
             method: "GET",
             credentials: "include",
@@ -175,7 +176,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 }
                 return response.json()
             })
-            .then(data => setSession(data.data))
+            .then(data => {setSession(data.data)})
             .catch(error => {
                 console.error("Error opening session:", error)
                 setError(error.message);
@@ -201,6 +202,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
             })
             .then(() => setSession(null))
             .then(() => console.log("closed session"))
+            .then(() => clearAttempts())
             .catch(error => {
                 console.error("Error closing session:", error)
                 setError(error.message);
@@ -210,6 +212,9 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
 
     function clearError() {
         setError(null);
+    }
+    function clearAttempts() {
+        setRouteAttempts([])
     }
 
 
@@ -223,7 +228,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
         closeSession,
         addRouteAttempt,
         updateRouteAttempt,
-        deleteRouteAttempt
+        deleteRouteAttempt,
     }
 }
 

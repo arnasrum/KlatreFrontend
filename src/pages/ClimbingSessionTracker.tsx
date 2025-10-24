@@ -41,6 +41,7 @@ import {
 } from "react-icons/fi";
 import {useBouldersAll} from "../hooks/useBouldersHooks"
 import {usePlaceHooks} from "../hooks/usePlaceHooks";
+import {usePastSessions} from "../hooks/usePastSessions.tsx"
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);
@@ -60,9 +61,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
     const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
-    const [pastSessions, setPastSessions] = useState<ActiveSession[]>([])
     const [refetchPastSessions, setRefetchPastSessions] = useState(false)
-    const [isLoadingPastSessions, setIsLoadingPastSessions] = useState(false)
     const { places, refetchPlaces } = usePlaceHooks({groupId: groupId, autoload: true})
 
     const {
@@ -74,11 +73,16 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         updateRouteAttempt,
         deleteRouteAttempt,
         error,
-        clearError
+        clearError,
     } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
+
+
+    const { pastSessions } = usePastSessions({groupId: groupId, autoload: true})
+
     const placeId = session?.placeId ?? selectedPlace?.id ?? null
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
+    console.log("SESSION", session)
 
     useEffect(() => {
         if(!placeId) {return }
@@ -87,6 +91,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
 
     useEffect(() => {
         if(error) {
+            console.log("ERROR: ", error)
             toaster.create({
                 title: "Error",
                 description: "Failed to open a session",
@@ -142,7 +147,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             })
             return
         }
-        setSelectedPlace(place)
+        //setSelectedPlace(place)
         openSession(place.id)
         setNewSessionModalOpen(false)
     }
