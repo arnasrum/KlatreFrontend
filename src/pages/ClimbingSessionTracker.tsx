@@ -225,7 +225,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         setLogClimbModalOpen(false)
     }
 
-    function handleEditAttemptClick(attempt: RouteAttempt) {
+    function handleEditAttemptClick(attempt: RouteAttemptDisplay) {
         setEditingAttempt(attempt)
         setEditClimbModalOpen(true)
     }

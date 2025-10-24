@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiUrl } from "../constants/global";
-import { RouteAttempt, RouteAttemptDTO } from "../interfaces/RouteAttempt";
+import { RouteAttempt, RouteAttemptDisplay, RouteAttemptDTO } from "../interfaces/RouteAttempt";
 
 type Session = {
     id: number
@@ -16,7 +16,7 @@ type UseSessionProps = {
 
 type UseSessionReturn = {
     session: Session | null
-    routeAttempts: RouteAttempt[]
+    routeAttempts: RouteAttemptDisplay[]
     addRouteAttempt: (attempt: RouteAttemptDTO) => Promise<string>
     updateRouteAttempt: (attempt: RouteAttempt) => void
     deleteRouteAttempt: (attemptId: number) => void
@@ -29,7 +29,7 @@ type UseSessionReturn = {
 
 export default function useSession({groupId, placeId}: UseSessionProps): UseSessionReturn {
     const [session, setSession] = useState<Session | null>(null);
-    const [routeAttempts, setRouteAttempts] = useState<RouteAttempt[]>([])
+    const [routeAttempts, setRouteAttempts] = useState<RouteAttemptDisplay[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
     const [refetch, setRefetch] = useState<boolean>(false)
