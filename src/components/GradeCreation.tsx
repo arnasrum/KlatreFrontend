@@ -24,11 +24,11 @@ interface GradeCreationProps {
 }
 
 function GradeCreation({
-                       gradeSystems,
-                       groupID,
-                       modalSetter,
-                       refetch,
-                       }: GradeCreationProps) {
+    gradeSystems,
+    groupID,
+    modalSetter,
+    refetch
+}: GradeCreationProps) {
     const [referenceGradeSystem, setReferenceGradeSystem] = useState<string[]>([])
     const [customGrades, setCustomGrades] = useState<Array<CustomGrade>>([])
     const [customGradeSystemName, setCustomGradeSystemName] = useState<string>("")
@@ -197,9 +197,7 @@ function GradeCreation({
         fetch(`${apiUrl}/api/gradingSystems/grades`, {
             method: "POST",
             body: formData,
-            headers: {
-                "Authorization": "Bearer " + user.access_token,
-            }
+            credentials: "include",
         })
             .then(data => {
                 console.log("data", data)
