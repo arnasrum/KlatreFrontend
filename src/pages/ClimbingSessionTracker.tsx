@@ -451,7 +451,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         <Card.Body>
                             {routeAttempts.length > 0 ? (
                                 <VStack gap={4} align="stretch">
-                                    {routeAttempts.map((attempt: RouteAttempt, index) => {
+                                    {routeAttempts.map((attempt: RouteAttemptDisplay, index) => {
                                         return(
                                             <Card.Root
                                                 key={index}
@@ -464,7 +464,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                         <Box>
                                                             <HStack mb={2}>
                                                                 <Heading size="md" color="gray.800">
-                                                                    {attempt.routeId}
+                                                                    {attempt.routeName}
                                                                 </Heading>
                                                                 <Badge 
                                                                     colorPalette={attempt.completed ? "green" : "orange"}
@@ -477,7 +477,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                                             </HStack>
                                                             <HStack gap={4} fontSize="sm" color="gray.700">
                                                                 <Text fontWeight="medium">
-                                                                    Grade: <Badge colorPalette="purple">{attempt.grade}</Badge>
+                                                                    Grade: <Badge colorPalette="purple">{attempt.gradeName}</Badge>
                                                                 </Text>
                                                                 <Text fontWeight="medium">
                                                                     Attempts: <Badge>{attempt.attempts}</Badge>
