@@ -57,7 +57,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     const [closeSessionModalOpen, setCloseSessionModalOpen] = useState(false)
     const [selectFieldPlaceValue, setSelectFieldPlaceValue] = useState<string[]>([])
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
-    const [editingAttempt, setEditingAttempt] = useState<RouteAttempt | null>(null)
+    const [editingAttempt, setEditingAttempt] = useState<RouteAttemptDisplay | null>(null)
     const { places } = usePlaceHooks({groupId: groupId, autoload: true})
 
     const {

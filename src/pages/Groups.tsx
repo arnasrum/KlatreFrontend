@@ -215,18 +215,16 @@ function Groups() {
                         <Heading color="fg" size="xl">Create New Group</Heading>
                     </Card.Header>
                     <Card.Body>
-                        <GroupContext.Provider value={groupContext}>
-                            <AddGroupForm />
-                            <Button
-                                mt={4}
-                                variant="outline"
-                                colorPalette="gray"
-                                width="full"
-                                onClick={() => setShowGroupModal(false)}
-                            >
-                                Cancel
-                            </Button>
-                        </GroupContext.Provider>
+                        <AddGroupForm />
+                        <Button
+                            mt={4}
+                            variant="outline"
+                            colorPalette="gray"
+                            width="full"
+                            onClick={() => setShowGroupModal(false)}
+                        >
+                            Cancel
+                        </Button>
                     </Card.Body>
                 </Card.Root>
             </Container>
@@ -331,15 +329,19 @@ function Groups() {
 
                         {/* Groups Grid */}
                         <Grid
-                            templateColumns="repeat(auto-fill, minmax(320px, 1fr))"
-                            gap={6}
+                            templateColumns={{
+                                base: "1fr",
+                                sm: "repeat(auto-fill, minmax(200px, 1fr))",
+                                md: "repeat(auto-fill, minmax(220px, 1fr))",
+                            }}
+                            gap={3}
                         >
                             {groupItems.map((item: Group & { placesCount: number }, index) => (
                                 <MotionCard
                                     key={item.uuid}
                                     variants={cardVariants}
                                     whileHover={{
-                                        y: -8,
+                                        y: -4,
                                         transition: { duration: 0.2 }
                                     }}
                                     cursor="pointer"
@@ -347,87 +349,47 @@ function Groups() {
                                     bg="white"
                                     borderWidth="1px"
                                     borderColor="gray.200"
+                                    borderRadius="lg"
                                     overflow="hidden"
                                     _hover={{
-                                        borderColor: "brand.500",
-                                        boxShadow: "xl"
+                                        borderColor: "brand.400",
+                                        boxShadow: "lg"
                                     }}
                                 >
-                                    {/* Card Header with Gradient */}
+                                    {/* Minimal colored accent */}
                                     <Box
-                                        h="100px"
-                                        bg="gradient-to-br"
-                                        bgGradient={`linear(to-br, brand.${400 + (index % 3) * 100}, brand.${600 + (index % 3) * 100})`}
-                                        position="relative"
-                                    >
-                                        <Box
-                                            position="absolute"
-                                            top={0}
-                                            left={0}
-                                            right={0}
-                                            bottom={0}
-                                            opacity={0.2}
-                                            bgImage="radial-gradient(circle, white 1px, transparent 1px)"
-                                            bgSize="20px 20px"
-                                        />
-                                    </Box>
+                                        h="4px"
+                                        bg={`brand.${400 + (index % 3) * 100}`}
+                                    />
 
-                                    <Card.Body pt={4} pb={6} px={6}>
-                                        <VStack align="stretch" gap={4}>
-                                            {/* Group Name */}
-                                            <Heading size="lg" color="gray.800">
+                                    <Card.Body p={4}>
+                                        <VStack align="stretch" gap={2}>
+                                            {/* Group Name - more compact */}
+                                            <Heading size="md" color="gray.800">
                                                 {item.name}
                                             </Heading>
 
-                                            {/* Description */}
+                                            {/* Description - limited height */}
                                             <Text
-                                                color="fg.muted"
+                                                color="gray.600"
                                                 fontSize="sm"
                                                 minH="40px"
                                             >
-                                                {item.description || "No description provided"}
+                                                {item.description || "No description"}
                                             </Text>
 
-                                            <Separator />
-
-                                            {/* Stats */}
-                                            <HStack justify="space-between">
-                                                <HStack gap={2}>
-                                                    <Box color="brand.500">
-                                                        <FiMapPin size={18} />
-                                                    </Box>
-                                                    <Text fontSize="sm" color="gray.600">
-                                                        {item.placesCount} {item.placesCount === 1 ? "place" : "places"}
-                                                    </Text>
-                                                </HStack>
-                                                <Badge colorPalette="green" size="sm">
-                                                    Active
-                                                </Badge>
+                                            {/* Stats - inline and minimal */}
+                                            <HStack gap={1.5} color="gray.500" fontSize="xs" mt={1}>
+                                                <FiMapPin size={14} />
+                                                <Text>
+                                                    {item.placesCount} {item.placesCount === 1 ? "place" : "places"}
+                                                </Text>
                                             </HStack>
                                         </VStack>
                                     </Card.Body>
-
-                                    <Card.Footer
-                                        justifySelf="flex-end"
-                                        justifyContent="flex-end"
-                                        bg="gray.50"
-                                        borderTopWidth="1px"
-                                        borderColor="gray.200"
-                                        py={3}
-                                    >
-                                        <Button
-                                            variant="outline"
-                                            colorPalette="brand"
-                                            size="sm"
-                                        >
-                                            View Group
-                                            <FiArrowRight />
-                                        </Button>
-                                    </Card.Footer>
                                 </MotionCard>
                             ))}
                         </Grid>
-
                         {/* Quick Actions */}
                         <Card.Root mt={4}>
                             <Card.Body>

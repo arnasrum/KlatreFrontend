@@ -17,22 +17,20 @@ interface ImageDimensions {
 interface ImageFieldProps {
     name?: string;
     value?: string;
-    onChange?: (event: { target: { name?: string; value: string } }) => void;
 }
 
 const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     name,
     value,
-    onChange
 }, ref) => {
-    const [imgSource, setImageSource] = useState("");
-    const [croppedImage, setCroppedImage] = useState(value || "");
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>();
+    const [imgSource, setImageSource] = useState("")
+    const [croppedImage, setCroppedImage] = useState(value || "")
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>()
     const [showCropModal, setShowCropModal] = useState(false);
     const [crop, setCrop] = useState({x: 0, y: 0})
-    const [zoom, setZoom] = useState(1);
-    const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null);
-    const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | null>(null);
+    const [zoom, setZoom] = useState(1)
+    const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null)
+    const [selectedAspectRatio, setSelectedAspectRatio] = useState<number | null>(null)
 
     const aspectRatios = [
         { label: "Original", value: null },
@@ -51,7 +49,7 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         name: name || '',
         focus: () => {},
         blur: () => {}
-    } as HTMLInputElement));
+    } as HTMLInputElement))
 
     function getImageDimensions(imageSrc: string): Promise<ImageDimensions> {
         return new Promise((resolve, reject) => {
@@ -63,29 +61,29 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
                     aspectRatio: img.naturalWidth / img.naturalHeight
                 });
             };
-            img.onerror = reject;
-            img.src = imageSrc;
+            img.onerror = reject
+            img.src = imageSrc
         });
     }
 
     const getCropContainerStyle = () => {
-        if (!imageDimensions) return { height: '500px', width: '700px' };
+        if (!imageDimensions) return { height: '500px', width: '700px' }
         
-        const maxWidth = Math.min(window.innerWidth * 0.7, 900);
-        const maxHeight = Math.min(window.innerHeight * 0.5, 600);
+        const maxWidth = Math.min(window.innerWidth * 0.7, 900)
+        const maxHeight = Math.min(window.innerHeight * 0.5, 600)
         
-        let containerWidth, containerHeight;
+        let containerWidth, containerHeight
         
         if (imageDimensions.aspectRatio > maxWidth / maxHeight) {
-            containerWidth = maxWidth;
-            containerHeight = maxWidth / imageDimensions.aspectRatio;
+            containerWidth = maxWidth
+            containerHeight = maxWidth / imageDimensions.aspectRatio
         } else {
-            containerHeight = maxHeight;
-            containerWidth = maxHeight * imageDimensions.aspectRatio;
+            containerHeight = maxHeight
+            containerWidth = maxHeight * imageDimensions.aspectRatio
         }
         
-        containerWidth = Math.max(containerWidth, 400);
-        containerHeight = Math.max(containerHeight, 300);
+        containerWidth = Math.max(containerWidth, 400)
+        containerHeight = Math.max(containerHeight, 300)
         
         return {
             width: `${Math.round(containerWidth)}px`,
@@ -96,48 +94,48 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     const getZoomLimits = () => {
         if (!imageDimensions) return { min: 0.1, max: 5 };
         
-        const containerStyle = getCropContainerStyle();
-        const containerWidth = parseInt(containerStyle.width);
-        const containerHeight = parseInt(containerStyle.height);
+        const containerStyle = getCropContainerStyle()
+        const containerWidth = parseInt(containerStyle.width)
+        const containerHeight = parseInt(containerStyle.height)
         
-        const scaleX = containerWidth / imageDimensions.width;
-        const scaleY = containerHeight / imageDimensions.height;
-        const minZoomToFit = Math.min(scaleX, scaleY);
+        const scaleX = containerWidth / imageDimensions.width
+        const scaleY = containerHeight / imageDimensions.height
+        const minZoomToFit = Math.min(scaleX, scaleY)
         
         // Allow much more generous zoom range
-        const minZoom = Math.max(0.1, minZoomToFit * 0.5); // Allow zooming out more
-        const maxZoom = 10; // Allow more zoom in
+        const minZoom = Math.max(0.1, minZoomToFit * 0.5)
+        const maxZoom = 10
         
-        return { min: minZoom, max: maxZoom };
+        return { min: minZoom, max: maxZoom }
     };
 
     function onSelectFile(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files.length > 0) {
-            setCrop({x: 0, y: 0});
-            setZoom(1);
-            const reader = new FileReader();
+            setCrop({x: 0, y: 0})
+            setZoom(1)
+            const reader = new FileReader()
             reader.addEventListener("load", async () => {
-                const imageSrc = reader.result?.toString() || "";
-                setImageSource(imageSrc);
+                const imageSrc = reader.result?.toString() || ""
+                setImageSource(imageSrc)
                 
                 try {
-                    const dimensions = await getImageDimensions(imageSrc);
-                    setImageDimensions(dimensions);
-                    setSelectedAspectRatio(dimensions.aspectRatio);
+                    const dimensions = await getImageDimensions(imageSrc)
+                    setImageDimensions(dimensions)
+                    setSelectedAspectRatio(dimensions.aspectRatio)
                     
                     setTimeout(() => {
-                        const limits = getZoomLimits();
-                        const initialZoom = Math.max(limits.min, 0.5); // Start with reasonable zoom
-                        setZoom(initialZoom);
-                    }, 100);
+                        const limits = getZoomLimits()
+                        const initialZoom = Math.max(limits.min, 0.5)
+                        setZoom(initialZoom)
+                    }, 100)
                     
-                    setShowCropModal(true);
+                    setShowCropModal(true)
                 } catch (error) {
-                    console.error("Error getting image dimensions:", error);
-                    setShowCropModal(true);
+                    console.error("Error getting image dimensions:", error)
+                    setShowCropModal(true)
                 }
             });
-            reader.readAsDataURL(e.target.files[0]);
+            reader.readAsDataURL(e.target.files[0])
         }
     }
 
@@ -146,7 +144,7 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
     }
 
     const handleCropDone = () => {
-        setShowCropModal(false);
+        setShowCropModal(false)
         if (!croppedAreaPixels) {return}
 
         cropImageAsBase64(imgSource,
@@ -156,19 +154,18 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
             croppedAreaPixels.height,
             "newImg.png")
                 .then((base64String: string) => {
-                    setCroppedImage(base64String);
-                    onChange?.({ target: { name, value: base64String } });
+                    setCroppedImage(base64String)
                 })
     };
 
     const handleCropCancel = () => {
         setShowCropModal(false);
-        setImageSource("");
+        setImageSource("")
         setCroppedAreaPixels(undefined);
-        setCrop({x: 0, y: 0});
-        setZoom(1);
-        setImageDimensions(null);
-        setSelectedAspectRatio(null);
+        setCrop({x: 0, y: 0})
+        setZoom(1)
+        setImageDimensions(null)
+        setSelectedAspectRatio(null)
     };
 
     function handleDeleteClick() {
@@ -177,30 +174,29 @@ const ImageField = forwardRef<HTMLInputElement, ImageFieldProps>(({
         setCroppedAreaPixels(undefined)
         setCrop({x: 0, y: 0})
         setZoom(1)
-        setImageDimensions(null);
-        setSelectedAspectRatio(null);
-        onChange?.({ target: { name, value: "" } });
+        setImageDimensions(null)
+        setSelectedAspectRatio(null)
     }
 
     const handleAspectRatioChange = (aspectRatio: number | null) => {
-        setSelectedAspectRatio(aspectRatio);
-        setCrop({x: 0, y: 0});
+        setSelectedAspectRatio(aspectRatio)
+        setCrop({x: 0, y: 0})
         
         const limits = getZoomLimits();
         if (zoom < limits.min) {
-            setZoom(limits.min);
+            setZoom(limits.min)
         }
     };
 
     // Reset zoom to fit image
     const handleResetZoom = () => {
-        const limits = getZoomLimits();
-        setZoom(limits.min);
-        setCrop({x: 0, y: 0});
+        const limits = getZoomLimits()
+        setZoom(limits.min)
+        setCrop({x: 0, y: 0})
     };
 
-    const zoomLimits = getZoomLimits();
-    const cropContainerStyle = getCropContainerStyle();
+    const zoomLimits = getZoomLimits()
+    const cropContainerStyle = getCropContainerStyle()
 
     return (
         <VStack gap={4} align="stretch">

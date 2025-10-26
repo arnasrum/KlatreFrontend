@@ -15,7 +15,6 @@ function cropImageAsBase64(
                 return reject(new Error('Could not get 2D context from canvas.'));
             }
 
-            // Set canvas size to the crop dimensions
             canvas.width = width;
             canvas.height = height;
 

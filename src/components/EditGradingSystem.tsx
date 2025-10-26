@@ -33,8 +33,7 @@ function EditGradingSystem(
 
         fetch(`${apiUrl}/api/gradingSystems`, {
             method: "DELETE",
-            headers: {
-            },
+            credentials: "include",
             body: formData,
         })
             .then(response => {

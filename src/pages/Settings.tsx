@@ -6,7 +6,7 @@ import Place from "../interfaces/Place.ts"
 import ReusableButton from "../components/ReusableButton.tsx";
 import Modal from "../components/Modal.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import MangeUsers from "../components/ManageUsers.tsx";
+import ManageUsers from "../components/ManageUsers.tsx";
 import ManageGradingSystems from "../components/ManageGradingSystems.tsx";
 import {
     Box, 
@@ -173,8 +173,8 @@ export default function Settings(props: SettingsProps) {
                     colorPalette="purple"
                     onClick={() => setModalIsOpen(true)}
                     disabled={disable}
-                    leftIcon={<FiPlus />}
                 >
+                    <FiPlus />
                     Add Grading System
                 </Button>
                 <HStack width="full" gap={3}>
@@ -244,9 +244,9 @@ export default function Settings(props: SettingsProps) {
                                 colorPalette="brand"
                                 size="lg"
                                 onClick={() => setMangeUsersModalIsOpen(true)}
-                                leftIcon={<FiUsers />}
                                 alignSelf="flex-start"
                             >
+                                <FiUsers />
                                 Manage Members
                             </Button>
                         </VStack>
@@ -357,8 +357,8 @@ export default function Settings(props: SettingsProps) {
                                 colorPalette="purple"
                                 variant="outline"
                                 onClick={() => setModalIsOpen(true)}
-                                leftIcon={<FiPlus />}
                             >
+                                <FiPlus />
                                 Add Grading System
                             </Button>
                         </HStack>
@@ -391,7 +391,7 @@ export default function Settings(props: SettingsProps) {
             {modalMangeUsersModalIsOpen && (
                 <Modal isOpen={modalMangeUsersModalIsOpen} title="Manage Group Members" size="xl">
                     <Modal.Body>
-                        <MangeUsers groupID={groupID}/>
+                        <ManageUsers groupID={groupID}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button 
