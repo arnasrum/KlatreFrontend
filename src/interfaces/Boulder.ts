@@ -1,9 +1,9 @@
 export default interface Boulder {
     id: number,
     name: string,
-    grade: number,
-    image: string,
-    place: number,
+    placeId: number,
+    gradeId: number,
     description: string,
     active: boolean,
+    image: string,
 }

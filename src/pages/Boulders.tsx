@@ -110,7 +110,7 @@ function Boulders(props: BoulderProps) {
 
         const formData = new FormData(event.target as HTMLFormElement);
         handleFormDataImage(formData);
-        formData.set("placeID", selectedBoulder.place.toString());
+        formData.set("placeID", selectedBoulder.placeId.toString());
         formData.set("boulderID", selectedBoulder.id.toString());
         formData.entries().forEach(entry => {
             if(!entry[1]) {
@@ -231,7 +231,7 @@ function Boulders(props: BoulderProps) {
     }
 
     if(boulderAction === "edit" && selectedBoulder) {
-        const gradeString = props.grades.find(item => item.id == selectedBoulder.grade)?.gradeString || "";
+        const gradeString = props.grades.find(item => item.id == selectedBoulder.gradeId)?.gradeString || "";
         const editFields = fields.map((field: InputField) => {
             if(field.name === "grade" && props.grades.length > 0) {
                 return {...field, required: false, placeholder: gradeString};
@@ -385,7 +385,7 @@ function Boulders(props: BoulderProps) {
                 {/* Scrollable Grid */}
                 <SimpleGrid columns={{base: 1, md: 2, lg: 3}} gap={6}>
                     {filteredBoulders.map((boulder, index) => {
-                        const gradeString = props.grades.find(item => item.id == boulder.grade)?.gradeString || "";
+                        const gradeString = props.grades.find(item => item.id == boulder.gradeId)?.gradeString || "";
                         
                         return (
                             <MotionCard
