@@ -335,9 +335,9 @@ function Home() {
                                         colorPalette="brand"
                                         size="lg"
                                         onClick={() => navigate("/login")}
-                                        rightIcon={<FiTarget />}
                                     >
                                         Start Tracking Today
+                                        <FiTarget />
                                     </Button>
                                 </VStack>
                             </MotionBox>

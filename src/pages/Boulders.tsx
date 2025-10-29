@@ -100,7 +100,10 @@ function Boulders(props: BoulderProps) {
                 setBoulderAction(null);
                 refetchBoulders();
             })
-            .catch(error => console.error(error))
+            .catch(error =>
+                console.error(error)
+
+            )
             .finally(() => {setBoulderAction(null)});
     }
 
@@ -384,9 +387,8 @@ function Boulders(props: BoulderProps) {
 
                 {/* Scrollable Grid */}
                 <SimpleGrid columns={{base: 1, md: 2, lg: 3}} gap={6}>
-                    {filteredBoulders.map((boulder, index) => {
+                    {filteredBoulders.sort((a, b) => a.name.localeCompare(b.name)).map((boulder, index) => {
                         const gradeString = props.grades.find(item => item.id == boulder.gradeId)?.gradeString || "";
-                        
                         return (
                             <MotionCard
                                 key={boulder.id}
@@ -404,10 +406,10 @@ function Boulders(props: BoulderProps) {
                             >
                                 {/* Image Section */}
                                 <Box position="relative">
-                                    {boulder.image ? (
+                                    {boulder.imageId ? (
                                         <AspectRatio ratio={4/3}>
                                             <ImageTag
-                                                src={`${apiUrl}/api/images/${boulder.image}`}
+                                                src={`${apiUrl}/api/images/${boulder.imageId}`}
                                                 alt={boulder.name}
                                                 objectFit="cover"
                                                 cursor="pointer"
@@ -562,7 +564,7 @@ function Boulders(props: BoulderProps) {
             </VStack>
 
             {/* Fullscreen Image Modal */}
-            {imageFullscreen && selectedBoulder?.image && (
+            {imageFullscreen && selectedBoulder?.imageId && (
                 <Box
                     position="fixed"
                     top={0}
@@ -582,7 +584,7 @@ function Boulders(props: BoulderProps) {
                     p={8}
                 >
                     <ImageTag
-                        src={`${apiUrl}/api/images/${selectedBoulder.image}`}
+                        src={`${apiUrl}/api/images/${selectedBoulder.imageId}`}
                         alt={selectedBoulder.name}
                         maxH="90vh"
                         maxW="90vw"

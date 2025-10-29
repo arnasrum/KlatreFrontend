@@ -50,6 +50,7 @@ function Places({groupID}: PlacesProps) {
 
     let grades = null;
     if(selectedPlace) {
+        console.log("selectedPlace", places);
         grades = places.find(place => place.id == selectedPlace)?.gradingSystem.grades;
     }
 

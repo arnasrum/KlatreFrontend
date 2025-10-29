@@ -5,5 +5,5 @@ export default interface Boulder {
     gradeId: number,
     description: string,
     active: boolean,
-    image: string,
+    imageId: string,
 }
