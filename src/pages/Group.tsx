@@ -21,10 +21,8 @@ import Places from "./Places.tsx";
 import {apiUrl} from "../constants/global.ts"
 import Settings from "./Settings.tsx";
 import Sessions from "./ClimbingSessionTracker.tsx";
-import { UserContext } from "../contexts/UserContext.ts";
-import { PlaceContext } from "../contexts/PlaceContext.ts";
+import Stats from "./Stats.tsx";
 import GroupType from "../interfaces/Group.ts"
-import Place from "../interfaces/Place.ts"
 import { motion } from "framer-motion"
 import { usePlaceHooks } from "../hooks/usePlaceHooks.tsx"
 import { 
@@ -222,6 +220,7 @@ function Group() {
                                                 <Text color="fg.muted" fontSize="lg">
                                                     Statistics coming soon...
                                                 </Text>
+                                                <Stats groupId={groupData.id}/>
                                             </VStack>
                                         </Tabs.Content>
                                         <Tabs.Content value="settings">
