@@ -125,7 +125,9 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 id: attempt.id,
                 attempts: attempt.attempts,
                 completed: attempt.completed,
+                routeId: attempt.routeId,
                 timestamp: attempt.timestamp,
+                session: 0
             })
         })
             .then(response => {
