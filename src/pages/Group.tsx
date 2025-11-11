@@ -216,12 +216,7 @@ function Group() {
                                             <Places groupID={groupData.id} />
                                         </Tabs.Content>
                                         <Tabs.Content value="stats">
-                                            <VStack gap={4} py={8}>
-                                                <Text color="fg.muted" fontSize="lg">
-                                                    Statistics coming soon...
-                                                </Text>
-                                                <Stats groupId={groupData.id}/>
-                                            </VStack>
+                                            <Stats groupId={groupData.id}/>
                                         </Tabs.Content>
                                         <Tabs.Content value="settings">
                                             <Settings groupID={groupData.id} />

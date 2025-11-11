@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiUrl } from "../constants/global";
+import UserStats from "../interfaces/UserStats.ts";
 
 type useStatsProps = {
     groupId: number
@@ -7,20 +8,17 @@ type useStatsProps = {
 }
 
 type useStatsReturn = {
-    userStats: any
+    userStats: UserStats[]
     isLoading: boolean,
     error: Error | null,
     refetchStats: () => void,
 }
 
-// Placeholder
-type UserStats = {}
-
 function useStats({groupId, autoLoad}: useStatsProps): useStatsReturn {
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<Error | null>(null);
-    const [userStats, setUserStats] = useState<any>([]);
+    const [userStats, setUserStats] = useState<UserStats[]>([]);
 
 
     useEffect(() => {
@@ -44,12 +42,10 @@ function useStats({groupId, autoLoad}: useStatsProps): useStatsReturn {
                 }
                 return response.json()
             })
-            .then(data => {setUserStats(data)})
+            .then((data: UserStats[]) => {setUserStats(data)})
             .catch(error => {setError(error)})
             .finally(() => setIsLoading(false))
     }
-
-
 
     return(
         {
@@ -59,7 +55,6 @@ function useStats({groupId, autoLoad}: useStatsProps): useStatsReturn {
             "refetchStats": refetchStats,
         }
     );
-
 }
 
 export { useStats };
