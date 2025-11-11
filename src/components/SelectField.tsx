@@ -1,15 +1,16 @@
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import { Stack, Text, Box, Select, HStack, Portal, createListCollection} from "@chakra-ui/react"
 
 interface SelectFieldProps {
     fields: Array<{label: string, value: string, description?: string}>,
     value: string[],
-    setValue: (val: string[]) => void,
+    setValue: Dispatch<SetStateAction<string[]>>,
     label?: string,
     placeholder?: string,
     disabled?: boolean
     zIndex?: number,
     width?: string,
+    multiple?: boolean
 }
 
 function SelectField(props: SelectFieldProps) {
@@ -27,6 +28,16 @@ function SelectField(props: SelectFieldProps) {
 
     // Get the display text with proper fallbacks
     const getDisplayText = () => {
+        if (props.multiple && props.value.length > 0) {
+            const selectedLabels = props.value
+                .map(val => fields.items.find(item => item.value === val)?.label)
+                .filter(Boolean);
+            
+            if (selectedLabels.length > 0) {
+                return selectedLabels.join(', ');
+            }
+        }
+        
         const foundItem = fields.items.find((item) => item.value === props.value[0]);
         if (foundItem?.label) {
             return foundItem.label;
@@ -43,6 +54,7 @@ function SelectField(props: SelectFieldProps) {
                          value={props.value}
                          onValueChange={(e) => props.setValue(e.value)}
                          width="auto"
+                         multiple={props.multiple}
             >
                 <Select.HiddenSelect />
                 {props.label && <Select.Label>{props.label}</Select.Label>}
