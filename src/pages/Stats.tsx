@@ -2,10 +2,9 @@
 
 import React, {useState} from 'react';
 import {useStats} from "../hooks/useStats";
-import {Bar, BarChart, Legend, XAxis, YAxis} from "recharts";
-import {Checkbox, Input} from "@chakra-ui/react";
+import {Bar, BarChart, Legend, XAxis, YAxis, ResponsiveContainer} from "recharts";
+import {Input} from "@chakra-ui/react";
 import SelectField from "../components/SelectField";
-import Modal from "../components/Modal.tsx";
 import UserStats from "../interfaces/UserStats.ts";
 
 type CounterStat = "totalTried" | "totalCompleted" | "routesTried";
@@ -103,7 +102,7 @@ function Stats({groupId}: StatsProps) {
             />
 
             {userStats && (
-                <div>
+                <ResponsiveContainer width="100%" height={500}>
                     <BarChart
                         width={"100%"}
                         height={500}
@@ -111,7 +110,7 @@ function Stats({groupId}: StatsProps) {
                         barSize={50}
                         responsive
                     >
-                        <Legend/>
+                        <Legend verticalAlign="top" height={36}/>
                         <XAxis
                             dataKey={"day"}
                             label={{ position: 'insideBottomRight', value: 'Date', offset: -5 }}
@@ -125,10 +124,9 @@ function Stats({groupId}: StatsProps) {
                         {displayStats.map(statLabel =>
                             <Bar key={crypto.randomUUID()} dataKey={statLabel} fill={colors[statLabel]}/>
                         )}
-                </BarChart>
-            </div>
-
-        )}
+                    </BarChart>
+                </ResponsiveContainer>
+            )}
         </div>
     );
 }
