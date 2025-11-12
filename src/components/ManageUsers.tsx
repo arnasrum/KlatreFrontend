@@ -1,8 +1,8 @@
-import React, {useState, useEffect, useContext} from 'react'
-import {Heading, Box, Card, Button, Text, VStack} from '@chakra-ui/react'
+import React, {useState, useEffect} from 'react'
+import {Heading, Box, Card, Button, Text, VStack, Tabs, HStack, Input, Separator} from '@chakra-ui/react'
 import { apiUrl } from "../constants/global.ts";
 import {toaster, Toaster} from "./ui/toaster";
-import { UserContext } from "../contexts/UserContext.ts"
+import { UserRole } from "../interfaces/User.ts";
 
 
 
@@ -12,10 +12,8 @@ interface ManageUsersProps {
 
 function ManageUsers({groupID}: ManageUsersProps) {
 
-    const { user } = useContext(UserContext)
     const [refetch, setRefetch] = useState<boolean>(false)
-    const [users, setUsers] = useState<Array<any>>([])
-
+    const [users, setUsers] = useState<UserRole[]>([])
 
     useEffect(() => {
 
@@ -70,19 +68,20 @@ function ManageUsers({groupID}: ManageUsersProps) {
                     }
                     return response.json()
                 })
-                .then(data => toaster.create({title: "User successfully kicked", type: "success"}))
+                .then(() => toaster.create({title: "User successfully kicked", type: "success"}))
                 .then(() => setRefetch((prev: boolean) => !prev))
                 .catch(error => toaster.create({title: "Error occurred", description: error.message, type: "error"}))
 
     }
 
 
-    function userEntries(users: Array<any>): React.ReactNode {
-        return users.map((user: any) => {
+    function userEntries(users: UserRole[]): React.ReactNode {
+        return users.map((user: UserRole) => {
             let role = user.isAdmin ? "Admin" : "Member"
             if(user.isOwner) {role = "Owner"}
             return (
-                <Card.Root key={user.id} m={4} p={4} borderWidth="1px" borderRadius="lg" boxShadow="lg">
+                <Card.Root key={user.id} m={4} p={4} borderWidth="1px" borderRadius="lg" boxShadow="lg"
+                >
                     <Card.Header>
                         <VStack display="flex" flexWrap="wrap" justifyContent="start">
                             <Heading size="md" justifySelf="start">{`${user.name}`}</Heading>
@@ -98,13 +97,12 @@ function ManageUsers({groupID}: ManageUsersProps) {
                     </Card.Body>
                     <Card.Footer>
                         {user.isAdmin ? (
-                            <Button colorPalette="blue"
-                                    disabled={user.isOwner}
-                                    onClick={() => handleChangeUserPermissions(2, groupID, user.id)}
+                            <Button
+                                disabled={user.isOwner}
+                                onClick={() => handleChangeUserPermissions(2, groupID, user.id)}
                             >Revoke Admin</Button>
                         ) : (
                             <Button
-                                colorPalette="blue"
                                 disabled={user.isOwner}
                                 onClick={() => handleChangeUserPermissions(1, groupID, user.id)}
                             >Make Admin</Button>
@@ -117,13 +115,36 @@ function ManageUsers({groupID}: ManageUsersProps) {
     }
 
     return (
-        <Box>
-            <Heading>Manage Users</Heading>
-            <Box display="flex" justifyContent="start" flexWrap="wrap">
-                {users && users.length > 0 && (
-                    userEntries(users)
-                )}
-            </Box>
+        <Box w="100%" h="70%">
+            <Tabs.Root defaultValue={"manage"}>
+                <Tabs.List>
+                    <VStack display="flex" flexWrap="wrap" justifyContent="start" w="100%" h="100%" p={4}>
+                        <HStack display="flex" justifyContent="center">
+                            <Tabs.Trigger value="manage">
+                                <VStack>
+                                    Manage Users
+
+                                </VStack>
+                            </Tabs.Trigger>
+                            <Tabs.Trigger value="invite">
+                                Invite Users
+                            </Tabs.Trigger>
+                        </HStack>
+                        <Separator color="gray.300" mx={4} my={2} />
+                        <Tabs.Content value="manage">
+                            <Box display="flex" justifyContent="start" flexWrap="wrap">
+                                {users && users.length > 0 && (
+                                    userEntries(users)
+                                )}
+                            </Box>
+                        </Tabs.Content>
+                        <Tabs.Content value="invite">
+                            <Input type="email" placeholder="Email" />
+                        </Tabs.Content>
+                    </VStack>
+                </Tabs.List>
+            </Tabs.Root>
+
             <Toaster/>
         </Box>
     )
