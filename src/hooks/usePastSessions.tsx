@@ -46,7 +46,7 @@ function usePastSessions(
                 return response.json()
             })
             .then(data => {
-                setPastSessions(data.data)
+                setPastSessions(data.data.toSorted((session: PastSession) => session.timestamp))
             })
             .catch(error => {
                 console.error('Failed to fetch places:', error);

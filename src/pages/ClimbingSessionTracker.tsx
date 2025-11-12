@@ -22,7 +22,7 @@ import Modal from "../components/Modal.tsx";
 import SelectField from "../components/SelectField.tsx";
 import {toaster, Toaster} from "../components/ui/toaster.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
-import {RouteAttempt, RouteAttemptDisplay} from "../interfaces/RouteAttempt.ts";
+import {RouteAttemptDisplay} from "../interfaces/RouteAttempt.ts";
 import {motion} from "framer-motion";
 import {
     FiActivity,
@@ -559,7 +559,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                         </Card.Root>
                     ) : pastSessions && pastSessions.length > 0 ? (
                         <VStack align="stretch" gap={4}>
-                            {pastSessions.toSorted((a, b) => a.timestamp - b.timestamp).map((session: PastSession, index: number) => {
+                            {pastSessions.map((session: PastSession, index: number) => {
                                 const sessionPlace = places.find(place => place.id === session.placeId);
                                 return(
                                     <MotionCard
@@ -740,7 +740,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                     {editingAttempt && (
                         <>
                             <Text color="black" fontWeight="bold" mb={4}>
-                                {boulders.find(boulder => boulder.id === editingAttempt.routeId)?.name || `Route #${editingAttempt.routeId}`}
+                                {editingAttempt.routeName}
                             </Text>
                             <AbstractForm
                                 fields={editFormFields}
