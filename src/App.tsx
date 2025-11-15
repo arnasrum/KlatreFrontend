@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import UserContextProvider from "./contexts/UserContextProvider.tsx"
-import SessionContextProvider from "./contexts/SessionContext.tsx"
 import NavBar from "./components/NavBar.tsx"
 import Home from "./pages/Home.tsx"
 import Groups from "./pages/Groups.tsx"

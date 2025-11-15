@@ -1,14 +1,13 @@
 import React from "react";
-import { Button } from "@chakra-ui/react";
-import { colorPalettes, sizes, variants} from "../ChakraUIThemeConfig";
+import {Button, ConditionalValue} from "@chakra-ui/react";
 
 interface ButtonProps {
     children: React.ReactNode,
     type?: "button" | "submit" | "reset",
     onClick?: () => void,
-    variant?: keyof typeof variants.button,
-    colorPalette?: keyof typeof colorPalettes,
-    size?: keyof typeof sizes,
+    variant?: ConditionalValue<"solid" | "outline" | "subtle" | "surface" | "ghost" | "plain">
+    colorPalette?: string,
+    size?: ConditionalValue<"md" | "sm" | "lg" | "xl" | "2xl" | "2xs" | "xs">,
     width?: "auto" | "full" | string,
     disabled?: boolean,
     loading?: boolean,
@@ -35,9 +34,9 @@ const ReusableButton = (props: ButtonProps) => {
         <Button
             type={type}
             onClick={onClick}
+            size={size}
             variant={variant}
             colorPalette={colorPalette}
-            size={size}
             width={width}
             disabled={disabled || loading}
             loading={loading}
