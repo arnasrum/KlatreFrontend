@@ -1,9 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 import { useContext } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { UserContext } from "../contexts/UserContext.ts"
-import { apiUrl } from "../constants/global.ts"
 import {
     Box,
     Container,
@@ -12,12 +10,13 @@ import {
     Button,
     HStack,
     Badge,
-    Separator
 } from "@chakra-ui/react"
 import { FiHome, FiUsers, FiSettings, FiLogOut, FiLogIn } from "react-icons/fi"
+import {GiLetterBomb} from "react-icons/gi";
+import {BiEnvelope} from "react-icons/bi";
 
 function NavBar() {
-    const { user, setUser, logout } = useContext(UserContext)
+    const { user, logout } = useContext(UserContext)
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -27,6 +26,29 @@ function NavBar() {
     }
 
     const isActive = (path: string) => location.pathname === path
+
+    const navItems = [
+        {
+            label: "Home",
+            path: "/",
+            icon: <FiHome />
+        },
+        {
+            label: "Groups",
+            path: "/groups",
+            icon: <FiUsers />
+        },
+        {
+            label: "Invites",
+            path: "/invites",
+            icon: <BiEnvelope/>
+        },
+        {
+            label: "Settings",
+            path: "/settings",
+            icon: <FiSettings />
+        }
+    ]
 
     return (
         <Box
@@ -56,30 +78,16 @@ function NavBar() {
                     {/* Navigation Links */}
                     {user && (
                         <HStack gap={2} display={{ base: "none", md: "flex" }}>
-                            <Button
-                                variant={isActive("/") ? "solid" : "ghost"}
-                                colorPalette={isActive("/") ? "brand" : "gray"}
-                                onClick={() => navigate("/")}
-                            >
-                                <FiHome />
-                                Home
-                            </Button>
-                            <Button
-                                variant={isActive("/groups") ? "solid" : "ghost"}
-                                colorPalette={isActive("/groups") ? "brand" : "gray"}
-                                onClick={() => navigate("/groups")}
-                            >
-                                <FiUsers />
-                                Groups
-                            </Button>
-                            <Button
-                                variant={isActive("/settings") ? "solid" : "ghost"}
-                                colorPalette={isActive("/settings") ? "brand" : "gray"}
-                                onClick={() => navigate("/settings")}
-                            >
-                                <FiSettings />
-                                Settings
-                            </Button>
+                            {navItems.map((item, index) => (
+                                <Button
+                                    variant={isActive(item.path) ? "solid" : "ghost"}
+                                    colorPalette={isActive(item.path) ? "brand" : "gray"}
+                                    onClick={() => navigate(item.path)}
+                                >
+                                    {item.icon}
+                                    {item.label}
+                                </Button>
+                            ))}
                         </HStack>
                     )}
 

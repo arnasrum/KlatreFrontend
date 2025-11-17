@@ -5,6 +5,7 @@ import Home from "./pages/Home.tsx"
 import Groups from "./pages/Groups.tsx"
 import Login from "./pages/Login.tsx"
 import Group from "./pages/Group.tsx"
+import Invites from "./components/Invites.tsx";
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                     <Route path="/groups" element={<Groups />} />
                     <Route path="/groups/:uuid" element={<Group />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/invites" element={<Invites />} />
                 </Routes>
             </Router>
         </UserContextProvider>

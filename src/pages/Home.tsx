@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { UserContext } from "../contexts/UserContext.ts"
+import Invites from "../components/Invites.tsx"
 import Groups from "./Groups.tsx"
 import { 
     Container, 
@@ -107,10 +108,10 @@ function Home() {
                                     <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
                                         <Box>
                                             <Heading color="fg" size="3xl" mb={2}>
-                                                Welcome back, {user.username || user.name || "Climber"}! 👋
+                                                Welcome back, {user.username || user.name || "Climber"}!
                                             </Heading>
                                             <Text fontSize="lg" color="fg" opacity={0.9}>
-                                                Ready to crush some routes today?
+                                                Ready for some climbing today?
                                             </Text>
                                         </Box>
                                         <Button
