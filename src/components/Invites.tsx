@@ -1,6 +1,5 @@
 import React, {useContext} from "react";
 import {Box, Heading, Card, HStack, VStack, Button, Text} from "@chakra-ui/react";
-import {useInvites} from "../hooks/useInvites.ts";
 import {InviteContext} from "../contexts/InviteContext.tsx";
 
 
@@ -9,7 +8,7 @@ function Invites() {
     const {invites, refetchInvites, isLoading, error, acceptInvite, rejectInvite}  = useContext(InviteContext)
 
     return(
-        <Box px={12} py={6}
+        <Box px={4} py={6}
              data-state="open"
              _open={{
                  animation: "fade-in 1000ms ease-out",
@@ -18,12 +17,11 @@ function Invites() {
              justifyContent="center"
         >
             <Card.Root
-                w="60%"
                 bg="gray.50"
-                display="flex"
-                justifyContent="center"
+                maxW={{ base: "100%", lg: "3xl" }}
+                w="100%"
             >
-                <VStack justifySelf="center">
+                <VStack w="100%">
                     <Card.Header>
                         <Heading size="xl">Invites</Heading>
                     </Card.Header>
@@ -36,37 +34,56 @@ function Invites() {
                                <Text>No invites</Text>
                            </Box>
                         ) : (
-                            <VStack w="100%" >
+                            <VStack w="100%" gap={4}>
                                 {invites.map((item) => {
                                     return <Box
+                                        key={item.id}
                                         display="flex"
                                         justifyContent="space-between"
-                                        w="50%"
-                                        p={2}
+                                        flexDirection={{ base: "column", md: "row" }}
+                                        alignItems={{ base: "stretch", md: "center" }}
+                                        w="100%"
+                                        p={4}
+                                        gap={2}
                                         bgColor="white"
                                         shadow="lg"
                                         rounded="xl"
                                     >
                                         <Box alignContent="center">
-                                            <HStack gap={4}>
-                                                <Text>{item.sender.name}</Text>
-                                                <Text color="fg.subtle">{item.sender.email}</Text>
+                                            <HStack gap={2} flexWrap="wrap">
+                                                <Text
+                                                    fontWeight="bold"
+                                                    overflow="hidden"
+                                                    textOverflow="ellipsis"
+                                                >
+                                                    {item.sender.name}</Text>
+                                                <Text
+                                                    color="fg.subtle"
+                                                    fontSize="sm"
+                                                    display="block"
+                                                >{item.sender.email}</Text>
                                             </HStack>
                                             has invited you to join their group "{item.group.name}"
                                         </Box>
-                                        <Box p={2} display="flex" gap={2}>
+                                        <HStack
+                                            p={2}
+                                            justifyContent={{ base: "space-between", md: "flex-end" }}
+                                            w={{ base: "100%", md: "auto" }}
+                                        >
                                             <Button
-                                                bgColor="green"
+                                                bgColor="green.500"
+                                                _hover={{ bgColor: "green.600" }}
                                                 variant="solid"
-                                                justifySelf="end"
                                                 onClick={() => {acceptInvite(item.id)}}
+                                                flexGrow={{base: 1, md: 0}}
                                             >Accept</Button>
                                             <Button
-                                                bgColor="red"
+                                                bgColor="red.500"
+                                                _hover={{ bgColor: "red.600" }}
                                                 variant="solid"
                                                 onClick={() => {rejectInvite(item.id)}}
                                             >X</Button>
-                                        </Box>
+                                        </HStack>
                                     </Box>
 
                                 })}
