@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import  User from "../interfaces/User.ts";
+import {User} from "../interfaces/User.ts";
 
 type UserContextType = {
     user: User

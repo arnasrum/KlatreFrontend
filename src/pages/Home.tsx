@@ -77,7 +77,7 @@ function Home() {
         {
             icon: <FiAward size={32} />,
             title: "Grading Systems",
-            description: "Support for multiple grading systems to match your climbing style",
+            description: "Support for multiple grading systems to match your climbing gym",
             color: "orange"
         }
     ]
@@ -91,10 +91,9 @@ function Home() {
         "Mobile-friendly interface"
     ]
 
-    // If user is logged in, show dashboard
     if (user) {
         return (
-            <Box minH="calc(100vh - 80px)" bg="gradient-to-b" bgGradient="linear(to-b, brand.50, white)">
+            <Box minH="calc(100vh - 80px)">
                 <Container maxW="7xl" py={12}>
                     <MotionBox
                         initial={{ opacity: 0, y: -20 }}
@@ -108,7 +107,7 @@ function Home() {
                                     <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
                                         <Box>
                                             <Heading color="fg" size="3xl" mb={2}>
-                                                Welcome back, {user.username || user.name || "Climber"}!
+                                                Welcome back, { user.name || "User"}!
                                             </Heading>
                                             <Text fontSize="lg" color="fg" opacity={0.9}>
                                                 Ready for some climbing today?
@@ -189,8 +188,6 @@ function Home() {
         <Box minH="calc(100vh - 80px)">
             {/* Hero Section */}
             <Box
-                bg="gradient-to-br"
-                bgGradient="linear(to-br, brand.500, brand.700)"
                 color="white"
                 py={20}
                 position="relative"

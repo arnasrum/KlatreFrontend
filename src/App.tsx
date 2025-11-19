@@ -6,20 +6,23 @@ import Groups from "./pages/Groups.tsx"
 import Login from "./pages/Login.tsx"
 import Group from "./pages/Group.tsx"
 import Invites from "./components/Invites.tsx";
+import { InviteProvider } from "./contexts/InviteContext.tsx";
 
 function App() {
     return (
         <UserContextProvider>
-            <Router>
-                <NavBar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/groups" element={<Groups />} />
-                    <Route path="/groups/:uuid" element={<Group />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/invites" element={<Invites />} />
-                </Routes>
-            </Router>
+            <InviteProvider>
+                <Router>
+                    <NavBar />
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/groups" element={<Groups />} />
+                        <Route path="/groups/:uuid" element={<Group />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/invites" element={<Invites />} />
+                    </Routes>
+                </Router>
+            </InviteProvider>
         </UserContextProvider>
     )
 }

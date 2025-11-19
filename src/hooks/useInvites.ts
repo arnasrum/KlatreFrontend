@@ -12,6 +12,8 @@ type UseInviteReturn = {
     refetchInvites: () => void
     isLoading: boolean
     error: Error
+    acceptInvite: (inviteId: number) => void
+    rejectInvite: (inviteId: number) => void
 }
 
 function useInvites(): UseInviteReturn {
@@ -48,11 +50,52 @@ function useInvites(): UseInviteReturn {
         setRefetch(prev => !prev)
     }
 
+    function acceptInvite(inviteId: number) {
+        fetch(`${apiUrl}/api/invite/accept?inviteId=${inviteId}`, {
+            method: "PUT",
+            credentials: "include",
+        })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+            })
+            .then(() => refetchInvitesHandler())
+    }
+
+    function rejectInvite(inviteId: number) {
+        fetch(`${apiUrl}/api/invite/reject?inviteId=${inviteId}`, {
+            method: "PUT",
+            credentials: "include",
+        })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+            })
+    }
+
+    function revokeInvite(inviteId: number) {
+        fetch(`${apiUrl}/api/invite/revoke?inviteId=${inviteId}`, {
+            method: "PUT",
+            credentials: "include",
+        })
+            .then(response => {
+                if(!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+            })
+    }
+
+
+
     return {
         invites: invites,
         refetchInvites: refetchInvitesHandler,
         isLoading: isLoading,
         error: error,
+        acceptInvite: acceptInvite,
+        rejectInvite: rejectInvite
     }
 
 }

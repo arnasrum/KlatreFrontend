@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import User from "../interfaces/User.ts";
+import { User } from "../interfaces/User.ts";
 import {UserContext} from "./UserContext.ts";
 import {apiUrl, origin} from "../constants/global"
 

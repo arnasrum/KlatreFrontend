@@ -2,6 +2,7 @@ import React from 'react';
 import { useContext } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { UserContext } from "../contexts/UserContext.ts"
+import { InviteContext } from "../contexts/InviteContext.tsx"
 import {
     Box,
     Container,
@@ -10,13 +11,15 @@ import {
     Button,
     HStack,
     Badge,
+    Float,
+    Circle
 } from "@chakra-ui/react"
 import { FiHome, FiUsers, FiSettings, FiLogOut, FiLogIn } from "react-icons/fi"
-import {GiLetterBomb} from "react-icons/gi";
 import {BiEnvelope} from "react-icons/bi";
 
 function NavBar() {
     const { user, logout } = useContext(UserContext)
+    const { invites } = useContext(InviteContext)
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -41,7 +44,8 @@ function NavBar() {
         {
             label: "Invites",
             path: "/invites",
-            icon: <BiEnvelope/>
+            icon: <BiEnvelope/>,
+            float: invites.length ? invites.length : null
         },
         {
             label: "Settings",
@@ -80,12 +84,20 @@ function NavBar() {
                         <HStack gap={2} display={{ base: "none", md: "flex" }}>
                             {navItems.map((item, index) => (
                                 <Button
+                                    key={index}
                                     variant={isActive(item.path) ? "solid" : "ghost"}
                                     colorPalette={isActive(item.path) ? "brand" : "gray"}
                                     onClick={() => navigate(item.path)}
                                 >
                                     {item.icon}
                                     {item.label}
+                                    {item.float && (
+                                        <Float offsetX={1}>
+                                            <Circle size="5" bg="red" color="white">
+                                                {item.float}
+                                            </Circle>
+                                        </Float>
+                                    )}
                                 </Button>
                             ))}
                         </HStack>
