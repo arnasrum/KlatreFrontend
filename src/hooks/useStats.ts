@@ -52,7 +52,7 @@ function useStats({groupId, autoLoad}: useStatsProps): useStatsReturn {
             "userStats": userStats,
             "isLoading": isLoading,
             "error": error,
-            "refetchStats": refetchStats,
+            refetchStats: refetchStats,
         }
     );
 }

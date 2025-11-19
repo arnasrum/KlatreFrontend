@@ -142,7 +142,6 @@ function Groups() {
         }
     };
 
-    // Loading State
     if (isLoading) {
         return (
             <Container maxW="7xl" py={8}>
@@ -158,7 +157,6 @@ function Groups() {
         );
     }
 
-    // Not Logged In State
     if (!user) {
         return (
             <Container maxW="4xl" py={16}>
@@ -186,7 +184,6 @@ function Groups() {
         );
     }
 
-    // Error State
     if (error) {
         return (
             <Container maxW="4xl" py={16}>
@@ -206,7 +203,6 @@ function Groups() {
         );
     }
 
-    // Add Group Modal
     if (showGroupModal) {
         return (
             <Container maxW="2xl" py={8}>
@@ -231,7 +227,6 @@ function Groups() {
         );
     }
 
-    // Empty State
     if (groups.length === 0) {
         return (
             <Container maxW="4xl" py={16}>
