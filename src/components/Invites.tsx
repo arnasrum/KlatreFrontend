@@ -1,11 +1,12 @@
 import React, {useContext} from "react";
 import {Box, Heading, Card, HStack, VStack, Button, Text} from "@chakra-ui/react";
 import {InviteContext} from "../contexts/InviteContext.tsx";
+import {AnimatePresence, motion} from "framer-motion";
 
 
 function Invites() {
 
-    const {invites, refetchInvites, isLoading, error, acceptInvite, rejectInvite}  = useContext(InviteContext)
+    const {invites, acceptInvite, rejectInvite}  = useContext(InviteContext)
 
     return(
         <Box px={4} py={6}
@@ -35,8 +36,17 @@ function Invites() {
                            </Box>
                         ) : (
                             <VStack w="100%" gap={4}>
+                                <AnimatePresence>
                                 {invites.map((item) => {
-                                    return <Box
+                                    return <motion.div
+                                        key={item.id}
+                                        initial={{ opacity: 0, x: 100}}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{opacity: 0, x: 100}}
+                                        transition={{ duration: 0.3 }}
+                                        layout
+                                    >
+                                    <Box
                                         key={item.id}
                                         display="flex"
                                         justifyContent="space-between"
@@ -85,11 +95,11 @@ function Invites() {
                                             >X</Button>
                                         </HStack>
                                     </Box>
-
+                                    </motion.div>
                                 })}
+                                </AnimatePresence>
                             </VStack>
                         )}
-
                     </Card.Body>
                 </VStack>
             </Card.Root>
