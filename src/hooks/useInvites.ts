@@ -2,8 +2,6 @@ import {useState, useEffect} from 'react'
 import {GroupInvite} from "../interfaces/GroupInvite.ts";
 import {apiUrl} from "../constants/global.ts";
 
-
-
 type UseInviteProps = {
 }
 
@@ -51,6 +49,7 @@ function useInvites(): UseInviteReturn {
     }
 
     function acceptInvite(inviteId: number) {
+        setIsLoading(true)
         fetch(`${apiUrl}/api/invite/accept?inviteId=${inviteId}`, {
             method: "PUT",
             credentials: "include",
@@ -61,9 +60,12 @@ function useInvites(): UseInviteReturn {
                 }
             })
             .then(() => refetchInvitesHandler())
+            .catch(error => {setError(error)})
+            .finally(() => setIsLoading(false))
     }
 
     function rejectInvite(inviteId: number) {
+        setIsLoading(true)
         fetch(`${apiUrl}/api/invite/reject?inviteId=${inviteId}`, {
             method: "PUT",
             credentials: "include",
@@ -73,6 +75,9 @@ function useInvites(): UseInviteReturn {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
             })
+            .then(() => refetchInvitesHandler())
+            .catch(error => {setError(error)})
+            .finally(() => setIsLoading(false))
     }
 
     function revokeInvite(inviteId: number) {
@@ -85,9 +90,8 @@ function useInvites(): UseInviteReturn {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
             })
+
     }
-
-
 
     return {
         invites: invites,
@@ -97,7 +101,6 @@ function useInvites(): UseInviteReturn {
         acceptInvite: acceptInvite,
         rejectInvite: rejectInvite
     }
-
 }
 
 export {useInvites}
