@@ -29,8 +29,9 @@ function Stats({groupId}: StatsProps) {
     const { userStats } = useStats({autoLoad: true, groupId: groupId});
     const [displayStats, setDisplayStats] = useState<CounterStat[]>([]);
     const [year, setYear] = useState(dateNow.getFullYear());
-    const [month, setMonth] = useState(dateNow.getMonth() + 1);
-    const [monthTest, setMonthTest] = useState<string[]>([dateNow.getMonth() + 1 + ""]);
+    const [month, setMonth] = useState<string[]>([dateNow.getMonth() + 1 + ""]);
+
+    const monthValue = parseInt(month[0]);
 
     const statType: { label: string, value: CounterStat }[] = [
         {"label": "Total Tries", "value": "totalTries"},
@@ -61,14 +62,14 @@ function Stats({groupId}: StatsProps) {
     const handleStats = (rawStats: UserStats[] | undefined, year: number, month: number): UserStats[] => {
         if (!rawStats) return [];
 
-        const dayInRange = new Date(year, month, 0).getDate();
+        const dayInRange = new Date(year, monthValue, 0).getDate();
         const dayRange = range(1, dayInRange + 1, 1);
 
         return dayRange.map(day => {
             // Filter and sum stats for the current day
             const relevantStats = rawStats.filter(stat =>
                 stat.year === year &&
-                stat.month === month &&
+                stat.month === monthValue &&
                 stat.day === day
             );
 
@@ -78,7 +79,7 @@ function Stats({groupId}: StatsProps) {
                     groupId: groupId,
                     userId: 0,
                     year: year,
-                    month: month,
+                    month: monthValue,
                     day: day,
                     totalTries: 0,
                     totalCompleted: 0,
@@ -93,7 +94,7 @@ function Stats({groupId}: StatsProps) {
                         routesTried: prev.routesTried + current.routesTried
                     } as UserStats;
                 }, { // Initial accumulator structure (Day-specific data is irrelevant in initial reduce state)
-                    groupId: groupId, userId: 0, year: year, month: month, day: day,
+                    groupId: groupId, userId: 0, year: year, month: monthValue, day: day,
                     totalTries: 0, totalCompleted: 0, routesTried: 0,
                 });
             }
@@ -102,7 +103,7 @@ function Stats({groupId}: StatsProps) {
 
     // Use useMemo to calculate the data only when userStats, year, or month changes
     const chartData = useMemo(() =>
-            handleStats(userStats, year, month),
+            handleStats(userStats, year, monthValue),
         [userStats, year, month]
     );
 
@@ -183,21 +184,13 @@ function Stats({groupId}: StatsProps) {
                         colorScheme="blue"
                     />
                 </Box>
-                <Box>
-                    <Text mb={1} fontSize="sm">Month (1-12):</Text>
-                    <Input
-                        value={month}
-                        onChange={(event) => setMonth(Number(event.currentTarget.value))}
-                        type="number"
-                        min={1}
-                        max={12}
-                        width="100px"
-                        colorScheme="blue"
-                    />
+                <Box minW="3xs">
+                    <Text mb={1} fontSize="sm">Month</Text>
                     <SelectField
                         fields={monthFields}
-                        value={monthTest}
-                        setValue={setMonthTest}
+                        value={month}
+                        setValue={setMonth}
+                        width="100%"
                     />
                 </Box>
             </HStack>
