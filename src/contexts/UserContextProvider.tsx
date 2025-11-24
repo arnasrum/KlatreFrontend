@@ -1,18 +1,28 @@
 import {useState, useEffect} from "react";
 import { User } from "../interfaces/User.ts";
 import {UserContext} from "./UserContext.ts";
-import {apiUrl, origin} from "../constants/global"
+import {apiUrl, origin} from "../constants/global";
+import axios from "axios";
 
 
 function UserContextProvider({children}: { children: React.ReactNode}) {
-
     const [user, setUser] = useState<User>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         fetchUser();
+        window.addEventListener('session-expired', handleSessionExpired);
+
+        return () => {
+            window.removeEventListener('session-expired', handleSessionExpired);
+        }
     }, [])
 
+
+    function handleSessionExpired() {
+        logout();
+        window.location.href = "/login";
+    }
 
     function setUserHandler(user: User) {
         setUser(user);

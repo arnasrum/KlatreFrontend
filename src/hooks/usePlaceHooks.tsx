@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type Place from "../interfaces/Place.ts";
-import {apiUrl} from "../constants/global";
+import client from "../api/client";
 
 
 
@@ -34,18 +34,15 @@ const usePlaceHooks = ({
 
     function fetchPlaces() {
         setIsLoading(true)
-        fetch(`${apiUrl}/api/places?groupID=${groupId}`, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
+        client.get(`/places?groupId=${groupId}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
                 }
-                return response.json()
+            })
+            .then(response => {
+                if(response.status != 200)  throw new Error(`HTTP error! status: ${response.status}`)
+                return response.data
             })
             .then(data => {
                 setPlaces(data);

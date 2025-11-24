@@ -1,6 +1,8 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useContext} from 'react'
 import {GroupInvite} from "../interfaces/GroupInvite.ts";
 import {apiUrl} from "../constants/global.ts";
+import { UserContext } from "../contexts/UserContext"
+import client from "../api/client"
 
 type UseInviteProps = {
 }
@@ -20,23 +22,18 @@ function useInvites(): UseInviteReturn {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [refetch, setRefetch] = useState<boolean>(false)
     const [error , setError] = useState<Error>(null)
+    const { isLoggedIn } = useContext(UserContext)
 
     useEffect(() => {
+        if(!isLoggedIn) return;
         fetchPendingInvites()
-    }, [refetch])
-
+    }, [refetch, isLoggedIn])
 
     function fetchPendingInvites() {
         setIsLoading(true)
-        fetch(`${apiUrl}/api/invite/pending`, {
-            method: "GET",
-            credentials: "include",
-        })
+        client.get("/invite/pending")
             .then(response => {
-                if(!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
-                }
-                return response.json()
+                return response.data
             })
             .then(data => {setInvites(data); return data})
             .then(data => console.log("invites", data))
