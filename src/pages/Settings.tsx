@@ -2,8 +2,6 @@ import React, {useState, useEffect, useContext} from 'react';
 
 import {apiUrl} from "../constants/global.ts";
 import GradeSystem from "../interfaces/GradeSystem.ts";
-import Place from "../interfaces/Place.ts"
-import ReusableButton from "../components/ReusableButton.tsx";
 import Modal from "../components/Modal.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import ManageUsers from "../components/ManageUsers.tsx";
@@ -72,7 +70,7 @@ export default function Settings(props: SettingsProps) {
         if(!groupID) {
             return;
         }
-        fetch(`${apiUrl}/api/groups/grading?groupID=${groupID}`, {
+        fetch(`${apiUrl}/api/groups/grading?groupId=${groupID}`, {
             method: "GET",
             credentials: "include",
             headers: {

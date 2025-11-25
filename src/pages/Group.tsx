@@ -46,8 +46,7 @@ function Group() {
 
     const [groupData, setGroupData] = useState<GroupType>(null)
     const [tab, setTab] = useState<string>("boulders")
-    const { places, refreshPlaces } = usePlaceHooks({groupId: groupId, autoload: true})
-
+    const { places } = usePlaceHooks({groupId: groupId, autoload: true})
 
     useEffect(() => {
         fetch(`${apiUrl}/api/groups/uuid/${groupUUID}`, {

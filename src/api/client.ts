@@ -9,7 +9,7 @@ const client = axios.create({
 client.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401 || error.response.status === 403) {
+        if (error.response && error.response.status === 401) {
             window.dispatchEvent(new Event("session-expired"));
         }
         return Promise.reject(error)

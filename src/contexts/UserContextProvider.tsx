@@ -2,7 +2,6 @@ import {useState, useEffect} from "react";
 import { User } from "../interfaces/User.ts";
 import {UserContext} from "./UserContext.ts";
 import {apiUrl, origin} from "../constants/global";
-import axios from "axios";
 
 
 function UserContextProvider({children}: { children: React.ReactNode}) {
@@ -47,7 +46,6 @@ function UserContextProvider({children}: { children: React.ReactNode}) {
                 }
             })
             .catch((error) => {
-                console.error('Error fetching user:', error);
                 setIsLoggedIn(false);
                 setUser(null);
             })

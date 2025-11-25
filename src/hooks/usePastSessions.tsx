@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
-import { apiUrl } from "../constants/global.ts";
 import { PastSession } from "../interfaces/ClimbingSession.ts"
+import client from "../api/client";
 
 type PastSessionProps = {
     groupId: number
@@ -27,23 +26,18 @@ function usePastSessions(
         fetchPastSession()
     }, [])
 
-
     function refetchPastSession() {
         fetchPastSession()
     }
 
-
     function fetchPastSession() {
         setIsLoading(true)
-        fetch(`${apiUrl}/api/climbingSessions/past/${groupId}`, {
-            credentials: "include",
-            method: "GET",
-        })
+        client.get(`/climbingSessions/past/${groupId}`)
             .then(response => {
-                if (!response.ok) {
+                if (response.status != 200) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
-                return response.json()
+                return response.data
             })
             .then(data => {
                 setPastSessions(data.data.toSorted((session: PastSession) => session.timestamp))
@@ -52,7 +46,6 @@ function usePastSessions(
                 console.error('Failed to fetch places:', error);
             })
             .finally(() => {setIsLoading(false)})
-        console.log("past sessions", pastSessions)
     }
 
     return {

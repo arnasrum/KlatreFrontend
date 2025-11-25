@@ -116,7 +116,6 @@ function Groups() {
 
     function navigateToGroup(uuid: string, group: Group) {
         setCurrentGroup(group);
-        console.log("group", group);
         navigate(`/groups/${uuid}`, { state: { group } });
     }
 

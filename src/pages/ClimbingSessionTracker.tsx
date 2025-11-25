@@ -208,7 +208,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         })
             .then(() => {
                 toaster.create({
-                    title: completed ? "Send! 🎯" : "Attempt Logged",
+                    title: completed ? "Send!" : "Attempt Logged",
                     description: completed ? "Great job crushing that route!" : "Keep pushing!",
                     type: "success"
                 })
@@ -405,7 +405,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                             <Text fontWeight="medium">{currentPlace.name}</Text>
                                             <Text>•</Text>
                                             <FiClock />
-                                            <Text>{session.timestamp}</Text>
+                                            <Text>{session.timestamp} hello</Text>
                                         </HStack>
                                     )}
                                     {!session && (

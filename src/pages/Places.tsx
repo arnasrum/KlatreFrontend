@@ -3,7 +3,6 @@ import type Place from "../interfaces/Place.ts";
 import Boulders from "./Boulders.tsx";
 import AbstractForm from "../components/AbstractForm.tsx";
 import type InputField from "../interfaces/InputField.ts";
-import type {BoulderData} from "../interfaces/BoulderData.ts";
 import {apiUrl} from "../constants/global.ts";
 import {
     Box, 
@@ -19,7 +18,6 @@ import {
     Flex
 } from "@chakra-ui/react";
 import Modal from "../components/Modal.tsx";
-import { UserContext } from "../contexts/UserContext.ts";
 import { motion } from "framer-motion";
 import { 
     FiMapPin, 
@@ -50,7 +48,6 @@ function Places({groupID}: PlacesProps) {
 
     let grades = null;
     if(selectedPlace) {
-        console.log("selectedPlace", places);
         grades = places.find(place => place.id == selectedPlace)?.gradingSystem.grades;
     }
 
@@ -62,7 +59,7 @@ function Places({groupID}: PlacesProps) {
     function handleAddPlaceSubmit(event: React.FormEvent<never>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        formData.set("groupID", groupID.toString());
+        formData.set("groupId", groupID.toString());
         fetch(`${apiUrl}/api/groups/place`, {
             method: "POST",
             credentials: "include",
