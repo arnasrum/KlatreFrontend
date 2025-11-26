@@ -332,36 +332,7 @@ export default function Settings(props: SettingsProps) {
                 </MotionCard>
 
                 {/* Grading Systems Info */}
-                <MotionCard
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    bg="purple.50"
-                    borderWidth="1px"
-                    borderColor="purple.200"
-                >
-                    <Card.Body>
-                        <HStack justify="space-between" wrap="wrap" gap={4}>
-                            <VStack align="start">
-                                <HStack>
-                                    <FiStar color="var(--chakra-colors-purple-500)" />
-                                    <Heading size="md">Available Grading Systems</Heading>
-                                </HStack>
-                                <Text fontSize="sm" color="fg.muted">
-                                    {gradingSystems.length} grading {gradingSystems.length === 1 ? 'system' : 'systems'} configured for this group
-                                </Text>
-                            </VStack>
-                            <Button
-                                colorPalette="purple"
-                                variant="outline"
-                                onClick={() => setModalIsOpen(true)}
-                            >
-                                <FiPlus />
-                                Add Grading System
-                            </Button>
-                        </HStack>
-                    </Card.Body>
-                </MotionCard>
+
             </VStack>
 
             {/* Manage Grading Systems Modal */}

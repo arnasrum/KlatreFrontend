@@ -2,11 +2,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px; /* Adjust this value to control how far from the top */
+    padding-top: 20px;
     min-height: 100vh;
 }
 
-/* Optional: Add some spacing between tabs and content */
 .group > div:first-child {
     margin-bottom: 20px;
 }
