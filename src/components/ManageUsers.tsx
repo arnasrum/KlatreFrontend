@@ -32,8 +32,8 @@ function ManageUsers({groupID}: ManageUsersProps) {
     function handleChangeUserPermissions(role: number, groupID: number, userID: number) {
         const formData = new FormData();
         formData.set("role", role.toString());
-        formData.set("groupID", groupID.toString());
-        formData.set("userID", userID.toString());
+        formData.set("groupId", groupID.toString());
+        formData.set("userId", userID.toString());
         fetch(`${apiUrl}/api/groups/users/permissions`, {
             method: "PUT",
             credentials: "include",
@@ -55,8 +55,8 @@ function ManageUsers({groupID}: ManageUsersProps) {
     function handleKick(groupID: number, userID: number) {
 
         const formData = new FormData();
-        formData.set("groupID", groupID.toString())
-        formData.set("userID", userID.toString())
+        formData.set("groupId", groupID.toString())
+        formData.set("userId", userID.toString())
         fetch(`${apiUrl}/api/groups/users/kick`, {
             method: "DELETE",
             credentials: "include",
@@ -123,7 +123,6 @@ function ManageUsers({groupID}: ManageUsersProps) {
                             <Tabs.Trigger value="manage">
                                 <VStack>
                                     Manage Users
-
                                 </VStack>
                             </Tabs.Trigger>
                             <Tabs.Trigger value="invite">
@@ -139,7 +138,12 @@ function ManageUsers({groupID}: ManageUsersProps) {
                             </Box>
                         </Tabs.Content>
                         <Tabs.Content value="invite">
-                            <Input type="email" placeholder="Email" />
+                            <VStack>
+                                <HStack>
+                                    <Input type="email" placeholder="Email" />
+                                    <Button>Invite</Button>
+                                </HStack>
+                            </VStack>
                         </Tabs.Content>
                     </VStack>
                 </Tabs.List>
