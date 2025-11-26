@@ -73,13 +73,13 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
     } = useSession( {groupId: groupId, placeId: selectedPlace?.id ?? null} )
 
 
-    const { pastSessions, isLoadingPastSessions, refetchPastSession } = usePastSessions({groupId: groupId, autoLoad: true})
     const placeId = session?.placeId ?? selectedPlace?.id ?? null
+    const { pastSessions, isLoadingPastSessions, refetchPastSession } = usePastSessions({groupId: groupId, autoLoad: true})
     const { boulders, refetchBoulders } = useBouldersAll({"placeID": placeId, fetchActive: "active", autoFetch:false})
 
     useEffect(() => {
         if(!placeId) {return }
-        refetchBoulders()
+        refetchBoulders().then()
     }, [selectedPlace, session])
 
     useEffect(() => {
@@ -107,13 +107,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             return
         }
         setNewSessionModalOpen(true)
-    }
-
-
-    function getDate(): string {
-        const date = new Date()
-        //return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getHours()}:${date.getMinutes()}`
-        return date.getTime().toString()
     }
 
     function handleSessionStartClick() {
@@ -204,7 +197,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             routeId: parseInt(routeId),
             attempts: parseInt(attempts),
             completed: completed,
-            timestamp: getDate()
+            timestamp: (Date.now() / 1000).toString()
         })
             .then(() => {
                 toaster.create({
@@ -252,7 +245,15 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         }
         const completed = formData.get("completed") == "on"
 
-        updateRouteAttempt({...editingAttempt, completed: completed, attempts: parseInt(attempts), timestamp: Date.now()})
+        updateRouteAttempt({
+            ...editingAttempt,
+            grade: editingAttempt.gradeName,
+            routeId: 0,
+            completed: completed,
+            attempts: parseInt(attempts),
+            timestamp: Date.now() / 1000
+        })
+
         setEditClimbModalOpen(false)
         setEditingAttempt(null)
 
@@ -323,12 +324,13 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
         ? places.find(place => place.id === placeId) : null;
 
     function timestampToDate(timestamp: number, mode: "full" | "time"): string {
-        const date = new Date(timestamp)
-        if(mode === "full") {return date.toUTCString()}
-        else if(mode === "time") {
+        const date = new Date(timestamp * 1000)
+        if(mode === "full") {
+            return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+        } else if(mode === "time") {
             const hours = date.getHours()
             const minutes = date.getMinutes()
-            return `${hours}:${minutes}`
+            return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
         }
 
     }
@@ -405,7 +407,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                                             <Text fontWeight="medium">{currentPlace.name}</Text>
                                             <Text>•</Text>
                                             <FiClock />
-                                            <Text>{session.timestamp} hello</Text>
+                                            <Text>{timestampToDate(session.timestamp, "full")}</Text>
                                         </HStack>
                                     )}
                                     {!session && (
@@ -824,7 +826,6 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
                     </HStack>
                 </Modal.Footer>
             </Modal>
-
             <Toaster/>
         </Container>
     )
