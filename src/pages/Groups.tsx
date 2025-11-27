@@ -1,9 +1,8 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import AddGroupForm from "./AddGroupForm.tsx";
-import type Place from "../interfaces/Place.ts";
 import type Group from "../interfaces/Group.ts";
-import ReusableButton from "../components/ReusableButton.tsx";
+import { useGroups } from "../hooks/useGroups.ts";
 import { apiUrl } from "../constants/global.ts";
 import { 
     Container,
@@ -35,84 +34,14 @@ import {
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card.Root);
 
-interface Groups {
-    group: Group;
-    places: Array<Place>;
-}
-
 function Groups() {
-    const [groups, setGroups] = useState<Array<Groups>>([]);
     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-    const [refetchGroups, setRefetchGroups] = useState<boolean>(false);
-    const [addRefetch, setAddRefetch] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
     const { setCurrentGroup } = useContext(GroupContext);
     const { user, isLoggedIn } = useContext(UserContext);
     const navigate = useNavigate();
 
-    const groupContext = {
-        refetch: refetchGroups,
-        setRefetch: setRefetchGroups,
-        groupID: selectedGroupId,
-        setSelectedGroupID: setSelectedGroupId,
-        addRefetch,
-        setAddRefetch,
-        setShowGroupModal,
-    };
-
-    // Fetch groups
-    useEffect(() => {
-        if (!isLoggedIn) return;
-
-        fetch(`${apiUrl}/api/groups`, {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(responseBody => {
-                setGroups(Array.isArray(responseBody) ? responseBody : []);
-                setError(null);
-            })
-            .finally(() => setIsLoading(false))
-            .catch(error => {
-                setGroups([]);
-                setIsLoading(false);
-                setError(error.message || "An unexpected error occurred while loading groups");
-                console.error(error);
-            });
-    }, [refetchGroups, isLoggedIn]);
-
-    function handleDeleteClick() {
-        fetch(`${apiUrl}/api/groups`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            method: "DELETE",
-            body: JSON.stringify({
-                groupID: selectedGroupId,
-            })
-        })
-            .then(() => setRefetchGroups(!refetchGroups))
-            .catch(error => {
-                console.log(error);
-                setError(error.message || "An unexpected error occurred while deleting group");
-            });
-    }
-
-    function refetchGroupsHandler() {
-        setRefetchGroups((prev: boolean) => !prev);
-    }
+    const { groups, refetchGroups,  isLoading, error } = useGroups();
 
     function navigateToGroup(uuid: string, group: Group) {
         setCurrentGroup(group);
@@ -189,12 +118,12 @@ function Groups() {
                 <Alert.Root status="error">
                     <Alert.Indicator />
                     <Alert.Title>Error Loading Groups</Alert.Title>
-                    <Alert.Description>{error}</Alert.Description>
+                    <Alert.Description><>{error}</></Alert.Description>
                 </Alert.Root>
                 <Button
                     mt={4}
                     colorPalette="blue"
-                    onClick={refetchGroupsHandler}
+                    onClick={refetchGroups}
                 >
                     Try Again
                 </Button>
@@ -254,11 +183,12 @@ function Groups() {
         );
     }
 
+    console.log(groups);
     const groupItems = groups.map(group => ({
-        id: group.group.id,
-        name: group.group.name,
-        description: group.group.description,
-        uuid: group.group.uuid,
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        uuid: group.uuid,
         placesCount: group.places.length,
     }));
 
