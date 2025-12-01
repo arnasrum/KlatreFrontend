@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type Boulder from "../interfaces/Boulder.ts";
 import { apiUrl } from "../constants/global.ts";
 

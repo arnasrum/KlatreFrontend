@@ -171,7 +171,7 @@ function Login() {
                                     key={provider.name}
                                     width="full"
                                     size="lg"
-                                    variant={provider.variant || "outline"}
+                                    variant={"outline"}
                                     colorPalette={provider.colorPalette}
                                     onClick={provider.onClick}
                                     disabled={loading}
