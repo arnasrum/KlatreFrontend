@@ -197,7 +197,7 @@ function Sessions({groupId}: SessionProps): React.ReactElement {
             routeId: parseInt(routeId),
             attempts: parseInt(attempts),
             completed: completed,
-            timestamp: (Date.now() / 1000).toString()
+            timestamp: (Math.floor(Date.now() / 1000)).toString()
         })
             .then(() => {
                 toaster.create({
