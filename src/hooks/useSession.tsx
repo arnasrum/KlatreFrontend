@@ -54,8 +54,8 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 return response.json()
             })
             .then(data => {
-                setSession(data.data);
-                return data.data
+                setSession(data);
+                return data
             })
             .then(data => {
                 if(!data) return;
@@ -79,7 +79,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 }
                 return response.json()
             })
-            .then(data => {setRouteAttempts(data.data); console.log("route attempts", data)})
+            .then(data => setRouteAttempts(data))
             .catch(error => {setError(error)})
     }
 
@@ -101,10 +101,10 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    return response.json();
+                    return response.body.toString();
                 })
                 .then(data => {
-                    resolve(data.data);
+                    resolve(data);
                 })
                 .then(() => {setRefetch(prev => !prev)})
                 .catch(error => {
@@ -134,7 +134,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 if(!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
-                return response.json()
+                return response.body.toString();
             })
             .then(data => {console.log("updated attempt", data)})
             .then(() => {setRefetch(prev => !prev)})
@@ -142,21 +142,17 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
     }
 
     function deleteRouteAttempt(attemptId: number) {
-        fetch(`${apiUrl}/api/climbingSessions/remove/attempt`, {
+        fetch(`${apiUrl}/api/climbingSessions/remove/attempt/${attemptId}`, {
             method: "DELETE",
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                attemptId: attemptId
-            })
+            }
         })
             .then(response => {
                 if(!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
                 }
-                return response.json()
             })
             .then(() => {setRefetch(prev => !prev)})
             .catch(error => {setError(error)})
@@ -178,7 +174,7 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 }
                 return response.json()
             })
-            .then(data => {setSession(data.data)})
+            .then(data => setSession(data))
             .catch(error => {
                 console.error("Error opening session:", error)
                 setError(error.message);
@@ -200,7 +196,6 @@ export default function useSession({groupId, placeId}: UseSessionProps): UseSess
                 if(!response.ok) {
                     throw new Error("Failed to close session");
                 }
-                return response.json()
             })
             .then(() => setSession(null))
             .then(() => console.log("closed session"))
