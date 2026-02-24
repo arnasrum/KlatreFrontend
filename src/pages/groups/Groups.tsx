@@ -1,10 +1,9 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
-import AddGroupForm from "./AddGroupForm.tsx";
-import type Group from "../interfaces/Group.ts";
-import { useGroups } from "../hooks/useGroups.ts";
-import { apiUrl } from "../constants/global.ts";
-import { 
+import AddGroupForm from "./components/AddGroupForm.tsx";
+import type Group from "../../interfaces/Group.ts";
+import { useGroups } from "./hooks/useGroups.ts";
+import {
     Container,
     Grid,
     Box,
@@ -14,14 +13,13 @@ import {
     Button,
     VStack,
     HStack,
-    Badge,
     Skeleton,
     Alert,
     Flex,
     Separator
 } from "@chakra-ui/react";
-import { GroupContext } from "../contexts/GroupContext.tsx";
-import { UserContext } from "../contexts/UserContext.ts";
+import { GroupContext } from "../../contexts/GroupContext.tsx";
+import { UserContext } from "../../contexts/UserContext.ts";
 import { motion } from "framer-motion";
 import { 
     FiUsers, 

@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import {apiUrl} from "../constants/global.ts";
+import {apiUrl} from "../../../constants/global.ts";
 import "./AddGroupFrom.css"
 
 function AddGroupForm() {

@@ -1,8 +1,7 @@
 import { useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { UserContext } from "../contexts/UserContext.ts"
-import Invites from "../components/Invites.tsx"
-import Groups from "./Groups.tsx"
+import Groups from "./groups/Groups.tsx"
 import { 
     Container, 
     Heading, 

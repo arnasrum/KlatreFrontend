@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { apiUrl } from "../constants/global";
 import { RouteAttempt, RouteAttemptDisplay, RouteAttemptDTO } from "../interfaces/RouteAttempt";
 
-type Session = {
+export type Session = {
     id: number
     groupId: number
     placeId: number

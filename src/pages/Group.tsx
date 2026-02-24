@@ -17,10 +17,10 @@ import {
     Flex
 } from "@chakra-ui/react"
 import "./Group.css"
-import Places from "./Places.tsx";
+import Places from "./places/Places.tsx";
 import {apiUrl} from "../constants/global.ts"
 import Settings from "./Settings.tsx";
-import Sessions from "./ClimbingSessionTracker.tsx";
+import Sessions from "./climbing-session/ClimbingSession.tsx";
 import Stats from "./Stats.tsx";
 import GroupType from "../interfaces/Group.ts"
 import { motion } from "framer-motion"

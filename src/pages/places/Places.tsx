@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
-import type Place from "../interfaces/Place.ts";
-import Boulders from "./Boulders.tsx";
-import AbstractForm from "../components/AbstractForm.tsx";
-import type InputField from "../interfaces/InputField.ts";
-import {apiUrl} from "../constants/global.ts";
+import React, { useState, useEffect } from 'react';
+import type Place from "../../interfaces/Place.ts";
+import Boulders from "../boulders/Boulders.tsx";
+import AbstractForm from "../../components/AbstractForm.tsx";
+import type InputField from "../../interfaces/InputField.ts";
+import {apiUrl} from "../../constants/global.ts";
 import {
     Box, 
     Container, 
@@ -17,7 +17,7 @@ import {
     Grid,
     Flex
 } from "@chakra-ui/react";
-import Modal from "../components/Modal.tsx";
+import Modal from "../../components/Modal.tsx";
 import { motion } from "framer-motion";
 import { 
     FiMapPin, 
@@ -26,7 +26,7 @@ import {
     FiChevronRight,
     FiAlertCircle 
 } from "react-icons/fi";
-import {usePlaceHooks} from "../hooks/usePlaceHooks";
+import {usePlaceHooks} from "../../hooks/usePlaceHooks.tsx";
 
 const MotionCard = motion.create(Card.Root);
 const MotionBox = motion.create(Box);

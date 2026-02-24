@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import type Group from "../interfaces/Group.ts";
-import client from "../api/client";
+import type Group from "../../../interfaces/Group.ts";
+import client from "../../../api/client.ts";
 
 
 

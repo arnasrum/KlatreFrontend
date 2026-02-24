@@ -1,25 +1,24 @@
-import React, { useState, useEffect, useContext } from 'react'
-import type Boulder from "../interfaces/Boulder.ts";
-import {apiUrl} from "../constants/global.ts";
+import React, { useState, useContext } from 'react'
+import type Boulder from "../../interfaces/Boulder.ts";
+import {apiUrl} from "../../constants/global.ts";
 import {
     Container, Box, Flex, VStack, HStack,
     Heading, Image as ImageTag, Text, Badge,
     AspectRatio, Card, Button,
     SimpleGrid, Skeleton
 } from "@chakra-ui/react";
-import AbstractForm from "../components/AbstractForm.tsx";
-import {handleFormDataImage} from "../Helpers.ts";
-import InputField from "../interfaces/InputField.ts";
-import {Grade} from "../interfaces/Grade.ts";
-import { UserContext } from "../contexts/UserContext.ts";
-import { useBouldersPaginated } from "../hooks/useBouldersHooks.ts"
+import AbstractForm from "../../components/AbstractForm.tsx";
+import {handleFormDataImage} from "../../Helpers.ts";
+import InputField from "../../interfaces/InputField.ts";
+import {Grade} from "../../interfaces/Grade.ts";
+import { UserContext } from "../../contexts/UserContext.ts";
+import { useBouldersPaginated } from "../../hooks/useBouldersHooks.ts"
 import { motion } from "framer-motion";
 import { 
     FiImage, 
     FiEdit3, 
     FiTrash2, 
     FiPlus,
-    FiInfo,
     FiCheckCircle,
     FiXCircle,
     FiFilter
