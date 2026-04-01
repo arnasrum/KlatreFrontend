@@ -1,6 +1,6 @@
 import { Button, HStack, Text } from "@chakra-ui/react";
-import Modal from "../../../../components/Modal.tsx";
-import AbstractForm from "../../../../components/AbstractForm.tsx";
+import Modal from "../../../../components/modals/Modal.tsx";
+import AbstractForm from "../../../../components/forms/AbstractForm.tsx";
 import { RouteAttemptDisplay } from "../../../../interfaces/RouteAttempt";
 import React from "react";
 

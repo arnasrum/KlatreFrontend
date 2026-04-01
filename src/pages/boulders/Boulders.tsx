@@ -7,8 +7,8 @@ import {
     AspectRatio, Card, Button,
     SimpleGrid, Skeleton
 } from "@chakra-ui/react";
-import AbstractForm from "../../components/AbstractForm.tsx";
-import {handleFormDataImage} from "../../Helpers.ts";
+import AbstractForm from "../../components/forms/AbstractForm.tsx";
+import {handleFormDataImage} from "../../utils/Helpers.ts";
 import InputField from "../../interfaces/InputField.ts";
 import {Grade} from "../../interfaces/Grade.ts";
 import { UserContext } from "../../contexts/UserContext.ts";

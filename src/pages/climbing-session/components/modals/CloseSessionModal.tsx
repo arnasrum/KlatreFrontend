@@ -1,6 +1,6 @@
 import { Badge, Box, Button, HStack, Text, VStack } from "@chakra-ui/react";
 import { FiSave, FiTrash2 } from "react-icons/fi";
-import Modal from "../../../../components/Modal.tsx";
+import Modal from "../../../../components/modals/Modal.tsx";
 import {RouteAttemptDisplay} from "../../../../interfaces/RouteAttempt.ts";
 import {Session} from "../../../../hooks/useSession.tsx";
 

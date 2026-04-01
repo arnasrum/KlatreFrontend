@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useMemo} from 'react';
-import {useStats} from "../hooks/useStats";
+import {useStats} from "../../hooks/useStats";
 import {
     Bar,
     BarChart,
@@ -13,8 +13,8 @@ import {
     CartesianGrid
 } from "recharts";
 import {Input, Box, HStack, Text} from "@chakra-ui/react";
-import SelectField from "../components/SelectField";
-import UserStats from "../interfaces/UserStats.ts";
+import SelectField from "../../components/forms/SelectField";
+import UserStats from "../../interfaces/UserStats.ts";
 
 type CounterStat = "totalTries" | "totalCompleted" | "routesTried";
 

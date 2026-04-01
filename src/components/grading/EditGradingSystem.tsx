@@ -1,10 +1,10 @@
 import {Heading, Box, Button} from "@chakra-ui/react";
-import GradeSystem from "../interfaces/GradeSystem.ts";
-import SelectField from "./SelectField.tsx";
+import GradeSystem from "../../interfaces/GradeSystem.ts";
+import SelectField from "../forms/SelectField.tsx";
 import React, {useContext, useState} from "react";
-import {Grade} from "../interfaces/Grade.ts";
-import {apiUrl} from "../constants/global.ts";
-import {toaster, Toaster} from "./ui/toaster.tsx";
+import {Grade} from "../../interfaces/Grade.ts";
+import {apiUrl} from "../../constants/global.ts";
+import {toaster, Toaster} from "../ui/toaster.tsx";
 
 
 interface EditGradingSystemProps {

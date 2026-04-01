@@ -1,6 +1,6 @@
 import React, {useContext} from "react";
 import {Box, Heading, Card, HStack, VStack, Button, Text} from "@chakra-ui/react";
-import {InviteContext} from "../contexts/InviteContext.tsx";
+import {InviteContext} from "../../contexts/InviteContext.tsx";
 import {AnimatePresence, motion} from "framer-motion";
 
 

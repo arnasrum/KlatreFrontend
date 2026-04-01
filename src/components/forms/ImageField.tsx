@@ -1,9 +1,9 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Box, VStack, HStack, Text, Input, Card, Badge, NativeSelect } from "@chakra-ui/react";
-import ReusableButton from "./ReusableButton.tsx";
+import ReusableButton from "../buttons/ReusableButton.tsx";
 import { default as Cropper } from 'react-easy-crop';
-import cropImageAsBase64 from "../scripts/CropImage.ts"
-import Modal from "./Modal.tsx";
+import cropImageAsBase64 from "../../utils/CropImage.ts"
+import Modal from "../modals/Modal.tsx";
 
 type CroppedArea = { x: number; y: number; width: number; height: number };
 type CroppedAreaPixels = { x: number; y: number; width: number; height: number };

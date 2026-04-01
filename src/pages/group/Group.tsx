@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useContext, useRef } from "react"
-import { useParams, useLocation, useNavigate } from "react-router-dom"
+import React, {useState, useEffect } from "react"
+import { useParams, useLocation } from "react-router-dom"
 import {
     Box, 
     Tabs,
@@ -17,14 +17,14 @@ import {
     Flex
 } from "@chakra-ui/react"
 import "./Group.css"
-import Places from "./places/Places.tsx";
-import {apiUrl} from "../constants/global.ts"
+import Places from "../places/Places.tsx";
+import {apiUrl} from "../../constants/global.ts"
 import Settings from "./Settings.tsx";
-import Sessions from "./climbing-session/ClimbingSession.tsx";
+import Sessions from "../climbing-session/ClimbingSession.tsx";
 import Stats from "./Stats.tsx";
-import GroupType from "../interfaces/Group.ts"
+import GroupType from "../../interfaces/Group.ts"
 import { motion } from "framer-motion"
-import { usePlaceHooks } from "../hooks/usePlaceHooks.tsx"
+import { usePlaceHooks } from "../../hooks/usePlaceHooks.tsx"
 import { 
     FiUsers, 
     FiMap, 

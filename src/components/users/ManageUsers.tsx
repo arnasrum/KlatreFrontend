@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react'
 import {Heading, Box, Card, Button, Text, VStack, Tabs, HStack, Input, Separator} from '@chakra-ui/react'
-import { apiUrl } from "../constants/global.ts";
-import {toaster, Toaster} from "./ui/toaster";
-import { UserRole } from "../interfaces/User.ts";
+import { apiUrl } from "../../constants/global.ts";
+import {toaster, Toaster} from "../ui/toaster";
+import { UserRole } from "../../interfaces/User.ts";
 
 
 

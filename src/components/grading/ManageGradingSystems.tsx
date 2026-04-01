@@ -1,7 +1,7 @@
 import {Box, Heading, Tabs} from "@chakra-ui/react";
 import React, {Dispatch, SetStateAction, useState} from "react";
 import GradeCreation from "./GradeCreation.tsx";
-import GradeSystem from "../interfaces/GradeSystem.ts";
+import GradeSystem from "../../interfaces/GradeSystem.ts";
 import EditGradingSystem from "./EditGradingSystem.tsx";
 
 interface ManageGradingSystemsProps {

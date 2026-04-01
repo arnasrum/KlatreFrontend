@@ -1,6 +1,6 @@
 import { Button, HStack } from "@chakra-ui/react";
-import Modal from "../../../../components/Modal.tsx";
-import AbstractForm from "../../../../components/AbstractForm.tsx";
+import Modal from "../../../../components/modals/Modal.tsx";
+import AbstractForm from "../../../../components/forms/AbstractForm.tsx";
 import React from "react";
 
 interface LogClimbModalProps {

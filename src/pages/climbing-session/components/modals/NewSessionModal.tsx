@@ -1,7 +1,7 @@
 import { Button, HStack, Text, VStack } from "@chakra-ui/react";
 import { FiPlay } from "react-icons/fi";
-import Modal from "../../../../components/Modal.tsx";
-import SelectField from "../../../../components/SelectField.tsx";
+import Modal from "../../../../components/modals/Modal.tsx";
+import SelectField from "../../../../components/forms/SelectField.tsx";
 
 interface NewSessionModalProps {
     isOpen: boolean;

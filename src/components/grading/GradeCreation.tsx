@@ -1,13 +1,13 @@
 import React, {useRef, useState, useEffect, useContext} from "react"
-import {apiUrl} from "../constants/global.ts"
+import {apiUrl} from "../../constants/global.ts"
 import {Separator, Box, VStack, Button, Field, Slider, Input, EmptyState} from "@chakra-ui/react"
-import SelectField from "./SelectField.tsx";
-import GradeSystem from "../interfaces/GradeSystem.ts";
-import ReusableButton from "./ReusableButton.tsx";
+import SelectField from "../forms/SelectField.tsx";
+import GradeSystem from "../../interfaces/GradeSystem.ts";
+import ReusableButton from "../buttons/ReusableButton.tsx";
 // @ts-ignore
 import {ValueChangeDetails} from "@chakra-ui/react"
 import {VscEmptyWindow} from "react-icons/vsc";
-import {toaster, Toaster} from "./ui/toaster.tsx";
+import {toaster, Toaster} from "../ui/toaster.tsx";
 
 interface CustomGrade {
     id: number,

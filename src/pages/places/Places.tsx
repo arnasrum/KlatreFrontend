@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type Place from "../../interfaces/Place.ts";
 import Boulders from "../boulders/Boulders.tsx";
-import AbstractForm from "../../components/AbstractForm.tsx";
+import AbstractForm from "../../components/forms/AbstractForm.tsx";
 import type InputField from "../../interfaces/InputField.ts";
 import {apiUrl} from "../../constants/global.ts";
 import {
@@ -17,7 +17,7 @@ import {
     Grid,
     Flex
 } from "@chakra-ui/react";
-import Modal from "../../components/Modal.tsx";
+import Modal from "../../components/modals/Modal.tsx";
 import { motion } from "framer-motion";
 import { 
     FiMapPin, 

@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import UserContextProvider from "./contexts/UserContextProvider.tsx"
-import NavBar from "./components/NavBar.tsx"
-import Home from "./pages/Home.tsx"
+import NavBar from "./components/navigation/NavBar.tsx"
+import Home from "./pages/home/Home.tsx"
 import Groups from "./pages/groups/Groups.tsx"
-import Login from "./pages/Login.tsx"
-import Group from "./pages/Group.tsx"
-import Invites from "./components/Invites.tsx";
+import Login from "./pages/login/Login.tsx"
+import Group from "./pages/group/Group.tsx"
+import Invites from "./components/users/Invites.tsx";
 import { InviteProvider } from "./contexts/InviteContext.tsx";
 
 function App() {

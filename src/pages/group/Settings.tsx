@@ -1,11 +1,11 @@
 import React, {useState, useEffect, useContext} from 'react';
 
-import {apiUrl} from "../constants/global.ts";
-import GradeSystem from "../interfaces/GradeSystem.ts";
-import Modal from "../components/Modal.tsx";
-import AbstractForm from "../components/AbstractForm.tsx";
-import ManageUsers from "../components/ManageUsers.tsx";
-import ManageGradingSystems from "../components/ManageGradingSystems.tsx";
+import {apiUrl} from "../../constants/global.ts";
+import GradeSystem from "../../interfaces/GradeSystem.ts";
+import Modal from "../../components/modals/Modal.tsx";
+import AbstractForm from "../../components/forms/AbstractForm.tsx";
+import ManageUsers from "../../components/users/ManageUsers.tsx";
+import ManageGradingSystems from "../../components/grading/ManageGradingSystems.tsx";
 import {
     Box, 
     Button, 
@@ -19,9 +19,9 @@ import {
     Badge,
     Container
 } from "@chakra-ui/react";
-import SelectField from "../components/SelectField";
-import { toaster, Toaster} from "../components/ui/toaster.tsx";
-import {usePlaceHooks} from "../hooks/usePlaceHooks.tsx";
+import SelectField from "../../components/forms/SelectField";
+import { toaster, Toaster} from "../../components/ui/toaster.tsx";
+import {usePlaceHooks} from "../../hooks/usePlaceHooks.tsx";
 import { motion } from "framer-motion";
 import { 
     FiUsers, 
